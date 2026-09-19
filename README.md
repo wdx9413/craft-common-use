@@ -21,7 +21,7 @@ node init.mjs --agent all    --dry-run               # 各家全预览，不落�
 node init.mjs --agent cline --product memory --uninstall
 ```
 
-- `--product`：`full | context | memory | knowledge | capability | quality | skill-quality | workflow-evolution`（server 名与 skill 名的映射见 `init.mjs --list`）。
+- `--product`：`full | context | memory | knowledge | capability | quality | skill-quality | experience`（server 名与 skill 名的映射见 `init.mjs --list`）。
 - `--check`（默认开启）会用**与写入配置完全相同的命令行**真实拉起 MCP 进程做
   `initialize` + `tools/list` 握手，安装即验证。
 - 幂等：相同配置重跑是 no-op；已有同名但不同的 server/skill 会拒绝改动并提示 `--force`；
@@ -75,7 +75,7 @@ Select-String .\bundle\craft-mcp.cjs -Pattern 'var VERSION = "([^"]+)"' | Select
 - Qoder dry-run 计划正确（本机未装 Qoder，未做真实写盘）。
 - **DSH 真实安装**：`--agent dsh` 把 MCP loader 块写进 `<DSH_HOME>/cordis.patch.yml`、把 Skill 装到
   `<DSH_HOME>/tool-management/skills/`。`mcp_manager_list` 显示三个 server `loader:on:active`
-  （craft-memory 23 / craft-knowledge 50 / craft-workflow-evolution 20 个工具），
+  （craft-memory 23 / craft-knowledge 50 / craft-experience 20 个工具），
   `skill_manager_list` 显示三个 skill `source=hub、enabled`。
   隔离 `DSH_HOME` 下验证了完整回路：`[]` → 新增块 → 二次运行 no-op → 追加第二块 →
   卸载一块 → 卸最后一块回到 `[]`，四次写入产生四份独立备份。

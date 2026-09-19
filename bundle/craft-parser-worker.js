@@ -1,4 +1,4 @@
-// src/store.ts
+// src/infrastructure/store.ts
 import { DatabaseSync } from "node:sqlite";
 
 // src/untrusted-parser.ts
