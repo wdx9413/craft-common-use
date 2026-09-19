@@ -35,7 +35,7 @@ const PRODUCTS = {
   'capability':        { server: 'craft-capability',         product: 'capability', skill: 'craft-capability' },
   'quality':           { server: 'craft-quality',            product: 'quality',    skill: 'craft-quality' },
   'skill-quality':     { server: 'craft-skill-quality',      product: 'quality',    skill: 'craft-skill-quality' },
-  'experience':        { server: 'craft-experience',          product: 'evolution',  skill: 'craft-experience' },
+  'experience':        { server: 'craft-experience',          product: 'experience', skill: 'craft-experience' },
 }
 
 function parseArgs(argv) {

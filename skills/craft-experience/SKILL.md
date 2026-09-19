@@ -1,4 +1,4 @@
-﻿---
+---
 name: craft-experience
 description: Compatibility helper for creating bounded Workflow drafts from sanitized observations. Use complete Craft and Craft Quality to evaluate, sign off, canary, or route a draft.
 ---
