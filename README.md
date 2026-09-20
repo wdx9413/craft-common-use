@@ -2,7 +2,8 @@
 
 一条命令把**通用**的 Craft skill（SKILL.md）和 MCP server 初始化进某个编程 Agent。
 本文件夹完全自包含：MCP bundle、parser worker 与全部 SKILL.md 都在 `bundle/` 与 `skills/`
-内（取自 craft-marketplace 0.12.33 发布物），运行时不依赖 craft-marketplace 或 craft 源码仓库。
+内（取自 Craft v0.12.34 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
+本次包对应源码提交 `ddd17e8`；精确版本、来源与 bundle 校验和见 [`release.json`](./release.json)。
 
 ## 用法
 
@@ -47,7 +48,8 @@ Craft 数据是刻意设计：记忆、知识、执行观察互通。
 
 ## 更新 bundle / skills
 
-发布物升级后（例如 craft-marketplace 出 0.12.34），重新拷贝即可，脚本无需改动：
+发布物升级后，应以 `craft-marketplace` 的已校验插件包为唯一发布源，重新同步
+bundle、parser worker 与对应 Skill；脚本本身无需改动：
 
 ```powershell
 Copy-Item ..\craft-marketplace\plugins\craft-memory\dist\plugin\craft-mcp.cjs, `
@@ -55,17 +57,20 @@ Copy-Item ..\craft-marketplace\plugins\craft-memory\dist\plugin\craft-mcp.cjs, `
 Copy-Item ..\craft-marketplace\plugins\*\skills\*\SKILL.md .\skills\<技能名>\SKILL.md
 ```
 
-**拷完必须核对版本**，否则会出现"README 说新版本、bundle 其实是旧版本"的静默不一致
-（2026-09-19 就发生过：本目录的 README 写着 0.12.33，bundle 实际是 0.12.30）：
+**同步后必须更新 `release.json` 并核对版本/校验和**，否则会出现“README 说新版本、bundle
+其实是旧版本”的静默不一致：
 
 ```powershell
-# bundle 内部真实版本（应与 craft-marketplace 各插件 package.json 声明一致）
+# bundle 内部真实版本（应与 release.json / craft-marketplace 各插件 manifest 一致）
 Select-String .\bundle\craft-mcp.cjs -Pattern 'var VERSION = "([^"]+)"' | Select-Object -First 1
 # 与 craft-marketplace 发布物逐字节比对（应为 True）
 (Get-FileHash .\bundle\craft-mcp.cjs).Hash -eq (Get-FileHash ..\craft-marketplace\plugins\craft-memory\dist\plugin\craft-mcp.cjs).Hash
 ```
 
-## 已验证（2026-09-19）
+## 已验证
+
+- v0.12.34 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
+  和 SHA-256 记录于 `release.json`。Craft 源码侧已完成 MCP bundle 冒烟检查。
 
 - Cline 用户级真实安装 `craft-memory`：JSON 合并保留既有 `craft` 条目；探针 `tools/list`
   返回 18 个工具；skill 落盘；重跑 no-op。

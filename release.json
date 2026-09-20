@@ -1,0 +1,21 @@
+{
+  "product": "craft-common-use",
+  "craft_version": "0.12.34",
+  "source_repository": "https://github.com/wdx9413/craft.git",
+  "source_commit": "ddd17e8ce4bd07612edb44aef1669674905684a1",
+  "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
+  "bundle": {
+    "craft_mcp_sha256": "a8e09b75c3a4b5c1dcc5169538fdd83111480e607db6ffed3821f5f48e86c0f9",
+    "parser_worker_sha256": "cfebc0927f17b2741fd0ca45ffcddae5242eb6f19ebeb8dcec2e75eb6cc44211"
+  },
+  "skills": [
+    "craft-route",
+    "craft-context",
+    "craft-memory",
+    "craft-knowledge",
+    "craft-capability",
+    "craft-quality",
+    "craft-skill-quality",
+    "craft-experience"
+  ]
+}
