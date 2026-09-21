@@ -23,8 +23,12 @@ node init.mjs --agent cline --product memory --uninstall
 ```
 
 - `--product`：`full | context | memory | knowledge | capability | quality | skill-quality | experience`（server 名与 skill 名的映射见 `init.mjs --list`）。
+  其中只有 `full | memory | knowledge | experience` 由本 bundle 提供 MCP；`context | capability | quality | skill-quality`
+  这四个**只装 Skill**（它们的 MCP 在 `craft-marketplace` 的同名插件包里，本目录刻意保持自包含而不携带）。
+  选到它们时脚手架会打印“跳过 MCP”而不是写一条无法启动的 server；`--list` 同样标注。
 - `--check`（默认开启）会用**与写入配置完全相同的命令行**真实拉起 MCP 进程做
-  `initialize` + `tools/list` 握手，安装即验证。
+  `initialize` + `tools/list` 握手，安装即验证。**握手失败会回滚**：写入前先快照配置文件，
+  失败则恢复安装前内容（此前失败只返回错误码、把无法启动的 server 留在用户配置里）。
 - 幂等：相同配置重跑是 no-op；已有同名但不同的 server/skill 会拒绝改动并提示 `--force`；
   JSON 合并保留文件里的其他内容与其他 server。
 - `--uninstall` 只删本脚手架写入的内容（skill 按 frontmatter `name` 校验，MCP 按 server 键名）。
@@ -42,7 +46,7 @@ Skill 与 MCP，不承诺“每个任务自动开始/结束各调用一次”。
 
 | Agent | MCP 配置 | Skill 目录 | 兼容要点 |
 |---|---|---|---|
-| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供） |
+| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 下 Cline 只装 `craft-knowledge` / `craft-memory` / `craft-experience`（外加可选 `craft` full） |
 | Qoder | `~/.qoder/settings.json`（用户级）或 `<项目>/.qoder/settings.json` | `~/.qoder/skills/` / `.qoder/skills/` | 项目级 MCP 需逐个批准（或 `mcp.enableAllProjectMcpServers`） |
 | Trae | `<项目>/.trae/mcp.json`（仅项目级） | `<项目>/.trae/skills/` | 需在 设置>MCP 打开「启用项目级 MCP」；command 不能含空格，脚本自动回退 8.3 短路径或已知的空格路径 node |
 | WorkBuddy | `~/.workbuddy-ai/mcp.json` | `~/.workbuddy-ai/skills/<name>/` | 信任绑定 `command+args` 的 SHA-256：装完/改动后需在 Connector 管理 > Custom connectors 点一次 Trust |

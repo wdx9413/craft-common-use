@@ -7,8 +7,8 @@
   "source_note": "v0.12.36 payloads were built from committed Craft source c074e85c06a26a2bd54b9be079b37b951c23107e.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "ba9fa9aae5487756a08e89ce664a3261fe5708cca76694f3489f8e32927d61c5",
-    "parser_worker_sha256": "503cd143d12379ee5754a98ca9ee47252012f3138fc9facf370b62ab6e85dc4c"
+    "craft_mcp_sha256": "9cb91afad3740e979dac5846ac07a0b6a9953eaec92d20cb56cb8a55833a21ea",
+    "parser_worker_sha256": "e1dcbf5ab909e77287a0102795abcb1de2761e8289cfe1306c6bd1543975ee5a"
   },
   "skills": [
     "craft-route",

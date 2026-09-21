@@ -27,16 +27,24 @@ const WORKER = join(HERE, 'bundle', 'craft-parser-worker.js')
 const SKILLS_ROOT = join(HERE, 'skills')
 const SCAFFOLD_VERSION = '0.1.0'
 
+// `mcp` records whether *this* bundle serves the product. The bundle is one
+// multi-product server whose supported set is `MCP_PRODUCT_SURFACES` inside it:
+// full, knowledge, memory, experience. The remaining products ship a Skill only --
+// their MCP lives in the per-plugin marketplace bundles, which this deliberately
+// self-contained folder does not carry. Declaring that here is what stops
+// `--product context` from writing an MCP entry that can never start.
 const PRODUCTS = {
-  'full':              { server: 'craft',                    product: 'full',       skill: 'craft-route' },
-  'context':           { server: 'craft-context',            product: 'context',    skill: 'craft-context' },
-  'memory':            { server: 'craft-memory',             product: 'memory',     skill: 'craft-memory' },
-  'knowledge':         { server: 'craft-knowledge',          product: 'knowledge',  skill: 'craft-knowledge' },
-  'capability':        { server: 'craft-capability',         product: 'capability', skill: 'craft-capability' },
-  'quality':           { server: 'craft-quality',            product: 'quality',    skill: 'craft-quality' },
-  'skill-quality':     { server: 'craft-skill-quality',      product: 'quality',    skill: 'craft-skill-quality' },
-  'experience':        { server: 'craft-experience',          product: 'experience', skill: 'craft-experience' },
+  'full':              { server: 'craft',                 product: 'full',       skill: 'craft-route',          mcp: true },
+  'context':           { server: 'craft-context',         product: 'context',    skill: 'craft-context',        mcp: false },
+  'memory':            { server: 'craft-memory',           product: 'memory',     skill: 'craft-memory',         mcp: true },
+  'knowledge':         { server: 'craft-knowledge',       product: 'knowledge',  skill: 'craft-knowledge',      mcp: true },
+  'capability':        { server: 'craft-capability',      product: 'capability', skill: 'craft-capability',     mcp: false },
+  'quality':           { server: 'craft-quality',         product: 'quality',    skill: 'craft-quality',        mcp: false },
+  'skill-quality':     { server: 'craft-skill-quality',   product: 'quality',    skill: 'craft-skill-quality',  mcp: false },
+  'experience':        { server: 'craft-experience',      product: 'experience', skill: 'craft-experience',     mcp: true },
 }
+const SKILL_ONLY_NOTE = 'MCP 见 craft-marketplace 的同名插件包'
+
 
 function parseArgs(argv) {
   const options = { agents: [], product: 'full', scope: null, node: process.execPath, dryRun: false, force: false, uninstall: false, mcp: true, skill: true, check: true, list: false }
@@ -383,7 +391,10 @@ function probeMcp(node, entry, timeoutMs = 30000) {
 async function runAgent(agentKey, options, productSpec) {
   const agent = AGENTS[agentKey]
   console.log(`\n=== ${agentKey} — ${agent.label} ===`)
-  if (options.mcp) {
+  if (options.mcp && !productSpec.mcp && !options.uninstall) {
+    // Skill-only product: say so instead of writing an entry that cannot start.
+    console.log(`  MCP   跳过 ${productSpec.server} — 本 bundle 不提供 ${options.product} 的 MCP（仅含 Skill）；${SKILL_ONLY_NOTE}`)
+  } else if (options.mcp) {
     const mcpScopes = agent.mcpScopes ?? {}
     const scope = options.scope ?? agent.defaultScope
     const resolve = mcpScopes[scope]
@@ -392,6 +403,10 @@ async function runAgent(agentKey, options, productSpec) {
     const entry = serverEntry(agentKey, productSpec, options.node)
     // DSH stores servers in a loader patch, every other agent in an mcpServers JSON.
     const dshPatch = agent.mcpFormat === 'dsh-loader-patch'
+    // Snapshot the file before touching it, so a failed probe can be rolled back
+    // exactly. Leaving the entry would hide the failure until the host tried to
+    // launch it; deleting it outright could destroy a working configuration.
+    const snapshot = !options.dryRun && !options.uninstall && existsSync(mcpPath) ? readFileSync(mcpPath, 'utf8') : null
     const result = options.uninstall
       ? (dshPatch ? removeDshPatch(mcpPath, productSpec.server, options) : removeMcp(mcpPath, productSpec.server, options))
       : (dshPatch ? mergeDshPatch(mcpPath, productSpec.server, entry, options) : mergeMcp(mcpPath, productSpec.server, entry, options))
@@ -400,7 +415,16 @@ async function runAgent(agentKey, options, productSpec) {
     if (!options.uninstall && options.check) {
       const probe = await probeMcp(options.node, entry)
       console.log(`  检查  ${probe.ok ? 'PASS' : 'FAIL'}  ${probe.detail}`)
-      if (!probe.ok) return { ok: false }
+      if (!probe.ok) {
+        if (snapshot !== null) {
+          writeFileSync(mcpPath, snapshot, 'utf8')
+          console.log(`  回滚  ${mcpPath} 已恢复到安装前内容`)
+        } else if (!options.dryRun) {
+          const undo = dshPatch ? removeDshPatch(mcpPath, productSpec.server, options) : removeMcp(mcpPath, productSpec.server, options)
+          console.log(`  回滚  已移除新建的 ${productSpec.server} — ${undo.note}`)
+        }
+        return { ok: false }
+      }
     }
   }
   if (options.skill) {
@@ -421,7 +445,10 @@ async function main() {
     printHelp()
     if (options.list) {
       console.log(`\nagents: ${Object.keys(AGENTS).join(', ')}\nproducts:`)
-      for (const [name, spec] of Object.entries(PRODUCTS)) console.log(`  ${name.padEnd(20)} server=${spec.server.padEnd(26)} skill=${spec.skill}`)
+      for (const [name, spec] of Object.entries(PRODUCTS)) {
+        const server = spec.mcp ? spec.server : `(无 MCP，仅 Skill；${SKILL_ONLY_NOTE})`
+        console.log(`  ${name.padEnd(20)} server=${server.padEnd(26)} skill=${spec.skill}`)
+      }
     }
     return
   }
