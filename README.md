@@ -2,7 +2,7 @@
 
 一条命令把**通用**的 Craft skill（SKILL.md）和 MCP server 初始化进某个编程 Agent。
 本文件夹完全自包含：MCP bundle、parser worker 与全部 SKILL.md 都在 `bundle/` 与 `skills/`
-内（取自 Craft v0.12.35 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
+内（取自 Craft v0.12.36 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
 精确版本、来源与 bundle 校验和见 [`release.json`](./release.json)。
 
 ## 用法
@@ -78,7 +78,7 @@ Select-String .\bundle\craft-mcp.cjs -Pattern 'var VERSION = "([^"]+)"' | Select
 
 ## 已验证
 
-- v0.12.35 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
+- v0.12.36 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
   和 SHA-256 记录于 `release.json`。Craft 源码侧已完成 MCP bundle 冒烟检查。
 
 - Cline 用户级真实安装 `craft-memory`：JSON 合并保留既有 `craft` 条目；探针 `tools/list`

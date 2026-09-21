@@ -1,6 +1,12 @@
 // src/infrastructure/store.ts
 import { DatabaseSync } from "node:sqlite";
 
+// src/scope-policy.ts
+var COGNITIVE_SCOPE_KINDS = ["user", "project", "workspace", "task", "session", "team", "organization", "global"];
+
+// src/validation.ts
+var SCOPE_KINDS = new Set(COGNITIVE_SCOPE_KINDS);
+
 // src/untrusted-parser.ts
 var MAX_CONTENT_BYTES = 1024 * 1024;
 function requiredText(value, name) {
