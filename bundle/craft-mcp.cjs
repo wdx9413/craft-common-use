@@ -11539,7 +11539,7 @@ function verifyPinIntact(input) {
 }
 
 // src/version.ts
-var CRAFT_RELEASE_VERSION = "0.12.36";
+var CRAFT_RELEASE_VERSION = "0.12.37";
 
 // src/mcp-forward-compat.ts
 var MCP_REVISION_REQUIREMENTS = [
@@ -19574,7 +19574,7 @@ var KnowledgeAutoReviewKernel = class {
       }
     }
     if (!fragments.length) return { status: "unavailable", reason: "evidence_fragment_unavailable", packet: null };
-    const content = typeof claim.content === "string" ? claim.content : this.store.contentStore.readCompatSync(claim.content_ref).body;
+    const content = String(claim.content);
     const packet = {
       schema_version: "craft.knowledge-semantic-review.v1",
       claim: { id: claim.id, version: claim.version, kind: claim.kind, scope: claim.scope, content, content_digest: claim.content_digest },
@@ -22594,7 +22594,7 @@ var HostSessionEventKernel = class {
     const sessionId = String(args.session_id ?? `host_session_${(0, import_node_crypto62.randomUUID)().replaceAll("-", "")}`);
     const traceId = String(args.trace_id ?? `host_session_trace_${sessionId}`);
     const taskId3 = text(args.task_id, "task_id");
-    const identity = { trace_id: traceId, task_id: taskId3, host_id: text(args.host_id, "host_id"), environment_fingerprint: text(args.environment_fingerprint, "environment_fingerprint"), policy_fingerprint: text(args.policy_fingerprint, "policy_fingerprint"), capability_fingerprint: text(args.capability_fingerprint, "capability_fingerprint") };
+    const identity = { trace_id: traceId, task_id: taskId3, host_id: text(args.host_id, "host_id"), environment_fingerprint: text(args.environment_fingerprint, "environment_fingerprint"), policy_fingerprint: text(args.policy_fingerprint, "policy_fingerprint"), capability_fingerprint: text(args.capability_fingerprint, "capability_fingerprint"), model_fingerprint: args.model_fingerprint === void 0 ? null : text(args.model_fingerprint, "model_fingerprint"), budget_fingerprint: args.budget_fingerprint === void 0 ? null : text(args.budget_fingerprint, "budget_fingerprint") };
     const identityDigest = digestJson(identity);
     const existing = this.store.find("host_session", sessionId);
     if (existing) {
@@ -24017,17 +24017,6 @@ function declaredEffects(definition2) {
   }
   return effects;
 }
-function receiptStep(step, result) {
-  return {
-    step_id: step.id,
-    type: step.type,
-    effect: step.side_effect,
-    passed: result.passed === true,
-    ...typeof result.exit_code === "number" ? { exit_code: result.exit_code } : {},
-    ...typeof result.expected_exit_code === "number" ? { expected_exit_code: result.expected_exit_code } : {},
-    ...typeof result.error === "string" ? { error: result.error } : {}
-  };
-}
 var ProcedureAutomationKernel = class {
   store;
   definitions;
@@ -24117,83 +24106,64 @@ var ProcedureAutomationKernel = class {
       procedure_version: job.procedure_version,
       started_at: now3,
       attempt,
-      status: "running",
+      status: "awaiting_host_dispatch",
       trigger: args.trigger ?? "manual"
     });
-    let receipt;
-    try {
-      const procedure = this.routeableWorkflow(String(job.procedure_id), Number(job.procedure_version));
-      const definition2 = this.definition(procedure);
-      const steps = this.workflowSteps(definition2, object3(job.inputs, "automation.inputs"));
-      const allowed = declaredEffects(definition2);
-      const receipts = [];
-      for (const [index, step] of steps.entries()) {
-        const effect2 = String(step.side_effect);
-        if (!allowed.has(effect2) || effect2 === "local_write" && job.allow_local_write !== true) {
-          receipts.push({ step_id: step.id, type: step.type, effect: effect2, passed: false, error: "effect_not_authorized" });
-        } else {
-          receipts.push(receiptStep(step, runStep(step, String(job.workspace))));
-        }
-        const checkpoint = this.store.create("procedure_automation_checkpoint", `${runId}_${index + 1}`, {
-          run_id: running.id,
-          sequence: index + 1,
-          step_id: step.id,
-          result_digest: stableDigest(receipts.at(-1)),
-          passed: receipts.at(-1)?.passed === true
-        });
-        if (checkpoint.passed !== true && step.continue_on_failure !== true) break;
-      }
-      const verifier = receipts.find((step) => step.step_id === job.verifier_step_id);
-      const passed2 = verifier?.passed === true && receipts.length === steps.length && receipts.every((step) => step.passed === true);
-      receipt = this.store.create("procedure_automation_receipt", `procedure_automation_receipt_${runId}`, {
-        run_id: running.id,
-        procedure_id: procedure.id,
-        procedure_version: procedure.version,
-        status: passed2 ? "passed" : "failed",
-        verifier_step_id: job.verifier_step_id,
-        step_receipts: receipts,
-        captured_at: (/* @__PURE__ */ new Date()).toISOString(),
-        raw_output_stored: false
-      });
-    } catch (error) {
-      receipt = this.store.create("procedure_automation_receipt", `procedure_automation_receipt_${runId}`, {
-        run_id: running.id,
-        procedure_id: job.procedure_id,
-        procedure_version: job.procedure_version,
-        status: "failed",
-        verifier_step_id: job.verifier_step_id,
-        step_receipts: [],
-        captured_at: (/* @__PURE__ */ new Date()).toISOString(),
-        error: error instanceof Error ? error.name : "automation_error",
-        raw_output_stored: false
-      });
-    }
-    const passed = receipt.status === "passed";
-    const outcome2 = this.store.create("procedure_automation_outcome", `procedure_automation_outcome_${runId}`, {
+    const dispatch = this.store.create("procedure_automation_dispatch", `procedure_automation_dispatch_${runId}`, {
       run_id: running.id,
+      job_id: job.id,
+      procedure_id: job.procedure_id,
+      procedure_version: job.procedure_version,
+      definition_digest: job.definition_digest,
+      workspace_ref: stableDigest({ workspace: job.workspace }),
+      inputs_digest: stableDigest(job.inputs),
+      allowed_effects: declaredEffects(this.definition(this.routeableWorkflow(String(job.procedure_id), Number(job.procedure_version)))).size === 0 ? [] : ["read_only", ...job.allow_local_write === true ? ["local_write"] : []],
+      status: "awaiting_external_host",
+      execution_authority: false,
+      raw_content_stored: false
+    });
+    this.store.appendEvent(`automation:${job.id}`, "automation.awaiting_host", { job_id: job.id, run_id: running.id, dispatch_id: dispatch.id });
+    return { run: running, dispatch, job, idempotent: false };
+  }
+  /** External Codex/CI/cron records a terminal Host receipt; Craft never executes the workflow. */
+  receiptRecord(args) {
+    const run = this.store.get("procedure_automation_run", text7(args.run_id, "run_id"));
+    if (run.status !== "awaiting_host_dispatch") throw new Error("Procedure Automation run is not awaiting a Host receipt");
+    const job = this.store.get("procedure_automation_job", String(run.job_id));
+    const session = this.store.get("host_session", text7(args.host_session_id, "host_session_id"));
+    if (session.status !== "terminal") throw new Error("Procedure Automation requires a terminal Host Session");
+    const observation = this.store.get("outcome_observation", text7(args.observation_id, "observation_id"));
+    if (observation.trace_id !== session.trace_id || observation.observer_id === session.host_id) throw new Error("Procedure Automation requires an independent Outcome Observation");
+    const evidenceIds2 = Array.isArray(args.acceptance_evidence_ids) ? args.acceptance_evidence_ids.map((value) => text7(value, "acceptance_evidence_ids")) : [];
+    if (!evidenceIds2.length) throw new Error("Procedure Automation requires acceptance Evidence");
+    evidenceIds2.forEach((id22) => this.store.get("evidence", id22));
+    const passed = observation.verdict === "passed";
+    const receipt = this.store.create("procedure_automation_receipt", `procedure_automation_receipt_${run.id}`, {
+      run_id: run.id,
+      procedure_id: run.procedure_id,
+      procedure_version: run.procedure_version,
+      status: passed ? "passed" : "failed",
+      verifier_step_id: job.verifier_step_id,
+      host_session_id: session.id,
+      host_session_version: session.version,
+      observation_id: observation.id,
+      observation_version: observation.version,
+      acceptance_evidence_ids: evidenceIds2.sort(),
+      raw_output_stored: false
+    });
+    const outcome2 = this.store.create("procedure_automation_outcome", `procedure_automation_outcome_${run.id}`, {
+      run_id: run.id,
       receipt_id: receipt.id,
       status: passed ? "accepted" : "failed",
       acceptance_ref: this.store.get("experience_procedure", String(job.procedure_id)).acceptance_ref,
-      acceptance_source: "verifier_step",
-      observed_at: (/* @__PURE__ */ new Date()).toISOString()
+      acceptance_source: "independent_host_observation",
+      observed_at: timestamp2(args.observed_at, "observed_at")
     });
-    const completed = this.store.save("procedure_automation_run", runId, {
-      ...payload(running),
-      status: passed ? "completed" : "failed",
-      receipt_id: receipt.id,
-      outcome_id: outcome2.id,
-      completed_at: (/* @__PURE__ */ new Date()).toISOString()
-    });
-    const progress = this.progress(job, receipt);
-    const settlement = passed && progress.changed ? this.settleQuota(job, completed, outcome2, now3) : null;
-    const savedJob = this.afterRun(job, completed, outcome2, now3, progress, settlement);
-    this.store.appendEvent(`automation:${job.id}`, passed ? "automation.completed" : "automation.failed", {
-      job_id: job.id,
-      run_id: completed.id,
-      outcome_id: outcome2.id,
-      receipt_id: receipt.id
-    });
-    return { run: completed, receipt, outcome: outcome2, job: savedJob, progress, settlement, idempotent: false };
+    const completed = this.store.save("procedure_automation_run", String(run.id), { ...payload(run), status: passed ? "completed" : "failed", receipt_id: receipt.id, outcome_id: outcome2.id, completed_at: timestamp2(args.observed_at, "observed_at") });
+    const progress = { digest: stableDigest({ receipt: receipt.id, observation: observation.id, verdict: observation.verdict }), changed: true, prior_digest: job.last_progress_digest ?? null, verifier_observed: true };
+    const settlement = passed ? this.settleQuota(job, completed, outcome2, timestamp2(args.observed_at, "observed_at")) : null;
+    const savedJob = this.afterRun(job, completed, outcome2, timestamp2(args.observed_at, "observed_at"), progress, settlement);
+    return { run: completed, receipt, outcome: outcome2, job: savedJob, progress, settlement };
   }
   tick(args = {}) {
     const now3 = timestamp2(args.now, "now");
@@ -25991,7 +25961,7 @@ var CapabilityKitRuntime = class {
   }
 };
 function builtin(id22, name, provides, effects, entrypoints, hooks) {
-  return { id: id22, version: "1.0.0", name, description: `${name} is a built-in declarative Capability Kit.`, compatibility: "^0.12.34", provides, effects, data_scopes: ["project_root"], entrypoints, hooks, surfaces: ["skill", "mcp", "cli", "plugin"], healthcheck: "builtin-declared", eval_suite: "capability-platform-fixtures" };
+  return { id: id22, version: "1.0.0", name, description: `${name} is a built-in declarative Capability Kit.`, compatibility: `^${CRAFT_RELEASE_VERSION}`, provides, effects, data_scopes: ["project_root"], entrypoints, hooks, surfaces: ["skill", "mcp", "cli", "plugin"], healthcheck: "builtin-declared", eval_suite: "capability-platform-fixtures" };
 }
 
 // capability/engineering-quality-profile.ts
@@ -26031,7 +26001,7 @@ function engineeringQualityProfileManifest() {
     version: ENGINEERING_QUALITY_PROFILE_VERSION,
     name: "Engineering quality profile",
     description: "An explicit, task-bound engineering-quality profile with evidence-only contributions.",
-    compatibility: "^0.12.34",
+    compatibility: "^0.12.37",
     provides: ["quality_profile", "root_cause_minimal_change", "risk_driven_verification", "independent_dual_review"],
     effects: [...EFFECTS13],
     data_scopes: ["task_bound_workspace", "evidence_reference"],
@@ -26137,6 +26107,8 @@ var EngineeringQualityProfileKernel = class {
     if (ruleId === "independent-dual-review") {
       const axis = text(proposal.review_axis, "proposal.review_axis");
       const baselineDigest = sha2563(proposal.baseline_digest, "proposal.baseline_digest");
+      const reviewerId = proposal.reviewer_id === void 0 ? `legacy:${axis}` : text(proposal.reviewer_id, "proposal.reviewer_id");
+      const blindInputDigest = proposal.blind_input_digest === void 0 ? baselineDigest : sha2563(proposal.blind_input_digest, "proposal.blind_input_digest");
       const reviewId = String(args.review_id ?? `engineering_quality_review_${stableDigest({ activation_id: activation.id, axis, baseline_digest: baselineDigest }).slice(-20)}`);
       const identity = {
         activation_id: activation.id,
@@ -26145,19 +26117,16 @@ var EngineeringQualityProfileKernel = class {
         contribution_version: contribution.version,
         axis,
         baseline_digest: baselineDigest,
+        reviewer_id: reviewerId,
+        blind_input_digest: blindInputDigest,
         evidence_ids: evidenceIds2
       };
-      const existing = this.store.find("engineering_quality_profile_review", reviewId);
-      if (existing) {
-        if (existing.identity_digest !== stableDigest(identity)) throw new Error("Engineering Quality Profile review idempotency conflict");
-      } else {
-        this.store.create("engineering_quality_profile_review", reviewId, {
-          ...identity,
-          identity_digest: stableDigest(identity),
-          visibility_scope: "axis_isolated",
-          raw_findings_stored: false
-        });
-      }
+      this.store.create("engineering_quality_profile_review", reviewId, {
+        ...identity,
+        identity_digest: stableDigest(identity),
+        visibility_scope: "axis_isolated",
+        raw_findings_stored: false
+      });
     }
     return result;
   }
@@ -26169,6 +26138,7 @@ var EngineeringQualityProfileKernel = class {
     }
     const baselineDigests = new Set(reviews.map((review) => String(review.baseline_digest)));
     if (baselineDigests.size !== 1) throw new Error("Engineering Quality Profile reviews must use the same fixed baseline");
+    if (new Set(reviews.map((review) => String(review.reviewer_id))).size !== REVIEW_AXES.length) throw new Error("Engineering Quality Profile review axes require independent reviewers");
     const reproductionEvidenceIds = strings24(args.reproduction_evidence_ids, "reproduction_evidence_ids");
     for (const evidenceId of reproductionEvidenceIds) {
       const evidence2 = this.store.get("evidence", evidenceId);
@@ -26237,46 +26207,13 @@ var EngineeringQualityProfileKernel = class {
   evaluationRecord(args) {
     const plan = this.store.get("engineering_quality_profile_evaluation_plan", text(args.plan_id, "plan_id"));
     if (plan.status !== "collecting") throw new Error("Engineering Quality Profile evaluation is not collecting observations");
-    this.activation(plan.activation_id);
     const caseId = text(args.case_id, "case_id");
     if (!plan.case_ids.includes(caseId)) throw new Error("Engineering Quality Profile Case is not in the plan");
     const trialIndex = Number(args.trial_index);
     if (!Number.isInteger(trialIndex) || trialIndex < 1 || trialIndex > Number(plan.trials_per_pair)) throw new Error("Engineering Quality Profile trial_index is outside the plan");
     const arm = text(args.arm, "arm");
     if (arm !== "baseline" && arm !== "profile") throw new Error("Engineering Quality Profile arm is unsupported");
-    const session = this.store.get("host_session", text(args.host_session_id, "host_session_id"));
-    if (session.host_id !== plan.host_id || session.environment_fingerprint !== plan.environment_fingerprint) throw new Error("Engineering Quality Profile Host Session does not match the plan");
-    const observation = this.store.get("outcome_observation", text(args.observation_id, "observation_id"));
-    if (observation.trace_id !== session.trace_id || observation.host_id !== plan.host_id || observation.observer_kind !== plan.observer_kind || observation.observer_id === plan.host_id) {
-      throw new Error("Engineering Quality Profile Outcome Observation is not independent or does not match the Host Session");
-    }
-    const rootCauseEvidenceIds = strings24(args.root_cause_evidence_ids, "root_cause_evidence_ids", 0);
-    rootCauseEvidenceIds.forEach((evidenceId) => this.store.get("evidence", evidenceId));
-    const deterministicAcceptancePassed = boolean2(args.deterministic_acceptance_passed, "deterministic_acceptance_passed");
-    const siblingCallerPassed = boolean2(args.sibling_caller_passed, "sibling_caller_passed");
-    const unauthorizedEffect = boolean2(args.unauthorized_effect, "unauthorized_effect");
-    const safetyRegression = boolean2(args.safety_regression, "safety_regression");
-    const factualRegression = boolean2(args.factual_regression, "factual_regression");
-    const identity = {
-      plan_id: plan.id,
-      plan_version: plan.version,
-      case_id: caseId,
-      trial_index: trialIndex,
-      arm,
-      host_session_id: session.id,
-      host_session_version: session.version,
-      observation_id: observation.id,
-      observation_version: observation.version,
-      deterministic_acceptance_passed: deterministicAcceptancePassed,
-      sibling_caller_passed: siblingCallerPassed,
-      unauthorized_effect: unauthorizedEffect,
-      safety_regression: safetyRegression,
-      factual_regression: factualRegression,
-      root_cause_evidence_ids: rootCauseEvidenceIds,
-      retry_count: nonNegativeNumber(args.retry_count, "retry_count", true),
-      cost_units: nonNegativeNumber(args.cost_units, "cost_units"),
-      latency_ms: nonNegativeNumber(args.latency_ms, "latency_ms")
-    };
+    const identity = { plan_id: plan.id, plan_version: plan.version, case_id: caseId, trial_index: trialIndex, arm, legacy: true };
     const recordId = String(args.record_id ?? `engineering_quality_profile_evaluation_record_${stableDigest({ plan_id: plan.id, case_id: caseId, trial_index: trialIndex, arm }).slice(-20)}`);
     const existing = this.store.find("engineering_quality_profile_evaluation_record", recordId);
     if (existing) {
@@ -26288,28 +26225,49 @@ var EngineeringQualityProfileKernel = class {
     const record = this.store.create("engineering_quality_profile_evaluation_record", recordId, {
       ...identity,
       identity_digest: stableDigest(identity),
-      observation_verdict: observation.verdict,
+      status: "revalidation_required",
+      deterministic_acceptance_passed: false,
+      sibling_caller_passed: false,
+      retry_count: 0,
+      cost_units: 0,
+      latency_ms: 0,
       raw_receipt_stored: false
     });
-    const reasons = arm === "profile" ? [
-      ...unauthorizedEffect ? ["unauthorized_effect"] : [],
-      ...deterministicAcceptancePassed ? [] : ["deterministic_acceptance_failed"],
-      ...safetyRegression ? ["safety_regression"] : [],
-      ...factualRegression ? ["factual_regression"] : [],
-      ...siblingCallerPassed ? [] : ["sibling_caller_regression"],
-      ...rootCauseEvidenceIds.length ? [] : ["root_cause_evidence_missing"]
-    ] : [];
-    if (!reasons.length) return { plan, record, idempotent: false };
-    const rejectionId = `engineering_quality_profile_rejection_${stableDigest({ plan_id: plan.id, record_id: record.id, reasons }).slice(-20)}`;
-    const rejection = this.store.create("engineering_quality_profile_rejection", rejectionId, {
-      plan_id: plan.id,
-      record_id: record.id,
-      reasons,
-      re_evaluation_condition: "Use a new fixed-version Profile activation and complete fresh paired trials.",
-      raw_content_stored: false
+    return { plan, record, idempotent: false };
+  }
+  evaluationReceiptRecord(args) {
+    const plan = this.store.get("engineering_quality_profile_evaluation_plan", text(args.plan_id, "plan_id"));
+    if (plan.status !== "collecting") throw new Error("Engineering Quality Profile evaluation is not collecting observations");
+    const caseId = text(args.case_id, "case_id");
+    if (!plan.case_ids.includes(caseId)) throw new Error("Engineering Quality Profile Case is not in the plan");
+    const trialIndex = Number(args.trial_index);
+    if (!Number.isInteger(trialIndex) || trialIndex < 1 || trialIndex > Number(plan.trials_per_pair)) throw new Error("Engineering Quality Profile trial_index is outside the plan");
+    const arm = text(args.arm, "arm");
+    if (arm !== "baseline" && arm !== "profile") throw new Error("Engineering Quality Profile arm is unsupported");
+    const session = this.store.get("host_session", text(args.host_session_id, "host_session_id"));
+    if (session.status !== "terminal" || session.host_id !== plan.host_id || session.environment_fingerprint !== plan.environment_fingerprint || session.model_fingerprint !== plan.model_fingerprint || session.budget_fingerprint !== plan.budget_fingerprint) throw new Error("Engineering Quality Profile Host receipt does not match the fixed plan");
+    const observation = this.store.get("outcome_observation", text(args.observation_id, "observation_id"));
+    if (observation.trace_id !== session.trace_id || observation.host_id !== plan.host_id || observation.observer_kind !== plan.observer_kind || observation.observer_id === plan.host_id) throw new Error("Engineering Quality Profile Outcome Observation is not independent or does not match the Host Session");
+    const receipt = object(args.receipt, "receipt");
+    const evidenceIds2 = strings24(receipt.evidence_ids, "receipt.evidence_ids");
+    const evidence2 = evidenceIds2.map((id22) => this.store.get("evidence", id22));
+    if (evidence2.some((item) => item.source_type !== "program" || item.confidence !== "confirmed")) throw new Error("Engineering Quality Profile receipt requires confirmed program Evidence");
+    const testCase = this.store.get("engineering_quality_profile_case", caseId);
+    ["frozen_input_digest", "workspace_snapshot_digest", "acceptance_command_digest", "sibling_caller_assertion_digest"].forEach((key2) => {
+      const expected = key2 === "workspace_snapshot_digest" ? sha2563(receipt[key2], `receipt.${key2}`) : testCase[key2];
+      if (key2 !== "workspace_snapshot_digest" && receipt[key2] !== expected) throw new Error(`Engineering Quality Profile receipt ${key2} drifted`);
     });
-    const rejected = this.store.save("engineering_quality_profile_evaluation_plan", String(plan.id), { ...payload(plan), status: "rejected", rejection_id: rejection.id });
-    return { plan: rejected, record, rejection, idempotent: false };
+    const identity = { plan_id: plan.id, plan_version: plan.version, case_id: caseId, trial_index: trialIndex, arm, host_session_id: session.id, host_session_version: session.version, observation_id: observation.id, observation_version: observation.version, receipt_digest: stableDigest(receipt), evidence_ids: evidenceIds2, retry_count: nonNegativeNumber(receipt.retry_count, "receipt.retry_count", true), cost_units: nonNegativeNumber(receipt.cost_units, "receipt.cost_units"), latency_ms: nonNegativeNumber(receipt.latency_ms, "receipt.latency_ms") };
+    const recordId = String(args.record_id ?? `engineering_quality_profile_evaluation_record_${stableDigest({ plan_id: plan.id, case_id: caseId, trial_index: trialIndex, arm }).slice(-20)}`);
+    const existing = this.store.find("engineering_quality_profile_evaluation_record", recordId);
+    if (existing) {
+      if (existing.identity_digest !== stableDigest(identity)) throw new Error("Engineering Quality Profile evaluation record idempotency conflict");
+      return { plan, record: existing, idempotent: true };
+    }
+    if (this.store.list("engineering_quality_profile_evaluation_record", 1e4, (record2) => record2.plan_id === plan.id && record2.case_id === caseId && record2.trial_index === trialIndex && record2.arm === arm).length) throw new Error("Engineering Quality Profile evaluation slot is already recorded");
+    const passed = observation.verdict === "passed";
+    const record = this.store.create("engineering_quality_profile_evaluation_record", recordId, { ...identity, identity_digest: stableDigest(identity), status: "verified", deterministic_acceptance_passed: passed, sibling_caller_passed: passed, unauthorized_effect: false, safety_regression: !passed, factual_regression: !passed, root_cause_evidence_ids: evidenceIds2, raw_receipt_stored: false });
+    return { plan, record, idempotent: false };
   }
   evaluationEvaluate(args) {
     const plan = this.store.get("engineering_quality_profile_evaluation_plan", text(args.plan_id, "plan_id"));
@@ -26406,6 +26364,8 @@ var EngineeringQualityProfileKernel = class {
       if (!REVIEW_AXES.includes(axis)) throw new Error("Engineering Quality Profile review axis is unsupported");
       sha2563(proposal.baseline_digest, "proposal.baseline_digest");
       sha2563(proposal.finding_digest, "proposal.finding_digest");
+      if (proposal.blind_input_digest !== void 0) sha2563(proposal.blind_input_digest, "proposal.blind_input_digest");
+      if (proposal.reviewer_id !== void 0) text(proposal.reviewer_id, "proposal.reviewer_id");
       if (this.store.list("engineering_quality_profile_review", 1e4, (review) => review.activation_id === activation.id && review.axis === axis).length) {
         throw new Error("Engineering Quality Profile review axis is already recorded");
       }
@@ -26867,12 +26827,12 @@ var ContextResolutionKernel = class {
     const preferred = /* @__PURE__ */ new Map();
     for (const candidate2 of candidates) {
       const topic = typeof candidate2.memory.topic === "string" && candidate2.memory.topic ? candidate2.memory.topic : `entry:${candidate2.memory.id}`;
-      const rank = scopeRank.get(canonicalJson(candidate2.memory.scope)) ?? Number.MAX_SAFE_INTEGER;
+      const rank = scopeRank.get(canonicalJson(candidate2.memory.scope));
       preferred.set(topic, Math.min(preferred.get(topic) ?? Number.MAX_SAFE_INTEGER, rank));
     }
     const scopedCandidates = candidates.filter((candidate2) => {
       const topic = typeof candidate2.memory.topic === "string" && candidate2.memory.topic ? candidate2.memory.topic : `entry:${candidate2.memory.id}`;
-      return (scopeRank.get(canonicalJson(candidate2.memory.scope)) ?? Number.MAX_SAFE_INTEGER) === preferred.get(topic);
+      return scopeRank.get(canonicalJson(candidate2.memory.scope)) === preferred.get(topic);
     });
     const temporal = temporalMemorySelect(scopedCandidates.map((item) => item.memory), now3, args.history_view === true);
     const available2 = scopedCandidates.filter((item) => temporal.selected.some((memory) => memory.id === item.memory.id));
@@ -29967,16 +29927,14 @@ function terms4(query) {
   return query.toLowerCase().match(/[\p{L}\p{N}_-]+/gu) ?? [];
 }
 function recordScope2(value) {
-  const [kind2, ...rest] = String(value ?? "").split(":");
-  return { kind: kind2 || "project", id: rest.join(":") || "unresolved" };
+  const [kind2, ...rest] = String(value).split(":");
+  return { kind: kind2, id: rest.join(":") };
 }
 var ExperienceContribution = class {
   member = "experience";
   store;
-  definitions;
   constructor(store) {
     this.store = store;
-    this.definitions = new ProcedureDefinitionStore(store.paths);
   }
   /**
    * Select routeable Procedures that match this scoped decision point.
@@ -30015,8 +29973,6 @@ var ExperienceContribution = class {
   }
   /** The Gate state makes the Procedure projection safe for this bounded Context. */
   describe(procedure) {
-    const content = this.store.contentStore.readCompatSync(procedure.content_ref).body;
-    const definition2 = procedureDefinitionRef(procedure.definition_ref) ? this.definitions.read(procedure.definition_ref) : null;
     return {
       kind: "experience_procedure",
       procedure_id: String(procedure.id),
@@ -30025,10 +29981,11 @@ var ExperienceContribution = class {
       trigger: String(procedure.trigger),
       acceptance_ref: String(procedure.acceptance_ref),
       scenario_signature: procedure.scenario_signature,
-      content,
       content_digest: procedure.content_digest,
-      definition_ref: procedure.definition_ref ?? null,
-      definition: definition2,
+      // A Context contribution is a routeable pointer, never an instruction
+      // payload.  A Host must explicitly materialize a procedure under its
+      // Task/Policy receipt before it can read the checked body or definition.
+      definition_digest: procedure.definition_digest ?? null,
       routeable: true
     };
   }
@@ -31258,7 +31215,6 @@ var MemoryGovernanceKernel = class {
     const topic = args.topic === void 0 ? "" : text17(args.topic, "topic");
     const observedAt = args.observed_at === void 0 && typeof existing?.observed_at === "string" ? existing.observed_at : args.observed_at === void 0 ? (/* @__PURE__ */ new Date()).toISOString() : new Date(text17(args.observed_at, "observed_at")).toISOString();
     const effectiveFrom = args.effective_from === void 0 && typeof existing?.effective_from === "string" ? existing.effective_from : args.effective_from === void 0 ? observedAt : new Date(text17(args.effective_from, "effective_from")).toISOString();
-    if (Number.isNaN(Date.parse(observedAt)) || Number.isNaN(Date.parse(effectiveFrom))) throw new Error("Memory temporal fields must be ISO timestamps");
     const identity = { source_id: sourceId, kind: kind2, scope: scope3, scope_envelope: envelope, topic, content_digest: digest18(content), sensitivity: String(args.sensitivity ?? "internal"), confidence, evidence_ids: ids5, valid_until: validUntil, observed_at: observedAt, effective_from: effectiveFrom };
     if (existing) {
       if (existing.identity_digest !== digest18(identity)) throw new Error("Memory candidate idempotency conflict");
@@ -36065,6 +36021,9 @@ var CraftService = class _CraftService extends ServiceFoundation {
   }
   engineeringQualityProfileEvaluationRecord(args) {
     return this.engineeringQualityProfile.evaluationRecord(args);
+  }
+  engineeringQualityProfileEvaluationReceiptRecord(args) {
+    return this.engineeringQualityProfile.evaluationReceiptRecord(args);
   }
   engineeringQualityProfileEvaluationEvaluate(args) {
     return this.engineeringQualityProfile.evaluationEvaluate(args);
@@ -41387,6 +41346,9 @@ Evidence: ${item.evidence_ids.join(", ")}
   procedureAutomationRun(args) {
     return this.procedureAutomation.run(args);
   }
+  procedureAutomationReceiptRecord(args) {
+    return this.procedureAutomation.receiptRecord(args);
+  }
   procedureAutomationTick(args = {}) {
     return this.procedureAutomation.tick(args);
   }
@@ -45292,7 +45254,8 @@ var TOOL_DEFINITIONS = [
   tool("craft_engineering_quality_profile_contribution", "Record one evidence-bound, digest-only engineering rule contribution; it cannot bypass Acceptance.", ["activation_id", "rule_id", "proposal", "evidence_ids"], false, ["contribution_id", "review_id"]),
   tool("craft_engineering_quality_profile_review_aggregate", "Aggregate isolated Standards and Spec review receipts only when they share a baseline and program-reproducible Evidence.", ["activation_id", "reproduction_evidence_ids"], false, ["aggregate_id"]),
   tool("craft_engineering_quality_profile_evaluation_plan", "Define a 12-20 Case, exactly five-paired-trial Profile evaluation without executing a Host.", ["activation_id", "host_id", "case_ids", "model_fingerprint", "environment_fingerprint", "budget_fingerprint", "trials_per_pair"], false, ["plan_id", "observer_kind"]),
-  tool("craft_engineering_quality_profile_evaluation_record", "Record one independently observed baseline or Profile trial and reject Profile blockers immediately.", ["plan_id", "case_id", "trial_index", "arm", "host_session_id", "observation_id", "deterministic_acceptance_passed", "sibling_caller_passed", "unauthorized_effect", "safety_regression", "factual_regression", "root_cause_evidence_ids", "retry_count", "cost_units", "latency_ms"], false, ["record_id"]),
+  tool("craft_engineering_quality_profile_evaluation_record", "Record a legacy unverified Profile trial for revalidation only; it can never promote a Profile.", ["plan_id", "case_id", "trial_index", "arm"], false, ["record_id"]),
+  tool("craft_engineering_quality_profile_evaluation_receipt_record", "Import a fixed-plan external Host receipt with confirmed program Evidence. It is the only Profile trial record eligible for promotion.", ["plan_id", "case_id", "trial_index", "arm", "host_session_id", "observation_id", "receipt"], false, ["record_id"]),
   tool("craft_engineering_quality_profile_evaluation_evaluate", "Summarize complete pairs only; only non-regressing, blocker-free results become Shadow candidates.", ["plan_id"], false, ["evaluation_id"]),
   tool("craft_engineering_quality_profile_evaluation_get", "Read sanitized Engineering Quality evaluation records, result and rejection receipt.", ["plan_id"], true),
   tool("craft_capability_connector_register", "Register one user-approved built-in, Skill-source, or MCP connector without storing credentials or starting it.", ["kind", "name"], false, ["connector_id", "endpoint", "approved", "approval_ref", "metadata", "allowed_operations"]),
@@ -45460,7 +45423,8 @@ var TOOL_DEFINITIONS = [
   tool("craft_local_service_get", "Read local runtime service state.", [], true, ["service_id"]),
   tool("craft_automation_job_save", "Register a routeable Experience Workflow as a bounded manual or interval Job. It never installs cron, executes Graph/Prompt Procedures, or permits external effects.", ["procedure_id", "workspace", "verifier_step_id"], false, ["job_id", "trigger", "interval_seconds", "inputs", "allow_local_write", "max_attempts", "max_no_progress", "quota_slots", "quota_window_seconds", "retry_delay_seconds", "notification", "next_run_at", "now"]),
   tool("craft_automation_job_pause", "Pause or resume one Procedure Automation Job without deleting its receipts or handoffs.", ["job_id"], false, ["paused", "now"]),
-  tool("craft_automation_job_run", "Run one active Procedure Automation Job now. It records checkpoints, a redacted receipt, Outcome and bounded retry/handoff state.", ["job_id"], false, ["run_id", "now"]),
+  tool("craft_automation_job_run", "Prepare one active Procedure Automation dispatch for an external Host. Craft never executes the Workflow.", ["job_id"], false, ["run_id", "now"]),
+  tool("craft_automation_job_receipt_record", "Record an external terminal Host receipt and independent acceptance Observation for a prepared automation dispatch.", ["run_id", "host_session_id", "observation_id", "acceptance_evidence_ids"], false, ["observed_at"]),
   tool("craft_automation_job_tick", "Advance due interval Jobs only when the named local service is running. A host cron, tray process or CI runner must invoke this tool explicitly.", [], false, ["service_id", "now", "limit"]),
   tool("craft_automation_job_get", "Read one Procedure Automation Job, its bounded run history and pending record-only notices.", ["job_id"], true, ["limit"]),
   tool("craft_automation_job_eligibility", "Decide whether one Procedure Automation Job has useful, budgeted work before a Host spends a model or execution slot.", ["job_id"], true, ["now"]),
@@ -46333,6 +46297,7 @@ var McpServer = class {
       craft_engineering_quality_profile_review_aggregate: service.engineeringQualityProfileReviewAggregate.bind(service),
       craft_engineering_quality_profile_evaluation_plan: service.engineeringQualityProfileEvaluationPlan.bind(service),
       craft_engineering_quality_profile_evaluation_record: service.engineeringQualityProfileEvaluationRecord.bind(service),
+      craft_engineering_quality_profile_evaluation_receipt_record: service.engineeringQualityProfileEvaluationReceiptRecord.bind(service),
       craft_engineering_quality_profile_evaluation_evaluate: service.engineeringQualityProfileEvaluationEvaluate.bind(service),
       craft_engineering_quality_profile_evaluation_get: service.engineeringQualityProfileEvaluationGet.bind(service),
       craft_knowledge_memory_install_builtins: service.knowledgeMemoryInstallBuiltins.bind(service),
@@ -46582,6 +46547,7 @@ var McpServer = class {
       craft_automation_job_save: (a) => service.procedureAutomationSave(a),
       craft_automation_job_pause: (a) => service.procedureAutomationPause(a),
       craft_automation_job_run: (a) => service.procedureAutomationRun(a),
+      craft_automation_job_receipt_record: (a) => service.procedureAutomationReceiptRecord(a),
       craft_automation_job_tick: (a) => service.procedureAutomationTick(a),
       craft_automation_job_get: (a) => service.procedureAutomationGet(a),
       craft_automation_job_eligibility: (a) => service.procedureAutomationEligibility(a),

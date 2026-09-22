@@ -28,26 +28,18 @@ const SKILLS_ROOT = join(HERE, 'skills')
 const SCAFFOLD_VERSION = '0.1.0'
 
 // `mcp` records whether *this* bundle serves the product. The bundle is one
-// multi-product server whose supported set is `MCP_PRODUCT_SURFACES` inside it:
-// full, knowledge, memory, experience. The remaining products ship a Skill only --
-// their MCP lives in the per-plugin marketplace bundles, which this deliberately
-// self-contained folder does not carry. Declaring that here is what stops
-// `--product context` from writing an MCP entry that can never start.
+// multi-product server whose public distribution set is deliberately limited to
+// knowledge, memory and experience.  The Craft source repository retains its wider
+// internal plugin catalog; this self-contained installer must not expose it.
 const PRODUCTS = {
-  'full':              { server: 'craft',                 product: 'full',       skill: 'craft-route',          mcp: true },
-  'context':           { server: 'craft-context',         product: 'context',    skill: 'craft-context',        mcp: false },
   'memory':            { server: 'craft-memory',           product: 'memory',     skill: 'craft-memory',         mcp: true },
   'knowledge':         { server: 'craft-knowledge',       product: 'knowledge',  skill: 'craft-knowledge',      mcp: true },
-  'capability':        { server: 'craft-capability',      product: 'capability', skill: 'craft-capability',     mcp: false },
-  'quality':           { server: 'craft-quality',         product: 'quality',    skill: 'craft-quality',        mcp: false },
-  'skill-quality':     { server: 'craft-skill-quality',   product: 'quality',    skill: 'craft-skill-quality',  mcp: false },
   'experience':        { server: 'craft-experience',      product: 'experience', skill: 'craft-experience',     mcp: true },
 }
-const SKILL_ONLY_NOTE = 'MCP 见 craft-marketplace 的同名插件包'
 
 
 function parseArgs(argv) {
-  const options = { agents: [], product: 'full', scope: null, node: process.execPath, dryRun: false, force: false, uninstall: false, mcp: true, skill: true, check: true, list: false }
+  const options = { agents: [], product: 'knowledge', scope: null, node: process.execPath, dryRun: false, force: false, uninstall: false, mcp: true, skill: true, check: true, list: false }
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
     if (arg === '--agent') options.agents.push(...(argv[++i] ?? '').split(',').filter(Boolean))
@@ -68,7 +60,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log('用法: node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product full] [--scope user|project] [--dry-run] [--force] [--uninstall] [--list]')
+  console.log('用法: node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience] [--scope user|project] [--dry-run] [--force] [--uninstall] [--list]')
 }
 
 /** cmd /c for %I in ("path") do @echo %~sI — needed because Trae rejects a
@@ -391,10 +383,20 @@ function probeMcp(node, entry, timeoutMs = 30000) {
 async function runAgent(agentKey, options, productSpec) {
   const agent = AGENTS[agentKey]
   console.log(`\n=== ${agentKey} — ${agent.label} ===`)
-  if (options.mcp && !productSpec.mcp && !options.uninstall) {
-    // Skill-only product: say so instead of writing an entry that cannot start.
-    console.log(`  MCP   跳过 ${productSpec.server} — 本 bundle 不提供 ${options.product} 的 MCP（仅含 Skill）；${SKILL_ONLY_NOTE}`)
-  } else if (options.mcp) {
+  // Validate the Skill side before changing MCP.  This prevents the former
+  // half-install/half-uninstall state when ownership or a content conflict is
+  // discovered only after the MCP file was already changed.
+  if (options.skill) {
+    const scope = options.scope ?? agent.defaultScope
+    const preflight = options.uninstall
+      ? uninstallSkill(agent.skillScopes, scope, productSpec.skill, { ...options, dryRun: true })
+      : installSkill(agent.skillScopes, scope, productSpec.skill, { ...options, dryRun: true })
+    if (preflight.blocked) {
+      console.log(`  预检  Skill ${productSpec.skill} — ${preflight.note}`)
+      return { ok: false }
+    }
+  }
+  if (options.mcp) {
     const mcpScopes = agent.mcpScopes ?? {}
     const scope = options.scope ?? agent.defaultScope
     const resolve = mcpScopes[scope]
@@ -446,8 +448,7 @@ async function main() {
     if (options.list) {
       console.log(`\nagents: ${Object.keys(AGENTS).join(', ')}\nproducts:`)
       for (const [name, spec] of Object.entries(PRODUCTS)) {
-        const server = spec.mcp ? spec.server : `(无 MCP，仅 Skill；${SKILL_ONLY_NOTE})`
-        console.log(`  ${name.padEnd(20)} server=${server.padEnd(26)} skill=${spec.skill}`)
+        console.log(`  ${name.padEnd(20)} server=${spec.server.padEnd(26)} skill=${spec.skill}`)
       }
     }
     return
@@ -475,6 +476,3 @@ async function main() {
 }
 
 await main()
-
-
-

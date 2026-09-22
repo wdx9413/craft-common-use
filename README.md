@@ -2,13 +2,13 @@
 
 一条命令把**通用**的 Craft skill（SKILL.md）和 MCP server 初始化进某个编程 Agent。
 本文件夹完全自包含：MCP bundle、parser worker 与全部 SKILL.md 都在 `bundle/` 与 `skills/`
-内（取自 Craft v0.12.36 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
+内（取自 Craft v0.12.37 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
 精确版本、来源与 bundle 校验和见 [`release.json`](./release.json)。
 
 ## 用法
 
 ```powershell
-node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product full] [--scope user|project]
+node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience] [--scope user|project]
               [--node <path>] [--dry-run] [--force] [--uninstall] [--no-check] [--list]
 ```
 
@@ -17,15 +17,12 @@ node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product full] [--scope
 ```powershell
 node init.mjs --agent cline  --product memory        # Cline 用户级：MCP + skill
 node init.mjs --agent dsh    --product knowledge     # DSH：MCP loader 块 + skill
-node init.mjs --agent trae   --product full          # 当前项目的 .trae/mcp.json + .trae/skills
+node init.mjs --agent trae   --product experience    # 当前项目的 .trae/mcp.json + .trae/skills
 node init.mjs --agent all    --dry-run               # 各家全预览，不落盘
 node init.mjs --agent cline --product memory --uninstall
 ```
 
-- `--product`：`full | context | memory | knowledge | capability | quality | skill-quality | experience`（server 名与 skill 名的映射见 `init.mjs --list`）。
-  其中只有 `full | memory | knowledge | experience` 由本 bundle 提供 MCP；`context | capability | quality | skill-quality`
-  这四个**只装 Skill**（它们的 MCP 在 `craft-marketplace` 的同名插件包里，本目录刻意保持自包含而不携带）。
-  选到它们时脚手架会打印“跳过 MCP”而不是写一条无法启动的 server；`--list` 同样标注。
+- `--product`：`knowledge | memory | experience`（默认 `knowledge`；server 名与 skill 名的映射见 `init.mjs --list`）。
 - `--check`（默认开启）会用**与写入配置完全相同的命令行**真实拉起 MCP 进程做
   `initialize` + `tools/list` 握手，安装即验证。**握手失败会回滚**：写入前先快照配置文件，
   失败则恢复安装前内容（此前失败只返回错误码、把无法启动的 server 留在用户配置里）。
@@ -46,7 +43,7 @@ Skill 与 MCP，不承诺“每个任务自动开始/结束各调用一次”。
 
 | Agent | MCP 配置 | Skill 目录 | 兼容要点 |
 |---|---|---|---|
-| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 下 Cline 只装 `craft-knowledge` / `craft-memory` / `craft-experience`（外加可选 `craft` full） |
+| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 只提供 `craft-knowledge` / `craft-memory` / `craft-experience`。 |
 | Qoder | `~/.qoder/settings.json`（用户级）或 `<项目>/.qoder/settings.json` | `~/.qoder/skills/` / `.qoder/skills/` | 项目级 MCP 需逐个批准（或 `mcp.enableAllProjectMcpServers`） |
 | Trae | `<项目>/.trae/mcp.json`（仅项目级） | `<项目>/.trae/skills/` | 需在 设置>MCP 打开「启用项目级 MCP」；command 不能含空格，脚本自动回退 8.3 短路径或已知的空格路径 node |
 | WorkBuddy | `~/.workbuddy-ai/mcp.json` | `~/.workbuddy-ai/skills/<name>/` | 信任绑定 `command+args` 的 SHA-256：装完/改动后需在 Connector 管理 > Custom connectors 点一次 Trust |
@@ -61,34 +58,22 @@ Craft 数据是刻意设计：记忆、知识、执行观察互通。
 
 ## 更新 bundle / skills
 
-发布物升级后，应以 `craft-marketplace` 的已校验插件包为唯一发布源，重新同步
-bundle、parser worker 与对应 Skill；脚本本身无需改动：
+发布物升级后，运行随仓库提供的同步与校验脚本；它会逐项复制并校验 bundle、parser worker、三个 Skill、版本、来源提交和 SHA-256，不能再手工复制或填写占位路径。
 
 ```powershell
-Copy-Item ..\craft-marketplace\plugins\craft-memory\dist\plugin\craft-mcp.cjs, `
-           ..\craft-marketplace\plugins\craft-memory\dist\plugin\craft-parser-worker.js .\bundle\
-Copy-Item ..\craft-marketplace\plugins\*\skills\*\SKILL.md .\skills\<技能名>\SKILL.md
-```
-
-**同步后必须更新 `release.json` 并核对版本/校验和**，否则会出现“README 说新版本、bundle
-其实是旧版本”的静默不一致：
-
-```powershell
-# bundle 内部真实版本（应与 release.json / craft-marketplace 各插件 manifest 一致）
-Select-String .\bundle\craft-mcp.cjs -Pattern 'var VERSION = "([^"]+)"' | Select-Object -First 1
-# 与 craft-marketplace 发布物逐字节比对（应为 True）
-(Get-FileHash .\bundle\craft-mcp.cjs).Hash -eq (Get-FileHash ..\craft-marketplace\plugins\craft-memory\dist\plugin\craft-mcp.cjs).Hash
+node .\scripts\sync-from-marketplace.mjs ..\craft-marketplace --apply
+node .\scripts\verify-release.mjs
 ```
 
 ## 已验证
 
-- v0.12.36 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
+- v0.12.37 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
   和 SHA-256 记录于 `release.json`。Craft 源码侧已完成 MCP bundle 冒烟检查。
 
-- Cline 用户级真实安装 `craft-memory`：JSON 合并保留既有 `craft` 条目；探针 `tools/list`
-  返回 18 个工具；skill 落盘；重跑 no-op。
-- Trae 项目级真实安装 `craft`（full）：DSH node 路径含空格被自动替换为 WorkBuddy 自带
-  node（v22 实测可跑）；探针 16 个工具；`--uninstall` → 重装回路通过。
+- Cline 用户级真实安装 `craft-memory`：JSON 合并保留其他 MCP 条目；探针 `tools/list`
+  返回组件工具；skill 落盘；重跑 no-op。
+- Trae 项目级真实安装 `craft-experience`：DSH node 路径含空格被自动替换为 WorkBuddy 自带
+  node（v22 实测可跑）；`--uninstall` → 重装回路通过。
 - WorkBuddy 检出既有 `craft` connector 配置并拒绝覆盖（需 `--force`）。
 - Qoder dry-run 计划正确（本机未装 Qoder，未做真实写盘）。
 
