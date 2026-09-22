@@ -29,12 +29,14 @@ const SCAFFOLD_VERSION = '0.1.0'
 
 // `mcp` records whether *this* bundle serves the product. The bundle is one
 // multi-product server whose public distribution set is deliberately limited to
-// knowledge, memory and experience.  The Craft source repository retains its wider
-// internal plugin catalog; this self-contained installer must not expose it.
+// knowledge, memory, experience, and the explicit read-only codebase product.
+// The Craft source repository retains its wider internal plugin catalog; this
+// self-contained installer must not expose it.
 const PRODUCTS = {
   'memory':            { server: 'craft-memory',           product: 'memory',     skill: 'craft-memory',         mcp: true },
   'knowledge':         { server: 'craft-knowledge',       product: 'knowledge',  skill: 'craft-knowledge',      mcp: true },
   'experience':        { server: 'craft-experience',      product: 'experience', skill: 'craft-experience',     mcp: true },
+  'codebase':          { server: 'craft-codebase',        product: 'codebase',   skill: 'craft-codebase',       mcp: true },
 }
 
 
@@ -60,7 +62,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log('用法: node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience] [--scope user|project] [--dry-run] [--force] [--uninstall] [--list]')
+  console.log('用法: node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience|codebase] [--scope user|project] [--dry-run] [--force] [--uninstall] [--list]')
 }
 
 /** cmd /c for %I in ("path") do @echo %~sI — needed because Trae rejects a

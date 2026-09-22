@@ -43656,7 +43656,11 @@ var COMPONENT_SURFACES = {
   // projection in `ownership.ts`; the projection adds the experience families a separate
   // kernel implements but the same product serves. The shared context verbs are not part of
   // it: experience is not resolved through the context plane.
-  "component-experience": EXPERIENCE_COMPONENT
+  "component-experience": EXPERIENCE_COMPONENT,
+  // Codebase is a read-only structural capability, not a cognitive Context
+  // member.  Its standalone product exposes only explicit activation, index,
+  // and snapshot-pinned query tools.
+  "component-codebase": CODEBASE_OWNS
 };
 var DAILY_COMPONENT_TOOLS = {
   "component-knowledge-daily": [
@@ -47155,7 +47159,8 @@ var MCP_PRODUCT_SURFACES = {
   full: "syscall",
   knowledge: "component-knowledge-daily",
   memory: "component-memory-daily",
-  experience: "component-experience-daily"
+  experience: "component-experience-daily",
+  codebase: "component-codebase"
 };
 var MCP_PRODUCT_NAMES = Object.keys(MCP_PRODUCT_SURFACES);
 function productSurfaceOf(product) {

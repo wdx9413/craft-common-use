@@ -2,20 +2,22 @@
   "product": "craft-common-use",
   "craft_version": "0.12.37",
   "source_repository": "https://github.com/wdx9413/craft.git",
-  "source_commit": "e2b2920ebb12d9b8c44356e2c2e871fa1a9c6feb",
+  "source_commit": "803a5f761fa2d51fde777659cc037adaa361d198",
   "source_state": "committed",
-  "source_note": "v0.12.37 payloads were built from e2b2920ebb12d9b8c44356e2c2e871fa1a9c6feb; source_commit names that revision. The plugin payloads under plugins/ are copies of that revision's build output.",
+  "source_note": "v0.12.37 payloads were built from 803a5f761fa2d51fde777659cc037adaa361d198; source_commit names that revision. The plugin payloads under plugins/ are copies of that revision's build output.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "889b19d48140692291e76f21fe0e23db2c805ba4aec6eea3392a3703f871b4c7",
+    "craft_mcp_sha256": "c8fcd5ee0f2ea87c9946472c14a523557dbf469dc8c840f99414d92e06a6f4de",
     "parser_worker_sha256": "503cd143d12379ee5754a98ca9ee47252012f3138fc9facf370b62ab6e85dc4c"
   },
   "skills": [
+    "craft-codebase",
     "craft-experience",
     "craft-knowledge",
     "craft-memory"
   ],
   "skill_sha256": {
+    "craft-codebase": "7f90446ae488d0605dc3d792c3a9debe293e4853a5d8acbac6c8f2c0ec3866c4",
     "craft-experience": "7e911cbb03d1e816251063441b5775be702f24d530b47b6b145f9e3dd8b89cc9",
     "craft-knowledge": "b4f800e6773bc368b940118e504f0e97fd73136c04a9390f5ab8e94f61a607cc",
     "craft-memory": "f679ee4968fa1059ae187d36f45993b473cc075b5cc6d8212b27b0aba6c2ba67"

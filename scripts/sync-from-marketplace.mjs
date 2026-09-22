@@ -7,8 +7,7 @@ const apply = process.argv.includes("--apply");
 const root = resolve(import.meta.dirname, "..");
 const release = JSON.parse(readFileSync(resolve(marketplace, "release.json"), "utf8"));
 const products = [...release.components].map(String).sort();
-const EXTERNAL_PRODUCTS = ["craft-experience", "craft-knowledge", "craft-memory"];
-if (JSON.stringify(products) !== JSON.stringify(EXTERNAL_PRODUCTS)) throw new Error("marketplace must expose exactly three Craft products");
+if (!products.length || new Set(products).size !== products.length) throw new Error("marketplace must expose a non-empty unique Craft product set");
 const digest = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 for (const product of products) if (!existsSync(resolve(marketplace, "plugins", product, "skills", product, "SKILL.md"))) throw new Error(`missing marketplace Skill ${product}`);
 if (!apply) { process.stdout.write("Validated marketplace input; re-run with --apply to synchronize.\n"); process.exit(0); }

@@ -8,7 +8,7 @@
 ## 用法
 
 ```powershell
-node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience] [--scope user|project]
+node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience|codebase] [--scope user|project]
               [--node <path>] [--dry-run] [--force] [--uninstall] [--no-check] [--list]
 ```
 
@@ -18,11 +18,12 @@ node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memo
 node init.mjs --agent cline  --product memory        # Cline 用户级：MCP + skill
 node init.mjs --agent dsh    --product knowledge     # DSH：MCP loader 块 + skill
 node init.mjs --agent trae   --product experience    # 当前项目的 .trae/mcp.json + .trae/skills
+node init.mjs --agent cline  --product codebase      # 显式激活后使用的只读代码结构分析
 node init.mjs --agent all    --dry-run               # 各家全预览，不落盘
 node init.mjs --agent cline --product memory --uninstall
 ```
 
-- `--product`：`knowledge | memory | experience`（默认 `knowledge`；server 名与 skill 名的映射见 `init.mjs --list`）。
+- `--product`：`knowledge | memory | experience | codebase`（默认 `knowledge`；server 名与 skill 名的映射见 `init.mjs --list`）。
 - `--check`（默认开启）会用**与写入配置完全相同的命令行**真实拉起 MCP 进程做
   `initialize` + `tools/list` 握手，安装即验证。**握手失败会回滚**：写入前先快照配置文件，
   失败则恢复安装前内容（此前失败只返回错误码、把无法启动的 server 留在用户配置里）。
@@ -43,7 +44,7 @@ Skill 与 MCP，不承诺“每个任务自动开始/结束各调用一次”。
 
 | Agent | MCP 配置 | Skill 目录 | 兼容要点 |
 |---|---|---|---|
-| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 只提供 `craft-knowledge` / `craft-memory` / `craft-experience`。 |
+| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 提供 `craft-knowledge` / `craft-memory` / `craft-experience` / `craft-codebase`。 |
 | Qoder | `~/.qoder/settings.json`（用户级）或 `<项目>/.qoder/settings.json` | `~/.qoder/skills/` / `.qoder/skills/` | 项目级 MCP 需逐个批准（或 `mcp.enableAllProjectMcpServers`） |
 | Trae | `<项目>/.trae/mcp.json`（仅项目级） | `<项目>/.trae/skills/` | 需在 设置>MCP 打开「启用项目级 MCP」；command 不能含空格，脚本自动回退 8.3 短路径或已知的空格路径 node |
 | WorkBuddy | `~/.workbuddy-ai/mcp.json` | `~/.workbuddy-ai/skills/<name>/` | 信任绑定 `command+args` 的 SHA-256：装完/改动后需在 Connector 管理 > Custom connectors 点一次 Trust |
@@ -58,7 +59,7 @@ Craft 数据是刻意设计：记忆、知识、执行观察互通。
 
 ## 更新 bundle / skills
 
-发布物升级后，运行随仓库提供的同步与校验脚本；它会逐项复制并校验 bundle、parser worker、三个 Skill、版本、来源提交和 SHA-256，不能再手工复制或填写占位路径。
+发布物升级后，运行随仓库提供的同步与校验脚本；它会逐项复制并校验 bundle、parser worker、全部发布 Skill、版本、来源提交和 SHA-256，不能再手工复制或填写占位路径。
 
 ```powershell
 node .\scripts\sync-from-marketplace.mjs ..\craft-marketplace --apply
