@@ -2,12 +2,12 @@
   "product": "craft-common-use",
   "craft_version": "0.12.37",
   "source_repository": "https://github.com/wdx9413/craft.git",
-  "source_commit": "cd6c0ef169570744ff820fbf763f1fcc6cf2fae5",
+  "source_commit": "e2b2920ebb12d9b8c44356e2c2e871fa1a9c6feb",
   "source_state": "committed",
-  "source_note": "v0.12.37 payloads were built from cd6c0ef169570744ff820fbf763f1fcc6cf2fae5; source_commit names that revision. The plugin payloads under plugins/ are copies of that revision's build output.",
+  "source_note": "v0.12.37 payloads were built from e2b2920ebb12d9b8c44356e2c2e871fa1a9c6feb; source_commit names that revision. The plugin payloads under plugins/ are copies of that revision's build output.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "7598dcb1d853e1e693d3f4f5963b7332a4d8a93cb061bb8f7e7e2357512f956c",
+    "craft_mcp_sha256": "889b19d48140692291e76f21fe0e23db2c805ba4aec6eea3392a3703f871b4c7",
     "parser_worker_sha256": "503cd143d12379ee5754a98ca9ee47252012f3138fc9facf370b62ab6e85dc4c"
   },
   "skills": [
