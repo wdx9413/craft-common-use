@@ -7,8 +7,8 @@
   "source_note": "v0.12.37 payloads were built from 803a5f761fa2d51fde777659cc037adaa361d198; source_commit names that revision. The plugin payloads under plugins/ are copies of that revision's build output.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "c8fcd5ee0f2ea87c9946472c14a523557dbf469dc8c840f99414d92e06a6f4de",
-    "parser_worker_sha256": "503cd143d12379ee5754a98ca9ee47252012f3138fc9facf370b62ab6e85dc4c"
+    "craft_mcp_sha256": "45597cae63358addd5619b9d8b67ef26c02dbeef669a7d0c64812c3197b5cc8a",
+    "parser_worker_sha256": "e1dcbf5ab909e77287a0102795abcb1de2761e8289cfe1306c6bd1543975ee5a"
   },
   "skills": [
     "craft-codebase",
@@ -17,9 +17,9 @@
     "craft-memory"
   ],
   "skill_sha256": {
-    "craft-codebase": "7f90446ae488d0605dc3d792c3a9debe293e4853a5d8acbac6c8f2c0ec3866c4",
-    "craft-experience": "7e911cbb03d1e816251063441b5775be702f24d530b47b6b145f9e3dd8b89cc9",
-    "craft-knowledge": "b4f800e6773bc368b940118e504f0e97fd73136c04a9390f5ab8e94f61a607cc",
-    "craft-memory": "f679ee4968fa1059ae187d36f45993b473cc075b5cc6d8212b27b0aba6c2ba67"
+    "craft-codebase": "1024dd92ba029bab27cbdebf81c6bc251193f0f6f2e1a4a8b42f74e8ef061ebc",
+    "craft-experience": "f113b82f73fef3db939b3813f60bf64f7e9a92ff77ff0307335898f540d0ff71",
+    "craft-knowledge": "ac70f2972705ffdd5fb992f08647c9d3d6c3ff0748106510346eba2756286b8f",
+    "craft-memory": "f863462dcad324b549e91f589e882b0d5ffba76d520b62a3b8d9604efdb6d744"
   }
 }
