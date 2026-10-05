@@ -2,7 +2,7 @@
 
 一条命令把**通用**的 Craft skill（SKILL.md）和 MCP server 初始化进某个编程 Agent。
 本文件夹完全自包含：MCP bundle、parser worker 与全部 SKILL.md 都在 `bundle/` 与 `skills/`
-内（取自 Craft v0.12.38 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
+内（取自 Craft v0.12.39 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
 精确版本、来源与 bundle 校验和见 [`release.json`](./release.json)。
 
 ## 用法
@@ -33,8 +33,7 @@ node init.mjs --agent cline --product memory --uninstall
 
 ## 生命周期边界
 
-Codex 插件可以额外声明 `SessionStart`、`UserPromptSubmit`、`Stop`、`SessionEnd` 等原生 Hook，
-并用 `mcp_tool` 在用户消息阶段调用已连接的 Knowledge/Memory MCP。这个通用脚手架面向的
+Codex/Claude 的 `craft-context` 插件提供原生生命周期 Hook，在用户消息阶段生成 Knowledge、Memory、Experience 的共享回执。这个通用脚手架面向的
 Cline、Qoder、Trae、WorkBuddy、DSH 没有一个统一的生命周期 Hook 协议，所以本包只负责安装
 Skill 与 MCP，不承诺“每个任务自动开始/结束各调用一次”。没有宿主 Hook 时，按 Skill 在任务
 开始执行实际的限定检索/解析，任务结束再执行实际的受控写入/观察；`readiness` 只能做可用性检查，
@@ -68,7 +67,7 @@ node .\scripts\verify-release.mjs
 
 ## 已验证
 
-- v0.12.38 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
+- v0.12.39 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
   和 SHA-256 记录于 `release.json`。Craft 源码侧已完成 MCP bundle 冒烟检查。
 
 以下宿主安装记录来自此前验收；本次发布物的自动化验收见仓库测试，尚未逐个重开真实宿主会话。
