@@ -15,9 +15,9 @@
  * Verified conventions live in ./agents.mjs (each entry cites its source).
  */
 import { spawn, execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { homedir } from 'node:os'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync, cpSync, mkdtempSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { homedir, tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { AGENTS } from './agents.mjs'
 
@@ -29,19 +29,18 @@ const SCAFFOLD_VERSION = '0.1.0'
 
 // `mcp` records whether *this* bundle serves the product. The bundle is one
 // multi-product server whose public distribution set is deliberately limited to
-// knowledge, memory, experience, and the explicit read-only codebase product.
+// the default context aggregate and its four independently usable components.
 // The Craft source repository retains its wider internal plugin catalog; this
 // self-contained installer must not expose it.
-const PRODUCTS = {
-  'memory':            { server: 'craft-memory',           product: 'memory',     skill: 'craft-memory',         mcp: true },
-  'knowledge':         { server: 'craft-knowledge',       product: 'knowledge',  skill: 'craft-knowledge',      mcp: true },
-  'experience':        { server: 'craft-experience',      product: 'experience', skill: 'craft-experience',     mcp: true },
-  'codebase':          { server: 'craft-codebase',        product: 'codebase',   skill: 'craft-codebase',       mcp: true },
-}
+const RELEASE = JSON.parse(readFileSync(join(HERE, 'release.json'), 'utf8'))
+const PRODUCTS = Object.fromEntries(RELEASE.skills.map(name => {
+  const product = name.replace(/^craft-/, '')
+  return [product, { server: name, product, skill: name, mcp: true }]
+}))
 
 
 function parseArgs(argv) {
-  const options = { agents: [], product: 'knowledge', scope: null, node: process.execPath, dryRun: false, force: false, uninstall: false, mcp: true, skill: true, check: true, list: false }
+  const options = { agents: [], product: 'context', scope: null, node: process.execPath, dryRun: false, force: false, uninstall: false, mcp: true, skill: true, check: true, list: false }
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
     if (arg === '--agent') options.agents.push(...(argv[++i] ?? '').split(',').filter(Boolean))
@@ -62,7 +61,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log('用法: node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience|codebase] [--scope user|project] [--dry-run] [--force] [--uninstall] [--list]')
+  console.log('用法: node init.mjs --agent <agent|all> [--product context|knowledge|memory|experience|codebase] [--scope user|project] [--dry-run] [--force] [--uninstall] [--list]')
 }
 
 /** cmd /c for %I in ("path") do @echo %~sI — needed because Trae rejects a
@@ -105,6 +104,8 @@ function traeCommand(node) {
 
 function serverEntry(agentKey, productSpec, node) {
   const args = [BUNDLE, '--product', productSpec.product]
+  if (agentKey === 'opencode') return { type: 'local', command: [node, ...args], enabled: true }
+  if (agentKey === 'vscode' || agentKey === 'cursor') return { type: 'stdio', command: node, args }
   if (agentKey === 'trae') {
     return { command: traeCommand(node), args, env: { START_MCP_TIMEOUT_MS: '60000', RUN_MCP_TIMEOUT_MS: '60000' } }
   }
@@ -114,35 +115,37 @@ function serverEntry(agentKey, productSpec, node) {
 }
 
 
-function mergeMcp(mcpPath, serverName, entry, { dryRun, force }) {
+function mergeMcp(mcpPath, serverName, entry, { dryRun, force, configKey = 'mcpServers' }) {
   let root = {}
   if (existsSync(mcpPath)) {
     const parsed = JSON.parse(readFileSync(mcpPath, 'utf8'))
-    if ((parsed !== null && typeof parsed !== 'object') || Array.isArray(parsed)) throw new Error(`${mcpPath} 的内容不是 JSON 对象，拒绝修改`)
+    if ((parsed === null || typeof parsed !== 'object') || Array.isArray(parsed)) throw new Error(`${mcpPath} 的内容不是 JSON 对象，拒绝修改`)
     root = parsed
   }
-  if (root.mcpServers === undefined) root.mcpServers = {}
-  const existing = root.mcpServers[serverName]
+  if (root[configKey] === undefined) root[configKey] = {}
+  if (!root[configKey] || typeof root[configKey] !== 'object' || Array.isArray(root[configKey])) throw new Error('MCP server map must be an object')
+  const existing = root[configKey][serverName]
   if (existing !== undefined && JSON.stringify(existing) === JSON.stringify(entry)) {
     return { changed: false, note: '已是目标配置，无需改动' }
   }
   if (existing !== undefined && !force) {
-    return { changed: false, blocked: true, note: `已存在不同配置：${JSON.stringify(existing)}（用 --force 覆盖）` }
+    return { changed: false, blocked: true, note: `已存在不同配置（用 --force 覆盖）` }
   }
   if (!dryRun) {
-    root.mcpServers[serverName] = entry
+    root[configKey][serverName] = entry
     mkdirSync(dirname(mcpPath), { recursive: true })
     writeFileSync(mcpPath, `${JSON.stringify(root, null, 2)}\n`, 'utf8')
   }
   return { changed: true, note: dryRun ? '[dry-run] 将写入' : (existing === undefined ? '新增' : '已用 --force 覆盖旧配置') }
 }
 
-function removeMcp(mcpPath, serverName, { dryRun }) {
+function removeMcp(mcpPath, serverName, { dryRun, configKey = 'mcpServers', expectedEntry }) {
   if (!existsSync(mcpPath)) return { changed: false, note: '配置文件不存在' }
   const root = JSON.parse(readFileSync(mcpPath, 'utf8'))
-  if (root?.mcpServers?.[serverName] === undefined) return { changed: false, note: '未发现该 server，无需改动' }
+  if (root?.[configKey]?.[serverName] === undefined) return { changed: false, note: '未发现该 server，无需改动' }
+  if (expectedEntry && JSON.stringify(root[configKey][serverName]) !== JSON.stringify(expectedEntry)) return { changed: false, blocked: true, note: '配置已被其他工具修改，拒绝删除' }
   if (!dryRun) {
-    delete root.mcpServers[serverName]
+    delete root[configKey][serverName]
     writeFileSync(mcpPath, `${JSON.stringify(root, null, 2)}\n`, 'utf8')
   }
   return { changed: true, note: dryRun ? '[dry-run] 将移除' : '已移除' }
@@ -301,23 +304,30 @@ function skillFrontmatterName(text) {
   return name ? name[1] : null
 }
 
+function skillFiles(directory, prefix = '') {
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    const relative = join(prefix, entry.name), path = join(directory, entry.name)
+    if (entry.isSymbolicLink()) throw new Error(`Skill 包含符号链接，拒绝覆盖或删除：${path}`)
+    return entry.isDirectory() ? skillFiles(path, relative) : [relative]
+  })
+}
+
 function installSkill(skillScopes, scope, skillName, { dryRun, force }) {
   const resolve = skillScopes[scope]
   if (!resolve) throw new Error(`该 agent 不支持 ${scope} 作用域的 skill（可用：${Object.keys(skillScopes).join(', ')}）`)
-  const source = join(SKILLS_ROOT, skillName, 'SKILL.md')
+  const sourceDir = join(SKILLS_ROOT, skillName), source = join(sourceDir, 'SKILL.md')
   if (!existsSync(source)) throw new Error(`缺少内置 skill：${source}`)
   const targetDir = join(resolve(process.cwd()), skillName)
-  const target = join(targetDir, 'SKILL.md')
-  const body = readFileSync(source, 'utf8')
-  if (existsSync(target)) {
-    if (readFileSync(target, 'utf8') === body) return { changed: false, note: `已一致（${target}）` }
-    if (!force) return { changed: false, blocked: true, note: `已存在不同内容：${target}（用 --force 覆盖）` }
+  const files = skillFiles(sourceDir)
+  if (existsSync(targetDir)) skillFiles(targetDir) // Reject nested links before writing any file.
+  const changed = files.filter(file => !existsSync(join(targetDir, file)) || !readFileSync(join(targetDir, file)).equals(readFileSync(join(sourceDir, file))))
+  if (!changed.length) return { changed: false, note: `已一致（${targetDir}）` }
+  if (!force && changed.some(file => existsSync(join(targetDir, file)))) return { changed: false, blocked: true, note: `已存在不同内容：${targetDir}（用 --force 覆盖）` }
+  if (!dryRun) for (const file of changed) {
+    mkdirSync(dirname(join(targetDir, file)), { recursive: true })
+    writeFileSync(join(targetDir, file), readFileSync(join(sourceDir, file)))
   }
-  if (!dryRun) {
-    mkdirSync(targetDir, { recursive: true })
-    writeFileSync(target, body, 'utf8')
-  }
-  return { changed: true, note: `${dryRun ? '[dry-run] 将写入' : '已写入'} ${target}` }
+  return { changed: true, note: `${dryRun ? '[dry-run] 将写入' : '已写入'} ${targetDir}` }
 }
 
 function uninstallSkill(skillScopes, scope, skillName, { dryRun }) {
@@ -335,55 +345,68 @@ function uninstallSkill(skillScopes, scope, skillName, { dryRun }) {
   if (existsSync(ownCopy) && readFileSync(target, 'utf8') !== readFileSync(ownCopy, 'utf8')) {
     return { changed: false, blocked: true, note: `${target} 内容与本脚手架的 skill 副本不同，拒绝删除` }
   }
+  const sourceDir = join(SKILLS_ROOT, skillName), owned = skillFiles(sourceDir), installed = skillFiles(targetDir)
+  if (installed.some(file => !owned.includes(file) || !readFileSync(join(targetDir, file)).equals(readFileSync(join(sourceDir, file))))) {
+    return { changed: false, blocked: true, note: `${targetDir} 含用户新增或修改的文件，拒绝删除` }
+  }
   if (!dryRun) rmSync(targetDir, { recursive: true, force: true })
   return { changed: true, note: `${dryRun ? '[dry-run] 将删除' : '已删除'} ${targetDir}` }
 }
 
 /** Real proof of life: stdio JSON-RPC initialize + tools/list against the
  *  same command line we just wrote into the agent's config. */
-function probeMcp(node, entry, timeoutMs = 30000) {
+export function probeMcp(node, entry, timeoutMs = 30000) {
   return new Promise((resolve) => {
-    const child = spawn(node, entry.args, { stdio: ['pipe', 'pipe', 'pipe'] })
-    let stdout = ''
-    let stderr = ''
-    let finished = false
-    const timer = setTimeout(() => finish({ ok: false, detail: `${timeoutMs}ms 内无响应` }), timeoutMs)
-    child.stdout.on('data', (chunk) => { stdout += chunk })
-    child.stderr.on('data', (chunk) => { stderr += chunk })
-    const send = (message) => child.stdin.write(`${JSON.stringify(message)}\n`)
-    const finish = (result) => {
+    const command = Array.isArray(entry.command) ? entry.command[0] : entry.command ?? node
+    const args = Array.isArray(entry.command) ? entry.command.slice(1) : entry.args
+    const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, ...(entry.env ?? entry.environment ?? {}) } })
+    let buffer = '', finished = false, stage = 1, toolCount = 0, checkName = 'craft_info'
+    const finish = result => {
       if (finished) return
-      finished = true
-      clearTimeout(timer)
-      try { child.kill() } catch { /* already gone */ }
-      resolve(result)
+      finished = true; clearTimeout(timer); child.kill(); resolve(result)
     }
-    child.on('error', (error) => finish({ ok: false, detail: error.message }))
-    child.on('exit', (code) => { if (code !== null && code !== 0) finish({ ok: false, detail: `进程退出 code=${code} stderr=${stderr.slice(0, 400)}` }) })
-    child.stdout.on('data', () => {
-      const lines = stdout.split('\n').filter((line) => line.trim().startsWith('{'))
-      let initialized = false
-      let listed = null
-      for (const line of lines) {
+    const timer = setTimeout(() => finish({ ok: false, detail: `${timeoutMs}ms 内无完整响应` }), timeoutMs)
+    const send = message => child.stdin.write(`${JSON.stringify(message)}\n`)
+    child.stdin.on('error', () => finish({ ok: false, detail: 'MCP stdin closed' }))
+    child.stderr.on('data', () => {}) // Never echo a subprocess credential into installer logs.
+    child.on('error', error => finish({ ok: false, detail: `MCP launch failed: ${error.code}` }))
+    child.on('exit', code => finish({ ok: false, detail: `MCP exited before completion: ${code}` }))
+    child.stdout.on('data', chunk => {
+      buffer += chunk
+      if (buffer.length > 4 * 1024 * 1024) return finish({ ok: false, detail: 'MCP response exceeds budget' })
+      let newline
+      while (!finished && (newline = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, newline); buffer = buffer.slice(newline + 1)
+        if (!line.trim()) continue
         let message
-        try { message = JSON.parse(line) } catch { continue }
-        if (message?.id === 1) initialized = true
-        if (message?.id === 2 && message.result?.tools) listed = message.result.tools
-      }
-      if (initialized && listed === null) send({ jsonrpc: '2.0', method: 'notifications/initialized' })
-      if (initialized && listed === null && stdout.split('\n').filter((l) => l.includes('"id":2')).length === 0) {
-        send({ jsonrpc: '2.0', id: 2, method: 'tools/list' })
-      }
-      if (listed) {
-        finish({ ok: listed.length > 0, detail: `tools/list 成功，共 ${listed.length} 个工具（前 3 个：${listed.slice(0, 3).map((tool) => tool.name).join(', ')}）` })
+        try { message = JSON.parse(line) } catch { return finish({ ok: false, detail: 'Invalid JSON on MCP stdout' }) }
+        if (message.id !== stage) continue
+        if (message.error || !message.result) return finish({ ok: false, detail: `MCP request ${stage} rejected` })
+        if (stage === 1) {
+          if (!['2025-03-26', '2025-06-18', '2025-11-25'].includes(message.result.protocolVersion)) return finish({ ok: false, detail: 'Unsupported negotiated protocol' })
+          stage = 2
+          send({ jsonrpc: '2.0', method: 'notifications/initialized' })
+          send({ jsonrpc: '2.0', id: 2, method: 'tools/list' })
+        } else if (stage === 2) {
+          const tools = message.result.tools
+          const product = args?.[args.indexOf('--product') + 1]
+          checkName = product === 'context' ? 'craft_info' : tools?.some?.(tool => tool.name === 'craft_component_readiness_get') ? 'craft_component_readiness_get' : 'craft_info'
+          if (!Array.isArray(tools) || !tools.some(tool => tool.name === checkName) || (checkName !== 'craft_info' && !['knowledge', 'memory', 'experience'].includes(product))) return finish({ ok: false, detail: 'Craft tool surface missing or product unknown' })
+          toolCount = tools.length; stage = 3
+          send({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: checkName, arguments: checkName === 'craft_info' ? {} : { component: product } } })
+        } else {
+          const ok = message.result.isError !== true && Array.isArray(message.result.content)
+          finish({ ok, level: ok ? 'tool_call_verified' : 'tools_visible', toolCount, host_session_verified: false, detail: `tools/list=${toolCount}; ${checkName} ${ok ? '成功' : '失败'}；宿主会话未验收` })
+        }
       }
     })
-    send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'craft-common-use-scaffold', version: SCAFFOLD_VERSION } } })
+    send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'craft-common-use-scaffold', version: SCAFFOLD_VERSION } } })
   })
 }
 
-async function runAgent(agentKey, options, productSpec) {
+async function applyAgent(agentKey, options, productSpec) {
   const agent = AGENTS[agentKey]
+  options = { ...options, configKey: agent.configKey ?? "mcpServers", expectedEntry: serverEntry(agentKey, productSpec, options.node) }
   console.log(`\n=== ${agentKey} — ${agent.label} ===`)
   // Validate the Skill side before changing MCP.  This prevents the former
   // half-install/half-uninstall state when ownership or a content conflict is
@@ -416,7 +439,7 @@ async function runAgent(agentKey, options, productSpec) {
       : (dshPatch ? mergeDshPatch(mcpPath, productSpec.server, entry, options) : mergeMcp(mcpPath, productSpec.server, entry, options))
     console.log(`  MCP   ${options.uninstall ? '卸载' : '安装'} ${productSpec.server} @ ${mcpPath} — ${result.note}`)
     if (result.blocked) return { ok: false }
-    if (!options.uninstall && options.check) {
+    if (!options.uninstall && !options.dryRun && options.check) {
       const probe = await probeMcp(options.node, entry)
       console.log(`  检查  ${probe.ok ? 'PASS' : 'FAIL'}  ${probe.detail}`)
       if (!probe.ok) {
@@ -443,6 +466,37 @@ async function runAgent(agentKey, options, productSpec) {
   return { ok: true }
 }
 
+async function runAgent(agentKey, options, productSpec) {
+  if (options.dryRun) return applyAgent(agentKey, options, productSpec)
+  const agent = AGENTS[agentKey], scope = options.scope ?? agent.defaultScope
+  const paths = []
+  if (options.mcp && agent.mcpScopes?.[scope]) paths.push(agent.mcpScopes[scope](process.cwd()))
+  if (options.skill && agent.skillScopes?.[scope]) paths.push(join(agent.skillScopes[scope](process.cwd()), productSpec.skill))
+  const backup = mkdtempSync(join(tmpdir(), 'craft-install-'))
+  const snapshots = paths.map((path, i) => {
+    const saved = join(backup, String(i)), existed = existsSync(path)
+    if (existed) cpSync(path, saved, { recursive: true, verbatimSymlinks: true })
+    return { path, saved, existed }
+  })
+  const restore = () => {
+    for (const { path, saved, existed } of snapshots) {
+      rmSync(path, { recursive: true, force: true })
+      if (existed) { mkdirSync(dirname(path), { recursive: true }); cpSync(saved, path, { recursive: true, verbatimSymlinks: true }) }
+    }
+  }
+  let result
+  try {
+    result = await applyAgent(agentKey, options, productSpec)
+    if (!result.ok) restore()
+  } catch (error) {
+    restore()
+    throw error
+  } finally {
+    rmSync(backup, { recursive: true, force: true })
+  }
+  return result
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   if (options.help || options.list) {
@@ -461,7 +515,7 @@ async function main() {
   if (!existsSync(BUNDLE) || !existsSync(WORKER)) throw new Error(`自包含产物缺失：${BUNDLE} / ${WORKER}`)
   let failures = 0
   for (const agentKey of options.agents) {
-    if (!AGENTS[agentKey]) throw new Error(`未知 agent：${agentKey}（可用：${Object.keys(AGENTS).join(', ')}，或 all）`)
+    if (agentKey !== 'all' && !AGENTS[agentKey]) throw new Error(`未知 agent：${agentKey}（可用：${Object.keys(AGENTS).join(', ')}，或 all）`)
     const agents = agentKey === 'all' ? Object.keys(AGENTS) : [agentKey]
     for (const key of agents) {
       try {
@@ -477,4 +531,5 @@ async function main() {
   process.exitCode = failures === 0 ? 0 : 1
 }
 
-await main()
+export { serverEntry, mergeMcp, removeMcp, runAgent, PRODUCTS, parseArgs }
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main()

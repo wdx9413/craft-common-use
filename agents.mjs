@@ -45,6 +45,38 @@ export function resolveDshHome() {
 }
 
 export const AGENTS = {
+  cursor: {
+    label: 'Cursor', // https://cursor.com/docs/mcp
+    mcpScopes: { user: () => join(home, '.cursor', 'mcp.json'), project: root => join(root, '.cursor', 'mcp.json') },
+    skillScopes: { user: () => join(home, '.cursor', 'skills'), project: root => join(root, '.cursor', 'skills') },
+    defaultScope: 'project', notes: ['Enable the MCP server and Skills in the host; configuration is not proof of an active session.'],
+  },
+  gemini: {
+    label: 'Gemini CLI', // https://geminicli.com/docs/tools/mcp-server/
+    mcpScopes: { user: () => join(home, '.gemini', 'settings.json'), project: root => join(root, '.gemini', 'settings.json') },
+    skillScopes: { user: () => join(home, '.gemini', 'skills'), project: root => join(root, '.gemini', 'skills') },
+    defaultScope: 'project', notes: ['Trust the project and enable the server in the current Gemini session.'],
+  },
+  vscode: {
+    label: 'VS Code workspace MCP', // https://code.visualstudio.com/docs/agent-customization/mcp-servers
+    configKey: 'servers',
+    mcpScopes: { project: root => join(root, '.vscode', 'mcp.json') },
+    skillScopes: { project: root => join(root, '.agents', 'skills') },
+    defaultScope: 'project', notes: ['Workspace trust and MCP server approval are host-managed. This profile targets workspace MCP, not the separate Agent Host configuration.'],
+  },
+  opencode: {
+    label: 'OpenCode', // https://opencode.ai/docs/mcp-servers/
+    configKey: 'mcp',
+    mcpScopes: { user: () => join(home, '.config', 'opencode', 'opencode.json'), project: root => join(root, 'opencode.json') },
+    skillScopes: { user: () => join(home, '.config', 'opencode', 'skills'), project: root => join(root, '.opencode', 'skills') },
+    defaultScope: 'project', notes: ['JSON configurations are supported; existing JSONC must be converted explicitly before using this installer.'],
+  },
+  claude: {
+    label: 'Claude Code portable MCP', // https://code.claude.com/docs/en/mcp
+    mcpScopes: { project: root => join(root, '.mcp.json') },
+    skillScopes: { project: root => join(root, '.claude', 'skills') },
+    defaultScope: 'project', notes: ['Approve project MCP servers in Claude Code. This profile installs no lifecycle hooks.'],
+  },
   cline: {
     label: 'Cline (IDE / CLI)',
     mcpScopes: {

@@ -2,13 +2,13 @@
 
 一条命令把**通用**的 Craft skill（SKILL.md）和 MCP server 初始化进某个编程 Agent。
 本文件夹完全自包含：MCP bundle、parser worker 与全部 SKILL.md 都在 `bundle/` 与 `skills/`
-内（取自 Craft v0.12.37 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
+内（取自 Craft v0.12.38 发布物），运行时不依赖 craft-marketplace 或 Craft 源码仓库。
 精确版本、来源与 bundle 校验和见 [`release.json`](./release.json)。
 
 ## 用法
 
 ```powershell
-node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memory|experience|codebase] [--scope user|project]
+node init.mjs --agent <agent|all> [--product context|knowledge|memory|experience|codebase] [--scope user|project]
               [--node <path>] [--dry-run] [--force] [--uninstall] [--no-check] [--list]
 ```
 
@@ -18,12 +18,12 @@ node init.mjs --agent <cline|qoder|trae|workbuddy|all> [--product knowledge|memo
 node init.mjs --agent cline  --product memory        # Cline 用户级：MCP + skill
 node init.mjs --agent dsh    --product knowledge     # DSH：MCP loader 块 + skill
 node init.mjs --agent trae   --product experience    # 当前项目的 .trae/mcp.json + .trae/skills
-node init.mjs --agent cline  --product codebase      # 显式激活后使用的只读代码结构分析
+node init.mjs --agent cline  --product codebase      # 当前仓库自动准备的只读代码结构分析
 node init.mjs --agent all    --dry-run               # 各家全预览，不落盘
 node init.mjs --agent cline --product memory --uninstall
 ```
 
-- `--product`：`knowledge | memory | experience | codebase`（默认 `knowledge`；server 名与 skill 名的映射见 `init.mjs --list`）。
+- `--product`：`context | knowledge | memory | experience | codebase`（默认 `context`；server 名与 skill 名的映射见 `init.mjs --list`）。
 - `--check`（默认开启）会用**与写入配置完全相同的命令行**真实拉起 MCP 进程做
   `initialize` + `tools/list` 握手，安装即验证。**握手失败会回滚**：写入前先快照配置文件，
   失败则恢复安装前内容（此前失败只返回错误码、把无法启动的 server 留在用户配置里）。
@@ -44,7 +44,7 @@ Skill 与 MCP，不承诺“每个任务自动开始/结束各调用一次”。
 
 | Agent | MCP 配置 | Skill 目录 | 兼容要点 |
 |---|---|---|---|
-| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 提供 `craft-knowledge` / `craft-memory` / `craft-experience` / `craft-codebase`。 |
+| Cline | `~/.cline/data/settings/cline_mcp_settings.json` | `~/.cline/skills/<name>/`（项目级 `.cline/skills/`） | 仅用户级 MCP（项目级未获官方文档证实，故不提供）。本 bundle 提供 `craft-context` 及四个独立子能力。 |
 | Qoder | `~/.qoder/settings.json`（用户级）或 `<项目>/.qoder/settings.json` | `~/.qoder/skills/` / `.qoder/skills/` | 项目级 MCP 需逐个批准（或 `mcp.enableAllProjectMcpServers`） |
 | Trae | `<项目>/.trae/mcp.json`（仅项目级） | `<项目>/.trae/skills/` | 需在 设置>MCP 打开「启用项目级 MCP」；command 不能含空格，脚本自动回退 8.3 短路径或已知的空格路径 node |
 | WorkBuddy | `~/.workbuddy-ai/mcp.json` | `~/.workbuddy-ai/skills/<name>/` | 信任绑定 `command+args` 的 SHA-256：装完/改动后需在 Connector 管理 > Custom connectors 点一次 Trust |
@@ -68,8 +68,10 @@ node .\scripts\verify-release.mjs
 
 ## 已验证
 
-- v0.12.37 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
+- v0.12.38 发布物：bundle 与 `craft-marketplace/plugins/craft-memory` 逐字节一致；版本、来源提交
   和 SHA-256 记录于 `release.json`。Craft 源码侧已完成 MCP bundle 冒烟检查。
+
+以下宿主安装记录来自此前验收；本次发布物的自动化验收见仓库测试，尚未逐个重开真实宿主会话。
 
 - Cline 用户级真实安装 `craft-memory`：JSON 合并保留其他 MCP 条目；探针 `tools/list`
   返回组件工具；skill 落盘；重跑 no-op。
@@ -91,3 +93,37 @@ node .\scripts\verify-release.mjs
 - WorkBuddy 的 Trust 点击与 Cline/Trae/Qoder 的宿主 UI 加载效果未在本轮验证（需要真人操作宿主）。
 - Trae 对 command/args 的内部 spawn 引号处理未知，因此本脚手架选择「空格路径回退」而非 `cmd /c` 包装。
 - Qoder/Trae 用户级 MCP 全局文件（若未来官方支持）未跟踪。
+
+## 2026-09-27 无 Hook 兼容入口
+
+新增 `cursor`、`gemini`、`vscode`、`opencode`、`claude`；保留 `cline`、`qoder`、`trae`、`workbuddy`、`dsh`。运行 `node init.mjs --list` 查看完整列表。推荐在目标项目先执行：
+
+```sh
+node /absolute/craft-common-use/init.mjs --agent cursor --product memory --scope project --dry-run
+node /absolute/craft-common-use/init.mjs --agent cursor --product memory --scope project
+```
+
+| 适配 | MCP 配置与区别 | 依据 |
+|---|---|---|
+| Cursor | `.cursor/mcp.json`，`mcpServers`，stdio | [官方 MCP 文档](https://cursor.com/docs/mcp) |
+| Gemini CLI | `.gemini/settings.json`，`mcpServers` | [官方 MCP 文档](https://geminicli.com/docs/tools/mcp-server/) |
+| VS Code workspace | `.vscode/mcp.json`，`servers`；不等同于独立 Agent Host 配置 | [官方 MCP 文档](https://code.visualstudio.com/docs/agent-customization/mcp-servers) |
+| OpenCode | `opencode.json`，`mcp`，local command 数组；现有 JSONC 不自动改写 | [官方 MCP 文档](https://opencode.ai/docs/mcp-servers/) |
+| Claude Code project | `.mcp.json` 与 `.claude/skills` | [官方 MCP 文档](https://code.claude.com/docs/en/mcp) |
+
+本安装器仅安装 Skill + MCP，不安装生命周期 Hook；宿主中的 Trust、项目授权与 Skill 启用仍由该宿主管理。普通本地启动默认使用 Craft 数据目录；需要多个工具共享数据时，必须确认各进程使用同一个受信任 `CRAFT_DATA_DIR`。
+
+探针现在验证 initialize → tools/list → readiness 或 craft_info 的实际调用，输出 `tool_call_verified` 和 `host_session_verified:false`。它使用实际配置的 executable/args/env；初始化错误、异常退出、错误工具列表、超时均失败。dry-run 不启动探针。失败恢复本目标的 MCP 配置与 Skill；多个目标分别提交/回滚。
+
+本轮完成配置 fixture、真实子进程探针和失败回滚测试；未在这 10 个宿主中逐一打开真实会话，不能把安装器通过称为全宿主认证。
+
+## 默认聚合入口
+
+默认产品为 `context`，一次安装 Knowledge、Memory、Experience 的统一上下文入口与自动仓库索引。各子能力继续用 `--product knowledge|memory|experience|codebase` 独立安装。
+
+```sh
+node init.mjs --agent cursor --product context
+node init.mjs --agent dsh --product context
+```
+
+新配置复用默认 Craft 数据目录，显式 `CRAFT_DATA_DIR` 可覆盖。聚合与组件并装时 Skill 优先使用聚合回执。安装和协议探针不代表真实宿主模型会话验收。

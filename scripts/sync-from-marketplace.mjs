@@ -15,6 +15,7 @@ for (const product of products) cpSync(resolve(marketplace, "plugins", product, 
 for (const file of ["craft-mcp.cjs", "craft-parser-worker.js"]) cpSync(resolve(marketplace, "plugins", "craft-memory", "dist", "plugin", file), resolve(root, "bundle", file), { force: true });
 const local = JSON.parse(readFileSync(resolve(root, "release.json"), "utf8"));
 local.craft_version = release.version; local.source_commit = release.source_commit; local.source_state = release.source_state; local.source_note = release.source_note;
+local.source_tree_digest = release.source_tree_digest;
 local.bundle = { craft_mcp_sha256: digest(resolve(root, "bundle", "craft-mcp.cjs")), parser_worker_sha256: digest(resolve(root, "bundle", "craft-parser-worker.js")) };
 local.skills = products;
 local.skill_sha256 = Object.fromEntries(products.map((product) => [product, digest(resolve(root, "skills", product, "SKILL.md"))]));

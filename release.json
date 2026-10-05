@@ -1,25 +1,28 @@
 {
   "product": "craft-common-use",
-  "craft_version": "0.12.37",
+  "craft_version": "0.12.38",
   "source_repository": "https://github.com/wdx9413/craft.git",
-  "source_commit": "803a5f761fa2d51fde777659cc037adaa361d198",
+  "source_commit": "0de577d85a7639bbffa5dd85c4432d2b29722315",
   "source_state": "committed",
-  "source_note": "v0.12.37 payloads were built from 803a5f761fa2d51fde777659cc037adaa361d198; source_commit names that revision. The plugin payloads under plugins/ are copies of that revision's build output.",
+  "source_note": "v0.12.38 payloads were synchronized from a clean checkout of 0de577d85a7639bbffa5dd85c4432d2b29722315; Git-visible source snapshot sha256:0775e09a3499d700dd299848b70d0a1e82579e177bec37cd7c7392467203854c. source_commit identifies HEAD, not dirty source contents; this snapshot does not attest the build process.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "45597cae63358addd5619b9d8b67ef26c02dbeef669a7d0c64812c3197b5cc8a",
-    "parser_worker_sha256": "e1dcbf5ab909e77287a0102795abcb1de2761e8289cfe1306c6bd1543975ee5a"
+    "craft_mcp_sha256": "25e65af5ba139046a0b4e037191017200580e1f9d62cfc957cc3476848d5c923",
+    "parser_worker_sha256": "6bcc3de4457f40cb1243bae8b3c73d6112e5481b88ec23d187348302da4b165c"
   },
   "skills": [
     "craft-codebase",
+    "craft-context",
     "craft-experience",
     "craft-knowledge",
     "craft-memory"
   ],
   "skill_sha256": {
-    "craft-codebase": "1024dd92ba029bab27cbdebf81c6bc251193f0f6f2e1a4a8b42f74e8ef061ebc",
-    "craft-experience": "f113b82f73fef3db939b3813f60bf64f7e9a92ff77ff0307335898f540d0ff71",
-    "craft-knowledge": "ac70f2972705ffdd5fb992f08647c9d3d6c3ff0748106510346eba2756286b8f",
-    "craft-memory": "f863462dcad324b549e91f589e882b0d5ffba76d520b62a3b8d9604efdb6d744"
-  }
+    "craft-codebase": "20a726b85f9465b41635b88cfb1ff8b1bca96f2afbf8912ce80bc38e82eacf54",
+    "craft-context": "c248eea7cf02a5ef8ef40d2fde7dadce1170a6e0faedac1a7b038d2586b3ac84",
+    "craft-experience": "bb4a559ef5e180a333c68953a5478a9603189e444ec9eb0512b30faf27068317",
+    "craft-knowledge": "4a2fbb308a8583397bac80bab9c6b2d05efee47e93cd624433a17e64766cd135",
+    "craft-memory": "f9e91e2218ad0f52fff7b62144290fa4a0eac3e4276f7110de2a9c679ed61fc9"
+  },
+  "source_tree_digest": "sha256:0775e09a3499d700dd299848b70d0a1e82579e177bec37cd7c7392467203854c"
 }
