@@ -219339,6 +219339,147 @@ var ContextHostEvaluation = class {
   }
 };
 
+// core/application/procedure-host-control.ts
+function procedureHostControl(service, args) {
+  const action = text(args.action, "action"), input = object(args.input, "input");
+  if (action === "prepare") return { ...service.verifiedWorkLoopWorkbenchPrepare({ ...input, interaction_mode: "plan", defer_host_start: true }), host_execution_authority: false };
+  const state4 = service.procedureInvocationGet(args), run = object(state4.invocation, "invocation");
+  if (action === "snapshot") return service.stateWorkspaceObserve({ workspace_id: run.workspace_id });
+  if (!["session_open", "session_close", "observe"].includes(action)) throw new Error("Unsupported Procedure Host operation");
+  const dispatch = service.store.get("procedure_invocation_dispatch", text(input.dispatch_id, "dispatch_id"));
+  if (dispatch.invocation_id !== run.id) throw new Error("Host dispatch belongs to another Invocation");
+  const sessionId = `procedure_host:${dispatch.id}`;
+  if (action === "session_open") return service.hostSessionOpen({
+    session_id: sessionId,
+    task_id: run.task_id,
+    host_id: run.host_id,
+    environment_fingerprint: text(input.environment_fingerprint, "environment_fingerprint"),
+    policy_fingerprint: text(input.policy_fingerprint, "policy_fingerprint"),
+    capability_fingerprint: dispatch.dispatch_digest,
+    model_fingerprint: run.model_fingerprint,
+    budget_fingerprint: run.budget_fingerprint
+  });
+  const session = service.store.get("host_session", sessionId);
+  const snapshot = service.store.get("state_snapshot", text(input.snapshot_id, "snapshot_id"));
+  if (snapshot.workspace_id !== run.workspace_id) throw new Error("Host snapshot belongs to another workspace");
+  if (action === "session_close") {
+    const kind4 = text(input.kind, "kind");
+    if (!["session.completed", "session.failed", "session.cancelled"].includes(kind4)) throw new Error("A terminal Host event is required");
+    return service.hostSessionAppend({ session_id: sessionId, kind: kind4, state_after_ref: snapshot.id });
+  }
+  const observer = text(input.observer_id, "observer_id");
+  if (observer === run.host_id) throw new Error("The executing Host cannot be its program observer");
+  return { ...service.outcomeObserverObserve({
+    observation_id: input.observation_id,
+    trace_id: session.trace_id,
+    host_id: run.host_id,
+    observer_id: observer,
+    observer_kind: "program",
+    environment_fingerprint: session.environment_fingerprint,
+    verdict: input.verdict,
+    state_snapshot_ref: snapshot.id,
+    evidence_ids: input.evidence_ids
+  }), verification_provenance: "host_attested", promotion_eligible: false };
+}
+
+// core/application/procedure-decision.ts
+function matchesDecisionGuard(raw, values3) {
+  if (!Array.isArray(raw) || !raw.length || raw.length > 100) throw new Error("Decision guard requires 1..100 clauses");
+  const outcomes = raw.map((value) => {
+    const clause = object(value, "guard clause"), field = text(clause.field, "guard field"), op = text(clause.op, "guard op");
+    if (!["eq", "eq_field", "gte"].includes(op)) throw new Error("Unsupported decision guard operator");
+    const actual = Object.hasOwn(values3, field) ? values3[field] : void 0;
+    const expected = op === "eq_field" ? values3[text(clause.value_field, "value_field")] : clause.value;
+    if (actual === void 0 || actual === null || expected === void 0 || expected === null) return null;
+    if (op === "gte") return typeof actual === "number" && Number.isFinite(actual) && typeof expected === "number" && Number.isFinite(expected) ? actual >= expected : null;
+    if (!["string", "number", "boolean"].includes(typeof expected) || typeof actual !== typeof expected) return null;
+    if (typeof actual === "number" && (!Number.isFinite(actual) || !Number.isFinite(expected))) return null;
+    return actual === expected;
+  });
+  return outcomes.includes(false) ? false : outcomes.includes(null) ? null : true;
+}
+function procedureDecisionEvaluate(service, args) {
+  return service.store.transaction(() => {
+    const state4 = service.procedureInvocationGet(args), run = object(state4.invocation, "invocation");
+    const decisionId = `${run.id}:${text(args.decision_id, "decision_id")}`, requestDigest = stableDigest(args);
+    const existing = service.store.find("procedure_host_decision", decisionId);
+    if (existing) {
+      if (existing.request_digest !== requestDigest) throw new Error("Decision idempotency conflict");
+      return { decision: existing, invocation: run, idempotent: true, host_execution_authority: false };
+    }
+    if (run.version !== args.expected_version || run.lifecycle !== "active") throw new Error("Decision requires current active Invocation version");
+    const graph = object(run.graph, "runtime Graph"), progress = object(run.graph_state, "graph state");
+    const node = graph.nodes.find((node2) => node2.id === progress.active_node);
+    if (!node) throw new Error("Graph is at its selected exit, not a decision node");
+    const receipt = service.store.get("procedure_invocation_receipt", text(args.receipt_id, "receipt_id"));
+    const snapshot = service.store.get("state_snapshot", text(args.snapshot_id, "snapshot_id"));
+    const loop = object(state4.loop, "loop");
+    if (receipt.id !== run.last_receipt_id || receipt.invocation_id !== run.id || receipt.status !== "passed" || snapshot.workspace_id !== run.workspace_id || snapshot.snapshot_digest !== loop.latest_snapshot_digest) throw new Error("Decision receipt or snapshot is not current");
+    const source = service.store.get("evidence", text(args.fact_evidence_id, "fact_evidence_id")), meta = object(source.metadata, "fact metadata");
+    const observation = service.store.get("outcome_observation", String(receipt.observation_id));
+    const acceptance = service.store.get("acceptance_gate", String(receipt.acceptance_gate_id));
+    const programBound = source.source_type === "program" && observation.evidence_ids.includes(String(source.id)) && acceptance.required_evidence_ids.includes(String(source.id)) && meta.dispatch_digest === receipt.dispatch_digest && meta.state_after_digest === snapshot.snapshot_digest;
+    const humanBound = source.source_type === "human" && meta.invocation_id === run.id && meta.receipt_id === receipt.id && meta.snapshot_digest === snapshot.snapshot_digest && Number.isFinite(Date.parse(String(meta.expires_at))) && Date.parse(String(meta.expires_at)) > Date.now();
+    if (source.confidence !== "confirmed" || !(programBound || humanBound)) throw new Error("Decision facts are unverified, stale or bound to another node");
+    const values3 = object(meta.fact_values, "verified fact_values"), rules = object(node.decision_rules ?? {}, "decision_rules");
+    const edges = graph.edges.filter((edge2) => edge2.from === node.id && graph.scenario.allowed_edges instanceof Array && graph.scenario.allowed_edges.includes(String(edge2.id)));
+    let unknown = false;
+    const matched = edges.filter((edge2) => {
+      if (edge2.kind === "human_resume" && !humanBound || edge2.kind !== "human_resume" && !programBound) return false;
+      if (!["success", "condition", "human_resume"].includes(String(edge2.kind))) return false;
+      if (!edge2.predicate_ref) return true;
+      const guard = rules[String(edge2.predicate_ref)];
+      if (guard === void 0) {
+        unknown = true;
+        return false;
+      }
+      const result = matchesDecisionGuard(guard, values3);
+      if (result === null) unknown = true;
+      return result === true;
+    });
+    if (unknown || matched.length !== 1) return { status: "blocked", reason: unknown ? "decision_inputs_or_evaluator_unavailable" : "no_unique_matching_edge", host_execution_authority: false };
+    const edge = matched[0];
+    if (programBound && (edge.predicate_ref || edge.rework === true) && (meta.fact_values_ref !== `artifact:${stableDigest(values3)}` || !Object.values(object(receipt.output_refs, "accepted outputs")).includes(meta.fact_values_ref))) throw new Error("Decision facts changed after accepted output or lack a digest-pinned artifact");
+    if (edge.rework === true && values3.safe_to_retry !== true) return { status: "blocked", reason: "safe_target_state_not_verified", host_execution_authority: false };
+    const evidenceId = `procedure_decision:${decisionId}`;
+    service.evidenceRecord({
+      evidence_id: evidenceId,
+      source_type: edge.kind === "human_resume" ? "human" : "program",
+      confidence: "confirmed",
+      claim: "The declared guard matched one current graph edge; source facts remain Host-attested.",
+      metadata: {
+        scope: run.scope,
+        invocation_id: run.id,
+        receipt_id: receipt.id,
+        graph_state_digest: stableDigest(progress),
+        snapshot_digest: snapshot.snapshot_digest,
+        workspace_state_revision: snapshot.workspace_state_revision,
+        expires_at: new Date(Date.now() + 6e4).toISOString(),
+        matched_edge_ids: [edge.id],
+        result: true,
+        predicate_ref: edge.predicate_ref,
+        safe_to_retry: values3.safe_to_retry === true,
+        source_fact_evidence_id: source.id,
+        fact_digest: stableDigest(values3),
+        verification_provenance: "host_attested"
+      }
+    });
+    const transitioned = service.procedureInvocationTransition({ ...args, transition_id: decisionId, edge_id: edge.id, evidence_id: evidenceId });
+    const decision = service.store.create("procedure_host_decision", decisionId, {
+      invocation_id: run.id,
+      scope: run.scope,
+      request_digest: requestDigest,
+      node_id: node.id,
+      edge_id: edge.id,
+      evidence_id: evidenceId,
+      fact_digest: stableDigest(values3),
+      status: "advanced",
+      verification_provenance: "host_attested"
+    });
+    return { ...transitioned, decision, host_execution_authority: false };
+  });
+}
+
 // core/application/craft-service.ts
 var import_node_fs31 = require("node:fs");
 var import_promises19 = require("node:fs/promises");
@@ -220101,7 +220242,8 @@ var CraftStore = class {
     if (!Array.isArray(scopes) || scopes.some((scope3) => !scope3 || typeof scope3.kind !== "string" || typeof scope3.id !== "string")) throw new Error("Invalid scoped query");
     if (!scopes.length) return [];
     const scopeSql = `EXISTS (SELECT 1 FROM json_each(?) s WHERE
-      json_extract(r.payload_json,'$.scope')=CASE WHEN json_extract(s.value,'$.kind')='global' THEN 'global' ELSE json_extract(s.value,'$.kind')||':'||json_extract(s.value,'$.id') END
+      json_extract(r.payload_json,'$.scope')=json_extract(s.value,'$.kind')||':'||json_extract(s.value,'$.id')
+      OR (json_extract(s.value,'$.kind')='global' AND json_extract(r.payload_json,'$.scope')='global')
       OR (json_extract(r.payload_json,'$.scope.kind')=json_extract(s.value,'$.kind') AND json_extract(r.payload_json,'$.scope.id')=json_extract(s.value,'$.id')))`;
     const values3 = [JSON.stringify(scopes)];
     if (temporal?.known_at !== void 0 && !Number.isFinite(Date.parse(temporal.known_at))) throw new Error("Invalid scoped known_at");
@@ -223419,7 +223561,7 @@ function verifyPinIntact(input) {
 }
 
 // core/version.ts
-var CRAFT_RELEASE_VERSION = "0.12.39";
+var CRAFT_RELEASE_VERSION = "0.12.40";
 
 // core/mcp-forward-compat.ts
 var MCP_REVISION_REQUIREMENTS = [
@@ -231331,6 +231473,8 @@ var TYPES_BY_TOOL = {
   craft_procedure_create: { scenario_signature: "object", preconditions: "array", scope_envelope: "object" },
   craft_host_session_open: { environment_fingerprint: "string", policy_fingerprint: "string", capability_fingerprint: "string", model_fingerprint: "string", budget_fingerprint: "string" },
   craft_outcome_observer_observe: { environment_fingerprint: "string" },
+  craft_procedure_host_control: { scope: "string", input: "object", principal_ids: "array" },
+  craft_procedure_decision_evaluate: { scope: "string", expected_version: "integer", principal_ids: "array" },
   craft_procedure_invocation_transition: { scope: "string", expected_version: "integer", principal_ids: "array" },
   craft_procedure_invocation_bind: { model_fingerprint: "string", budget_fingerprint: "string", scope: "string", expected_version: "integer", principal_ids: "array", procedure_version: "integer", input_refs: "object", allowed_effects: "array", max_dispatches: "integer", ttl_ms: "integer" },
   craft_procedure_invocation_dispatch: { scope: "string", expected_version: "integer", principal_ids: "array", precondition_evidence: "object" },
@@ -232831,6 +232975,8 @@ var TOOL_DEFINITIONS = [
   tool("craft_experience_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
   tool("craft_codebase_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
   tool("craft_codebase_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_host_control", "Prepare an embedded Host Work Loop without starting a child Host, or record scoped snapshots and dispatch-bound Host/program observations. It grants no execution authority.", ["action", "input"], false, ["invocation_id", "scope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_decision_evaluate", "Evaluate declared graph guards using current accepted program/human fact Evidence and advance only one matching edge. Unknown, ambiguous, stale or unsafe decisions block; it never executes the Host.", ["invocation_id", "scope", "expected_version", "decision_id", "receipt_id", "snapshot_id", "fact_evidence_id"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
   tool("craft_procedure_invocation_bind", "Bind selected Procedure calls to an existing Verified Work Loop and durable items; no Host execution authority.", ["invocation_id", "work_loop_id", "procedure_id", "procedure_version", "scope", "entry_id", "exit_id", "input_refs", "allowed_effects", "host_id", "model_fingerprint", "budget_fingerprint", "max_dispatches", "ttl_ms"], false, ["subscenario_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "release_channel", "test_workspace_id", "baseline_workspace_id"]),
   tool("craft_procedure_invocation_dispatch", "Prepare one ready item and bind call-specific fresh preconditions; never executes the Host.", ["invocation_id", "scope", "expected_version", "snapshot_id", "item_key"], false, ["precondition_evidence", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
   tool("craft_procedure_invocation_report", "Accept an independent terminal Host observation for the exact item, outputs and snapshot; retries are idempotent.", ["invocation_id", "scope", "expected_version", "dispatch_id", "host_session_id", "observation_id", "snapshot_id", "output_refs", "acceptance_evidence_ids"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
@@ -241584,440 +241730,6 @@ var EngineeringQualityProfileKernel = class {
   }
 };
 
-// capability/craft-memory/memory-governance.ts
-var import_node_crypto93 = require("node:crypto");
-
-// common/craft-common-base/src/retrieval-terms.ts
-function retrievalTerms(value) {
-  const words = value.toLowerCase().match(/[\p{L}\p{N}_-]+/gu) ?? [];
-  const segmenter = new Intl.Segmenter("zh", { granularity: "word" });
-  return [...new Set(words.flatMap((word) => new RegExp("\\p{Script=Han}", "u").test(word) ? [...segmenter.segment(word)].filter((part) => part.isWordLike).map((part) => part.segment) : [word]))];
-}
-
-// capability/craft-memory/memory-governance.ts
-var SECRET7 = /(?:api[_-]?key|authorization|cookie|password|passwd|secret|token)\s*[:=]\s*[^\s]{6,}/iu;
-var KINDS4 = /* @__PURE__ */ new Set(["working", "episodic", "preference", "procedural"]);
-var CONFIDENCE = /* @__PURE__ */ new Set(["confirmed", "bounded", "unverified"]);
-var POLICY_MODES = /* @__PURE__ */ new Set(["off", "propose", "governed"]);
-var POLICY_CONFIDENCE = /* @__PURE__ */ new Set(["confirmed", "bounded"]);
-function id13(prefix) {
-  return `${prefix}_${(0, import_node_crypto93.randomUUID)().replaceAll("-", "")}`;
-}
-function text9(v, name) {
-  if (typeof v !== "string" || !v.trim()) throw new Error(`${name} must not be empty`);
-  return v.trim();
-}
-function digest16(v) {
-  return `sha256:${(0, import_node_crypto93.createHash)("sha256").update(JSON.stringify(v)).digest("hex")}`;
-}
-function noSecret2(v, name) {
-  if (SECRET7.test(v)) throw new Error(`${name} must not contain credentials or secrets`);
-  return v;
-}
-function payload2(r) {
-  const { id: _id, version: _version, created_at: _created, updated_at: _updated, ...p } = r;
-  return p;
-}
-function evidenceIds(v) {
-  if (v === void 0) return [];
-  if (!Array.isArray(v)) throw new Error("evidence_ids must be an array");
-  const values3 = v.map((x) => text9(x, "evidence_ids"));
-  if (new Set(values3).size !== values3.length) throw new Error("evidence_ids must be unique");
-  return values3.sort();
-}
-function latestMemoryConfirmation(store, memory, now3) {
-  const row = store.database.prepare(`SELECT MAX(created_at) AS confirmed_at FROM records r
-    WHERE kind='memory_confirmation'
-      AND version=(SELECT MAX(version) FROM records WHERE kind=r.kind AND id=r.id)
-      AND json_extract(payload_json,'$.memory_id')=? AND json_extract(payload_json,'$.memory_version')=?
-      AND json_extract(payload_json,'$.content_digest')=? AND julianday(created_at)<=julianday(?)`).get(String(memory.id), Number(memory.version), String(memory.content_digest), now3);
-  return row.confirmed_at;
-}
-var MemoryGovernanceKernel = class {
-  store;
-  ledger;
-  constructor(store, ledger) {
-    this.store = store;
-    this.ledger = ledger;
-  }
-  policyGet(args = {}) {
-    const policyId = text9(args.policy_id ?? "default", "policy_id");
-    const stored = this.store.find("memory_policy", policyId);
-    return { policy: stored ?? { id: policyId, version: 1, mode: "propose", min_confidence: "confirmed", auto_commit: false, source: "builtin" } };
-  }
-  policySave(args) {
-    const policyId = text9(args.policy_id ?? "default", "policy_id");
-    const mode2 = text9(args.mode, "mode");
-    if (!POLICY_MODES.has(mode2)) throw new Error("memory policy mode is unsupported");
-    const minConfidence = text9(args.min_confidence ?? "confirmed", "min_confidence");
-    if (!POLICY_CONFIDENCE.has(minConfidence)) throw new Error("min_confidence must be confirmed or bounded");
-    const updatedBy = noSecret2(text9(args.updated_by ?? "operator", "updated_by"), "updated_by");
-    const identity = { mode: mode2, min_confidence: minConfidence, auto_commit: mode2 === "governed" };
-    const existing = this.store.find("memory_policy", policyId);
-    if (existing && existing.identity_digest === digest16(identity)) return { policy: existing, idempotent: true };
-    const payloadValue = { ...identity, updated_by: updatedBy, identity_digest: digest16(identity), status: "active" };
-    return { policy: existing ? this.store.save("memory_policy", policyId, { ...payload2(existing), ...payloadValue, policy_revision: Number(existing.policy_revision ?? 1) + 1 }) : this.store.create("memory_policy", policyId, { ...payloadValue, policy_revision: 1 }), idempotent: false };
-  }
-  propose(args) {
-    const policy = this.policyGet().policy;
-    if (policy.mode === "off") return { candidate: null, conflicts: [], auto_committed: false, status: "disabled", policy };
-    const kind4 = text9(args.kind, "kind");
-    if (!KINDS4.has(kind4)) throw new Error("memory kind is unsupported");
-    const scopeKind = text9(args.scope_kind, "scope_kind");
-    if (!SCOPE_KINDS.has(scopeKind)) throw new Error("scope_kind is unsupported");
-    const scopeId = text9(args.scope_id, "scope_id");
-    const scope3 = { kind: scopeKind, id: scopeId };
-    const envelope = scopeEnvelope(args.scope_envelope, scope3);
-    const content = noSecret2(text9(args.content, "content"), "content");
-    const confidence2 = text9(args.confidence ?? "unverified", "confidence");
-    if (!CONFIDENCE.has(confidence2)) throw new Error("confidence is unsupported");
-    const ids6 = evidenceIds(args.evidence_ids);
-    ids6.forEach((e) => this.store.get("evidence", e));
-    const sourceId = text9(args.source_id, "source_id");
-    const source = this.store.get("knowledge_source", sourceId);
-    if (source.status !== "active" || source.trust === "untrusted") throw new Error("Memory Source is unavailable");
-    const candidateId2 = String(args.candidate_id ?? id13("memory_candidate"));
-    const existing = this.store.find("memory_candidate", candidateId2);
-    let validUntil = existing && args.valid_until === void 0 ? typeof existing.valid_until === "string" ? existing.valid_until : null : null;
-    if (args.valid_until !== void 0 && args.valid_until !== null) {
-      const parsed2 = new Date(text9(args.valid_until, "valid_until"));
-      if (Number.isNaN(parsed2.valueOf())) throw new Error("valid_until must be an ISO timestamp");
-      validUntil = parsed2.toISOString();
-    }
-    if (validUntil === null && kind4 === "working") validUntil = new Date(Date.now() + 24 * 60 * 60 * 1e3).toISOString();
-    if (validUntil === null && kind4 === "episodic") validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3).toISOString();
-    if (kind4 === "procedural" && !ids6.length) throw new Error("procedural memory requires Evidence");
-    const topic = args.topic === void 0 ? "" : text9(args.topic, "topic");
-    const observedAt2 = args.observed_at === void 0 && typeof existing?.observed_at === "string" ? existing.observed_at : args.observed_at === void 0 ? (/* @__PURE__ */ new Date()).toISOString() : new Date(text9(args.observed_at, "observed_at")).toISOString();
-    const effectiveFrom = args.effective_from === void 0 && typeof existing?.effective_from === "string" ? existing.effective_from : args.effective_from === void 0 ? observedAt2 : new Date(text9(args.effective_from, "effective_from")).toISOString();
-    const identity = { source_id: sourceId, kind: kind4, scope: scope3, scope_envelope: envelope, topic, content_digest: digest16(content), sensitivity: String(args.sensitivity ?? "internal"), confidence: confidence2, evidence_ids: ids6, valid_until: validUntil, observed_at: observedAt2, effective_from: effectiveFrom };
-    if (existing) {
-      if (existing.identity_digest !== digest16(identity)) throw new Error("Memory candidate idempotency conflict");
-      return { candidate: existing, idempotent: true };
-    }
-    const conflicts = topic ? this.store.listScoped("memory_candidate", [scope3], 1e4, (item) => Boolean(!["rejected", "superseded", "expired"].includes(String(item.status)) && item.scope && JSON.stringify(item.scope) === JSON.stringify(identity.scope) && item.topic === topic && item.content_digest !== identity.content_digest)) : [];
-    const conflictingMemories = topic ? this.store.listScoped("memory_ledger", [scope3], 1e4, (item) => Boolean(item.status === "active" && item.topic === topic && item.scope && JSON.stringify(item.scope) === JSON.stringify(identity.scope) && item.content_digest !== identity.content_digest)) : [];
-    const status2 = conflicts.length || conflictingMemories.length ? "conflict_pending" : "candidate";
-    const candidate2 = this.store.create("memory_candidate", candidateId2, { ...identity, content, status: status2, conflict_ids: conflicts.map((x) => x.id), conflicting_memory_ids: conflictingMemories.map((x) => x.id), proposed_by: String(args.proposed_by ?? "agent"), identity_digest: digest16(identity) });
-    for (const conflict of conflicts) this.store.save("memory_candidate", String(conflict.id), { ...payload2(conflict), status: "conflict_pending", conflict_ids: [.../* @__PURE__ */ new Set([...conflict.conflict_ids ?? [], candidate2.id])] });
-    const eligible = args.proposal_only !== true && policy.mode === "governed" && conflicts.length === 0 && conflictingMemories.length === 0 && ids6.length > 0 && ids6.every((e) => {
-      const confidenceValue = String(this.store.get("evidence", e).confidence);
-      return policy.min_confidence === "bounded" ? ["bounded", "confirmed"].includes(confidenceValue) : confidenceValue === "confirmed";
-    });
-    if (eligible) {
-      const approved = this.store.save("memory_candidate", candidateId2, { ...payload2(candidate2), status: "approved", review: { reviewer: "governed-policy", reason_digest: digest16("policy threshold"), reviewed_at: (/* @__PURE__ */ new Date()).toISOString() } });
-      const memory = this.remember({ candidate_id: approved.id }).memory;
-      return { candidate: approved, conflicts, conflicting_memories: conflictingMemories, memory, auto_committed: true, idempotent: false, policy };
-    }
-    return { candidate: candidate2, conflicts, conflicting_memories: conflictingMemories, auto_committed: false, idempotent: false, policy };
-  }
-  review(args) {
-    const candidate2 = this.store.get("memory_candidate", text9(args.candidate_id, "candidate_id"));
-    const decision = text9(args.decision, "decision");
-    if (!(/* @__PURE__ */ new Set(["approve", "reject"])).has(decision)) throw new Error("decision must be approve or reject");
-    const reviewer = text9(args.reviewer, "reviewer");
-    const reason = noSecret2(text9(args.reason, "reason"), "reason");
-    if (decision === "approve") {
-      const ids6 = candidate2.evidence_ids;
-      const trusted = ids6.some((e) => ["bounded", "confirmed"].includes(String(this.store.get("evidence", e).confidence)));
-      if (!trusted) throw new Error("Memory candidate approval requires bounded or confirmed Evidence");
-      if (candidate2.status === "conflict_pending") throw new Error("Resolve Memory conflict before approval");
-    }
-    const saved = this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), status: decision === "approve" ? "approved" : "rejected", review: { reviewer, reason_digest: digest16(reason), reviewed_at: (/* @__PURE__ */ new Date()).toISOString() } });
-    return { candidate: saved };
-  }
-  remember(args) {
-    return this.store.transaction(() => {
-      const candidate2 = this.store.get("memory_candidate", text9(args.candidate_id, "candidate_id"));
-      if (candidate2.status !== "approved") throw new Error("Only approved Memory candidates can enter the Ledger");
-      const memoryId = candidate2.ledger_memory_id ?? args.memory_id ?? `memory_ledger_candidate_${digest16(candidate2.id).slice(-32)}`;
-      if (candidate2.ledger_memory_id) {
-        if (this.store.get("knowledge_source", String(candidate2.source_id)).status !== "active") throw new Error("Knowledge Source is not active");
-        if (args.memory_id !== void 0 && args.memory_id !== memoryId) throw new Error("Memory candidate Ledger identity conflict");
-        const memory2 = this.store.get("memory_ledger", String(memoryId));
-        return { candidate: candidate2, memory: memory2, superseded: [], idempotent: true };
-      }
-      const result = this.ledger.remember({ memory_id: memoryId, source_id: candidate2.source_id, kind: candidate2.kind, scope_kind: candidate2.scope.kind, scope_id: candidate2.scope.id, scope_envelope: candidate2.scope_envelope, content: candidate2.content, topic: candidate2.topic || void 0, sensitivity: candidate2.sensitivity, confidence: candidate2.confidence, evidence_ids: candidate2.evidence_ids, valid_until: candidate2.valid_until, observed_at: candidate2.observed_at, effective_from: candidate2.effective_from });
-      const memory = result.memory;
-      const supersededMemoryIds = Array.isArray(candidate2.supersedes_memory_ids) ? candidate2.supersedes_memory_ids : [];
-      const superseded = supersededMemoryIds.map((memoryId2) => {
-        const previous = this.store.get("memory_ledger", memoryId2);
-        if (previous.status !== "active") return previous;
-        return this.ledger.transition({ memory_id: previous.id, status: "superseded", replacement_id: memory.id, reason: `superseded by ${memory.id}` }).memory;
-      });
-      const saved = this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), ledger_memory_id: memory.id, status: "approved" });
-      return { candidate: saved, memory, superseded, idempotent: result.idempotent };
-    });
-  }
-  /** Topic recommendations require confirmation; no inferred topic overwrites durable Memory. */
-  topicSuggestions(args) {
-    const content = text9(args.content, "content"), query = retrievalTerms(content), scope3 = { kind: text9(args.scope_kind, "scope_kind"), id: text9(args.scope_id, "scope_id") };
-    const scored = this.store.listScoped("memory_ledger", [scope3], 10001, (item) => item.status === "active" && (item.sensitivity !== "restricted" || args.allow_restricted === true) && scopeAllows(scopeEnvelope(item.scope_envelope, scope3), scopeAccess(args))).map((item) => {
-      const languageHint = /\b(?:python|java|javascript|typescript|rust|golang)\b/iu.test(content) && /\b(?:python|java|javascript|typescript|rust|golang)\b/iu.test(String(item.content));
-      return { topic: item.topic || (languageHint ? "programming-language" : null), memory_id: item.id, memory_version: item.version, content_digest: item.content_digest, score: query.filter((term) => String(item.content).toLowerCase().includes(term)).length + Number(languageHint), classification: "confirmation_required_hint" };
-    }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score || String(a.topic).localeCompare(String(b.topic)));
-    return { suggestions: scored.slice(0, 5), requires_confirmation: true, changes_memory: false };
-  }
-  confirm(args) {
-    return this.store.transaction(() => {
-      if (args.explicit_consent !== true) throw new Error("Memory confirmation requires explicit consent");
-      const memory = this.ledger.get(args).memory;
-      if (memory.status !== "active" || args.expected_version !== memory.version) throw new Error("Memory confirmation version conflict or inactive entry");
-      const ids6 = evidenceIds(args.evidence_ids);
-      if (!ids6.some((id22) => {
-        const proof = this.store.get("evidence", id22);
-        return proof.source_type === "human" && ["bounded", "confirmed"].includes(String(proof.confidence));
-      })) throw new Error("Memory confirmation requires user Evidence");
-      const identity = { memory_id: memory.id, memory_version: memory.version, content_digest: memory.content_digest, evidence_ids: ids6 };
-      const confirmationId = `memory_confirmation_${digest16(identity).slice(-24)}`;
-      return { confirmation: this.store.find("memory_confirmation", confirmationId) ?? this.store.create("memory_confirmation", confirmationId, identity), changes_content: false };
-    });
-  }
-  governanceTasks(args) {
-    const scope3 = { kind: text9(args.scope_kind, "scope_kind"), id: text9(args.scope_id, "scope_id") };
-    const candidates = this.store.listScoped("memory_candidate", [scope3], 100, (candidate2) => ["candidate", "conflict_pending"].includes(String(candidate2.status)) && scopeAllows(scopeEnvelope(candidate2.scope_envelope, scope3), scopeAccess(args)));
-    const corrections = this.store.list("context_correction_task", 100, (task) => task.status === "pending_review" && task.asset_ref.member === "memory" && JSON.stringify(task.asset_ref.scope) === JSON.stringify(scope3));
-    return { candidates, corrections, changes_memory: false };
-  }
-  listConflicts(args = {}) {
-    return { conflicts: this.store.list("memory_candidate", Number(args.limit ?? 100), (x) => x.status === "conflict_pending") };
-  }
-  resolveConflict(args) {
-    const candidate2 = this.store.get("memory_candidate", text9(args.candidate_id, "candidate_id"));
-    const resolution = text9(args.resolution, "resolution");
-    if (!(/* @__PURE__ */ new Set(["keep", "supersede", "dismiss"])).has(resolution)) throw new Error("resolution is unsupported");
-    const reason = noSecret2(text9(args.reason, "reason"), "reason");
-    const conflictIds = Array.isArray(candidate2.conflict_ids) ? candidate2.conflict_ids : [];
-    const conflictingMemoryIds = Array.isArray(candidate2.conflicting_memory_ids) ? candidate2.conflicting_memory_ids : [];
-    const saved = this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), status: "candidate", conflict_resolution: { resolution, actor: text9(args.actor, "actor"), reason_digest: digest16(reason), at: (/* @__PURE__ */ new Date()).toISOString() }, conflict_ids: [], conflicting_memory_ids: [], ...resolution === "supersede" ? { supersedes_memory_ids: conflictingMemoryIds, supersedes_candidate_ids: conflictIds } : {} });
-    for (const conflictId of conflictIds) {
-      const other = this.store.find("memory_candidate", String(conflictId));
-      if (other) this.store.save("memory_candidate", String(other.id), { ...payload2(other), conflict_ids: (other.conflict_ids ?? []).filter((x) => x !== candidate2.id), status: "candidate" });
-    }
-    return { candidate: saved };
-  }
-  expirySweep(args = {}) {
-    const now3 = new Date(args.now === void 0 ? Date.now() : text9(args.now, "now"));
-    if (Number.isNaN(now3.valueOf())) throw new Error("now must be an ISO timestamp");
-    const expired = [];
-    for (const candidate2 of this.store.list("memory_candidate", 1e4, (x) => x.status === "candidate" || x.status === "approved")) if (candidate2.valid_until && Date.parse(String(candidate2.valid_until)) < now3.valueOf()) expired.push(this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), status: "expired" }));
-    for (const memory of this.store.list("memory_ledger", 1e4, (x) => Boolean(x.status === "active" && x.valid_until && Date.parse(String(x.valid_until)) < now3.valueOf()))) expired.push(this.ledger.transition({ memory_id: memory.id, status: "expired", reason: "valid_until elapsed" }).memory);
-    return { expired, count: expired.length, now: now3.toISOString() };
-  }
-  sessionFinalize(args) {
-    const summary2 = noSecret2(text9(args.summary, "summary"), "summary");
-    const candidateIds = evidenceIds(args.candidate_ids);
-    const candidates = candidateIds.map((candidateId2) => this.store.get("memory_candidate", candidateId2));
-    return { session_id: text9(args.session_id, "session_id"), summary_digest: digest16(summary2), candidates: candidates.map((candidate2) => ({ candidate_id: candidate2.id, status: candidate2.status })), content_free: true };
-  }
-  consolidate(args) {
-    const ids6 = evidenceIds(args.candidate_ids);
-    if (ids6.length < 2) throw new Error("candidate_ids must contain at least two ids");
-    const candidates = ids6.map((candidateId2) => this.store.get("memory_candidate", candidateId2));
-    if (candidates.some((candidate2) => candidate2.status !== "approved")) throw new Error("Only approved candidates can be consolidated");
-    const consolidationId = String(args.consolidation_id ?? id13("memory_consolidation"));
-    const identity = { candidate_ids: ids6, summary_digest: digest16(noSecret2(text9(args.summary, "summary"), "summary")) };
-    const existing = this.store.find("memory_consolidation", consolidationId);
-    if (existing) {
-      if (existing.identity_digest !== digest16(identity)) throw new Error("Memory consolidation idempotency conflict");
-      return { consolidation: existing, idempotent: true };
-    }
-    return { consolidation: this.store.create("memory_consolidation", consolidationId, { ...identity, identity_digest: digest16(identity), status: "candidate", ledger_memory_id: null, content_free: true }), idempotent: false };
-  }
-};
-
-// common/craft-common-store-local/src/context-access-guard.ts
-var KINDS5 = ["memory_ledger", "knowledge_source", "knowledge_claim", "knowledge_document", "experience_procedure", "experience_release", "scope_alias"];
-var ContextAccessChangedError = class extends Error {
-  constructor() {
-    super("Context authorization or material state changed during recall; reopen Context");
-    this.name = "ContextAccessChangedError";
-  }
-};
-function assertContextReadCurrent(store, receipt) {
-  const refs6 = receipt?.read_refs ?? [];
-  if (!refs6.length) return;
-  store.transaction(() => {
-    for (let offset = 0; offset < refs6.length; offset += 250) {
-      const part = refs6.slice(offset, offset + 250);
-      const changed = store.database.prepare(`WITH pinned(kind,id,version) AS (VALUES ${part.map(() => "(?,?,?)").join(",")}) SELECT 1 FROM pinned p WHERE COALESCE((SELECT MAX(r.version) FROM records r WHERE r.kind=p.kind AND r.id=p.id),0)<>p.version LIMIT 1`).get(...part.flatMap((ref2) => [ref2.kind, ref2.id, ref2.version]));
-      if (changed) throw new ContextAccessChangedError();
-    }
-  });
-}
-var ContextReadGuard = class {
-  store;
-  initial = /* @__PURE__ */ new Map();
-  tracked = /* @__PURE__ */ new Map();
-  constructor(store, refs6, scopes, sourceIds = []) {
-    this.store = store;
-    if (refs6 !== void 0) {
-      for (const ref2 of refs6) this.initial.set(`${ref2.kind}:${ref2.id}`, ref2.version);
-      return;
-    }
-    const scopeSql = `EXISTS (SELECT 1 FROM json_each(?) s WHERE
-      json_extract(payload_json,'$.scope')=CASE WHEN json_extract(s.value,'$.kind')='global' THEN 'global' ELSE json_extract(s.value,'$.kind')||':'||json_extract(s.value,'$.id') END
-      OR (json_extract(payload_json,'$.scope.kind')=json_extract(s.value,'$.kind') AND json_extract(payload_json,'$.scope.id')=json_extract(s.value,'$.id')))`;
-    const rows4 = scopes?.length ? store.database.prepare(`WITH relevant AS (
-      SELECT kind,id,payload_json FROM records WHERE kind IN ('memory_ledger','knowledge_claim','experience_procedure') AND (${scopeSql})
-    ), wanted(kind,id) AS (
-      SELECT kind,id FROM relevant
-      UNION SELECT 'knowledge_source',json_extract(payload_json,'$.source_id') FROM relevant
-      UNION SELECT 'knowledge_document',json_extract(payload_json,'$.document_id') FROM relevant
-      UNION SELECT 'experience_release',id FROM relevant WHERE kind='experience_procedure'
-      UNION SELECT kind,id FROM records WHERE kind='scope_alias' AND (${scopeSql})
-      UNION SELECT 'knowledge_source',value FROM json_each(?)
-    ) SELECT r.kind,r.id,MAX(r.version) version FROM records r JOIN wanted w ON w.kind=r.kind AND w.id=r.id GROUP BY r.kind,r.id`).all(JSON.stringify(scopes), JSON.stringify(scopes), JSON.stringify(sourceIds)) : store.database.prepare(`SELECT kind,id,MAX(version) version FROM records WHERE kind IN (${KINDS5.map(() => "?").join(",")}) GROUP BY kind,id`).all(...KINDS5);
-    for (const row of rows4) this.initial.set(`${row.kind}:${row.id}`, Number(row.version));
-  }
-  track(kind4, id22, expectedVersion) {
-    const key2 = `${kind4}:${id22}`, version3 = this.initial.get(key2) ?? 0;
-    if (expectedVersion !== void 0 && expectedVersion !== version3 || (this.store.find(kind4, id22, void 0, false)?.version ?? 0) !== version3) throw new ContextAccessChangedError();
-    this.tracked.set(key2, { kind: kind4, id: id22, version: version3 });
-  }
-  contribution(member, item) {
-    const kind4 = member === "knowledge" ? "knowledge_claim" : "experience_procedure";
-    const id22 = item.claim_id ?? item.procedure_id;
-    if (typeof id22 !== "string") return;
-    this.track(kind4, id22);
-    const record = this.store.find(kind4, id22, void 0, false);
-    if (!record) return;
-    if (typeof record.source_id === "string") this.track("knowledge_source", record.source_id);
-    if (typeof record.document_id === "string") this.track("knowledge_document", record.document_id);
-    if (member === "experience") this.track("experience_release", id22);
-  }
-  refs() {
-    return [...this.tracked.values()].sort((a, b) => `${a.kind}:${a.id}`.localeCompare(`${b.kind}:${b.id}`));
-  }
-  assertCurrent() {
-    assertContextReadCurrent(this.store, { read_refs: this.refs() });
-  }
-};
-
-// capability/craft-memory/memory-signals.ts
-var HALF_LIFE_DAYS = 90;
-var ACCESS_CAP = 10;
-var ACCESS_BONUS = 0.15;
-var DECAY_FLOOR = 0.01;
-var TRUST_FACTOR = { verified: 1, bounded: 0.85 };
-function memoryDecayWeight(input) {
-  const confirmedAt = Date.parse(text(input.confirmed_at, "confirmed_at"));
-  const now3 = Date.parse(text(input.now, "now"));
-  if (Number.isNaN(confirmedAt)) throw new Error("confirmed_at must be an ISO timestamp");
-  if (Number.isNaN(now3)) throw new Error("now must be an ISO timestamp");
-  const accesses = Number(input.accesses ?? 0);
-  if (!Number.isInteger(accesses) || accesses < 0) throw new Error("accesses must be a non-negative integer");
-  const trust = input.trust ?? "bounded";
-  if (!(trust in TRUST_FACTOR)) throw new Error("trust must be verified or bounded");
-  const ageDays = Math.max(0, (now3 - confirmedAt) / 864e5);
-  const recency = 2 ** (-ageDays / HALF_LIFE_DAYS);
-  const usage2 = 1 + Math.min(accesses, ACCESS_CAP) * ACCESS_BONUS;
-  const weighted = Math.max(recency * usage2 * TRUST_FACTOR[trust], DECAY_FLOOR);
-  return Number(weighted.toFixed(6));
-}
-function rankWithDecay(candidates) {
-  return candidates.map((candidate2) => ({
-    id: candidate2.id,
-    base_score: candidate2.base_score,
-    decay: candidate2.decay,
-    score: Number((candidate2.base_score * candidate2.decay).toFixed(6))
-  })).sort((left, right) => right.score - left.score || left.id.localeCompare(right.id));
-}
-var STRONG_SIGNALS = ["durable_value", "user_correction", "decision_made"];
-var AUTOMATIC_KEYS = /* @__PURE__ */ new Set(["durable_value", "needs_execution"]);
-function shouldProposeMemory(input) {
-  const signals = Array.isArray(input.signals) ? input.signals.map((item) => text(item, "signal")) : [];
-  const succeeded = input.succeeded === true;
-  const corrections = Number(input.corrections ?? 0);
-  const retries = Number(input.retries ?? 0);
-  if (!Number.isInteger(corrections) || corrections < 0) throw new Error("corrections must be a non-negative integer");
-  if (!Number.isInteger(retries) || retries < 0) throw new Error("retries must be a non-negative integer");
-  const novel = input.novel === true;
-  const mode2 = String(input.mode ?? "review_by_exception");
-  if (!["strict", "review_by_exception"].includes(mode2)) throw new Error("memory capture mode is unsupported");
-  if (mode2 === "strict") {
-    const propose = signals.includes("durable_value");
-    return { propose, reasons: propose ? ["durable_value"] : [], policy: "strict" };
-  }
-  const reasons = [];
-  for (const signal of signals) {
-    if (STRONG_SIGNALS.includes(signal)) reasons.push(signal);
-    else if (AUTOMATIC_KEYS.has(signal)) reasons.push(`${signal}_automatic`);
-  }
-  if (corrections > 0) reasons.push(`corrections_${corrections}`);
-  if (retries > 0) reasons.push(`retries_${retries}`);
-  if (!reasons.length && novel) reasons.push("novel_situation");
-  const unique3 = [...new Set(reasons)].sort();
-  return { propose: unique3.length > 0, reasons: unique3, policy: "review_by_exception" };
-}
-function planLegacyPromotion(input) {
-  const legacyKind = text(input.legacy_kind, "legacy_kind");
-  if (!["memory_item", "episodic_memory", "semantic_memory"].includes(legacyKind)) throw new Error("Legacy Memory kind is unsupported");
-  const legacyId = text(input.legacy_id, "legacy_id");
-  const content = text(input.content, "content");
-  const scope3 = String(input.scope ?? "user");
-  if (!["user", "project", "workspace", "task"].includes(scope3)) throw new Error("Legacy Memory scope is unsupported");
-  const legacyVersion = Number(input.legacy_version ?? 1);
-  if (!Number.isInteger(legacyVersion) || legacyVersion < 1) throw new Error("legacy_version must be a positive integer");
-  const kind4 = legacyKind === "memory_item" ? String(input.kind ?? "fact") : legacyKind === "episodic_memory" ? "experience" : "fact";
-  if (!["fact", "preference", "decision", "experience"].includes(kind4)) throw new Error("Promoted Memory kind is unsupported");
-  return {
-    promotion_id: `promotion_${digestJson({ legacyKind, legacyId, legacyVersion, scope: scope3, kind: kind4 }).slice(7, 31)}`,
-    legacy_kind: legacyKind,
-    legacy_id: legacyId,
-    legacy_version: legacyVersion,
-    kind: kind4,
-    scope: scope3,
-    content_digest: digestJson(content),
-    // A promotion is a candidate like any other: it needs a source and approval
-    // before it can appear in resolutions.
-    requires_source: true,
-    requires_approval: true,
-    // Episodic content is raw experience and is the likeliest to hold secrets.
-    sensitivity: legacyKind === "episodic_memory" ? "restricted" : "internal",
-    migration_performed: false,
-    downgrade_policy: "reference_only_until_approved"
-  };
-}
-function hybridMemoryScores(candidates, options = { vectorEligible: false }) {
-  const k = options.k ?? 60;
-  if (!Number.isFinite(k) || k <= 0) throw new Error("Fusion k must be a positive number");
-  if (!options.vectorEligible) {
-    return candidates.map((candidate2) => ({ id: candidate2.id, score: candidate2.keyword_score, retrieval_mode: "keyword" })).filter((candidate2) => candidate2.score > 0).sort((left, right) => right.score - left.score || left.id.localeCompare(right.id));
-  }
-  const byKeyword = [...candidates].sort((left, right) => right.keyword_score - left.keyword_score || left.id.localeCompare(right.id));
-  const byVector = [...candidates].filter((candidate2) => candidate2.similarity !== null).sort((left, right) => right.similarity - left.similarity || left.id.localeCompare(right.id));
-  const scores = /* @__PURE__ */ new Map();
-  for (const [index, candidate2] of byKeyword.entries()) {
-    if (candidate2.keyword_score > 0) scores.set(candidate2.id, (scores.get(candidate2.id) ?? 0) + 1 / (k + index + 1));
-  }
-  for (const [index, candidate2] of byVector.entries()) {
-    scores.set(candidate2.id, (scores.get(candidate2.id) ?? 0) + 1 / (k + index + 1));
-  }
-  return [...scores].map(([id22, score]) => ({ id: id22, score: Number(score.toFixed(8)), retrieval_mode: "vector+keyword" })).sort((left, right) => right.score - left.score || left.id.localeCompare(right.id));
-}
-function memoryUsageEvidence(input) {
-  const memoryIds = Array.isArray(input.memory_ids) ? input.memory_ids.map((item) => text(item, "memory_id")) : [];
-  if (!memoryIds.length) throw new Error("memory_ids must not be empty");
-  if (new Set(memoryIds).size !== memoryIds.length) throw new Error("memory_ids must be unique");
-  const outcome2 = text(input.outcome, "outcome");
-  if (!["succeeded", "failed", "abandoned"].includes(outcome2)) throw new Error("outcome is unsupported");
-  const turnId = text(input.turn_id, "turn_id");
-  const receiptId = input.receipt_id === void 0 ? null : text(input.receipt_id, "receipt_id");
-  const used = outcome2 === "succeeded";
-  return {
-    evidence_id: `memory_usage_${digestJson({ turnId, memoryIds, outcome: outcome2 }).slice(7, 31)}`,
-    turn_id: turnId,
-    receipt_id: receiptId,
-    outcome: outcome2,
-    memory_ids: memoryIds,
-    counted_as_use: used,
-    // One record per memory, so the access counter is derivable by summing.
-    access_deltas: memoryIds.map((memoryId) => ({ memory_id: memoryId, delta: used ? 1 : 0 })),
-    content_free: true
-  };
-}
-
 // common/craft-common-base/src/retrieval-port.ts
 var import_node_sqlite3 = require("node:sqlite");
 var KeywordRetrievalPort = class {
@@ -242186,6 +241898,568 @@ function temporalMemorySelect(items2, now3, history) {
   }
   return { selected, excluded };
 }
+
+// common/craft-common-store-local/src/context-access-guard.ts
+var KINDS4 = ["memory_ledger", "knowledge_source", "knowledge_claim", "knowledge_document", "experience_procedure", "experience_release", "scope_alias"];
+var ContextAccessChangedError = class extends Error {
+  constructor() {
+    super("Context authorization or material state changed during recall; reopen Context");
+    this.name = "ContextAccessChangedError";
+  }
+};
+function assertContextReadCurrent(store, receipt) {
+  const refs6 = receipt?.read_refs ?? [];
+  if (!refs6.length) return;
+  store.transaction(() => {
+    for (let offset = 0; offset < refs6.length; offset += 250) {
+      const part = refs6.slice(offset, offset + 250);
+      const changed = store.database.prepare(`WITH pinned(kind,id,version) AS (VALUES ${part.map(() => "(?,?,?)").join(",")}) SELECT 1 FROM pinned p WHERE COALESCE((SELECT MAX(r.version) FROM records r WHERE r.kind=p.kind AND r.id=p.id),0)<>p.version LIMIT 1`).get(...part.flatMap((ref2) => [ref2.kind, ref2.id, ref2.version]));
+      if (changed) throw new ContextAccessChangedError();
+    }
+  });
+}
+var ContextReadGuard = class {
+  store;
+  initial = /* @__PURE__ */ new Map();
+  tracked = /* @__PURE__ */ new Map();
+  constructor(store, refs6, scopes, sourceIds = []) {
+    this.store = store;
+    if (refs6 !== void 0) {
+      for (const ref2 of refs6) this.initial.set(`${ref2.kind}:${ref2.id}`, ref2.version);
+      return;
+    }
+    const scopeSql = `EXISTS (SELECT 1 FROM json_each(?) s WHERE
+      json_extract(payload_json,'$.scope')=json_extract(s.value,'$.kind')||':'||json_extract(s.value,'$.id')
+      OR (json_extract(s.value,'$.kind')='global' AND json_extract(payload_json,'$.scope')='global')
+      OR (json_extract(payload_json,'$.scope.kind')=json_extract(s.value,'$.kind') AND json_extract(payload_json,'$.scope.id')=json_extract(s.value,'$.id')))`;
+    const rows4 = scopes?.length ? store.database.prepare(`WITH relevant AS (
+      SELECT kind,id,payload_json FROM records WHERE kind IN ('memory_ledger','knowledge_claim','experience_procedure') AND (${scopeSql})
+    ), wanted(kind,id) AS (
+      SELECT kind,id FROM relevant
+      UNION SELECT 'knowledge_source',json_extract(payload_json,'$.source_id') FROM relevant
+      UNION SELECT 'knowledge_document',json_extract(payload_json,'$.document_id') FROM relevant
+      UNION SELECT 'experience_release',id FROM relevant WHERE kind='experience_procedure'
+      UNION SELECT kind,id FROM records WHERE kind='scope_alias' AND (${scopeSql})
+      UNION SELECT 'knowledge_source',value FROM json_each(?)
+    ) SELECT r.kind,r.id,MAX(r.version) version FROM records r JOIN wanted w ON w.kind=r.kind AND w.id=r.id GROUP BY r.kind,r.id`).all(JSON.stringify(scopes), JSON.stringify(scopes), JSON.stringify(sourceIds)) : store.database.prepare(`SELECT kind,id,MAX(version) version FROM records WHERE kind IN (${KINDS4.map(() => "?").join(",")}) GROUP BY kind,id`).all(...KINDS4);
+    for (const row of rows4) this.initial.set(`${row.kind}:${row.id}`, Number(row.version));
+  }
+  track(kind4, id22, expectedVersion) {
+    const key2 = `${kind4}:${id22}`, version3 = this.initial.get(key2) ?? 0;
+    if (expectedVersion !== void 0 && expectedVersion !== version3 || (this.store.find(kind4, id22, void 0, false)?.version ?? 0) !== version3) throw new ContextAccessChangedError();
+    this.tracked.set(key2, { kind: kind4, id: id22, version: version3 });
+  }
+  contribution(member, item) {
+    const kind4 = member === "memory" ? "memory_ledger" : member === "knowledge" ? "knowledge_claim" : "experience_procedure";
+    const id22 = item.memory_id ?? item.claim_id ?? item.procedure_id;
+    if (typeof id22 !== "string") return;
+    this.track(kind4, id22);
+    const record = this.store.find(kind4, id22, void 0, false);
+    if (!record) return;
+    const sourceId = item.source_id ?? record.source_id;
+    if (typeof sourceId === "string") this.track("knowledge_source", sourceId);
+    if (typeof record.document_id === "string") this.track("knowledge_document", record.document_id);
+    if (member === "experience") this.track("experience_release", id22);
+  }
+  refs() {
+    return [...this.tracked.values()].sort((a, b) => `${a.kind}:${a.id}`.localeCompare(`${b.kind}:${b.id}`));
+  }
+  assertCurrent() {
+    assertContextReadCurrent(this.store, { read_refs: this.refs() });
+  }
+};
+
+// capability/craft-memory/memory-governance.ts
+var import_node_crypto93 = require("node:crypto");
+
+// common/craft-common-base/src/retrieval-terms.ts
+function retrievalTerms(value) {
+  const words = value.toLowerCase().match(/[\p{L}\p{N}_-]+/gu) ?? [];
+  const segmenter = new Intl.Segmenter("zh", { granularity: "word" });
+  return [...new Set(words.flatMap((word) => new RegExp("\\p{Script=Han}", "u").test(word) ? [...segmenter.segment(word)].filter((part) => part.isWordLike).map((part) => part.segment) : [word]))];
+}
+
+// capability/craft-memory/memory-governance.ts
+var SECRET7 = /(?:api[_-]?key|authorization|cookie|password|passwd|secret|token)\s*[:=]\s*[^\s]{6,}/iu;
+var KINDS5 = /* @__PURE__ */ new Set(["working", "episodic", "preference", "procedural"]);
+var CONFIDENCE = /* @__PURE__ */ new Set(["confirmed", "bounded", "unverified"]);
+var POLICY_MODES = /* @__PURE__ */ new Set(["off", "propose", "governed"]);
+var POLICY_CONFIDENCE = /* @__PURE__ */ new Set(["confirmed", "bounded"]);
+function id13(prefix) {
+  return `${prefix}_${(0, import_node_crypto93.randomUUID)().replaceAll("-", "")}`;
+}
+function text9(v, name) {
+  if (typeof v !== "string" || !v.trim()) throw new Error(`${name} must not be empty`);
+  return v.trim();
+}
+function digest16(v) {
+  return `sha256:${(0, import_node_crypto93.createHash)("sha256").update(JSON.stringify(v)).digest("hex")}`;
+}
+function noSecret2(v, name) {
+  if (SECRET7.test(v)) throw new Error(`${name} must not contain credentials or secrets`);
+  return v;
+}
+function payload2(r) {
+  const { id: _id, version: _version, created_at: _created, updated_at: _updated, ...p } = r;
+  return p;
+}
+function evidenceIds(v) {
+  if (v === void 0) return [];
+  if (!Array.isArray(v)) throw new Error("evidence_ids must be an array");
+  const values3 = v.map((x) => text9(x, "evidence_ids"));
+  if (new Set(values3).size !== values3.length) throw new Error("evidence_ids must be unique");
+  return values3.sort();
+}
+function latestMemoryConfirmation(store, memory, now3) {
+  const row = store.database.prepare(`SELECT MAX(created_at) AS confirmed_at FROM records r
+    WHERE kind='memory_confirmation'
+      AND version=(SELECT MAX(version) FROM records WHERE kind=r.kind AND id=r.id)
+      AND json_extract(payload_json,'$.memory_id')=? AND json_extract(payload_json,'$.memory_version')=?
+      AND json_extract(payload_json,'$.content_digest')=? AND julianday(created_at)<=julianday(?)`).get(String(memory.id), Number(memory.version), String(memory.content_digest), now3);
+  return row.confirmed_at;
+}
+var MemoryGovernanceKernel = class {
+  store;
+  ledger;
+  constructor(store, ledger) {
+    this.store = store;
+    this.ledger = ledger;
+  }
+  policyGet(args = {}) {
+    const policyId = text9(args.policy_id ?? "default", "policy_id");
+    const stored = this.store.find("memory_policy", policyId);
+    return { policy: stored ?? { id: policyId, version: 1, mode: "propose", min_confidence: "confirmed", auto_commit: false, source: "builtin" } };
+  }
+  policySave(args) {
+    const policyId = text9(args.policy_id ?? "default", "policy_id");
+    const mode2 = text9(args.mode, "mode");
+    if (!POLICY_MODES.has(mode2)) throw new Error("memory policy mode is unsupported");
+    const minConfidence = text9(args.min_confidence ?? "confirmed", "min_confidence");
+    if (!POLICY_CONFIDENCE.has(minConfidence)) throw new Error("min_confidence must be confirmed or bounded");
+    const updatedBy = noSecret2(text9(args.updated_by ?? "operator", "updated_by"), "updated_by");
+    const identity = { mode: mode2, min_confidence: minConfidence, auto_commit: mode2 === "governed" };
+    const existing = this.store.find("memory_policy", policyId);
+    if (existing && existing.identity_digest === digest16(identity)) return { policy: existing, idempotent: true };
+    const payloadValue = { ...identity, updated_by: updatedBy, identity_digest: digest16(identity), status: "active" };
+    return { policy: existing ? this.store.save("memory_policy", policyId, { ...payload2(existing), ...payloadValue, policy_revision: Number(existing.policy_revision ?? 1) + 1 }) : this.store.create("memory_policy", policyId, { ...payloadValue, policy_revision: 1 }), idempotent: false };
+  }
+  propose(args) {
+    const policy = this.policyGet().policy;
+    if (policy.mode === "off") return { candidate: null, conflicts: [], auto_committed: false, status: "disabled", policy };
+    const kind4 = text9(args.kind, "kind");
+    if (!KINDS5.has(kind4)) throw new Error("memory kind is unsupported");
+    const scopeKind = text9(args.scope_kind, "scope_kind");
+    if (!SCOPE_KINDS.has(scopeKind)) throw new Error("scope_kind is unsupported");
+    const scopeId = text9(args.scope_id, "scope_id");
+    const scope3 = { kind: scopeKind, id: scopeId };
+    const envelope = scopeEnvelope(args.scope_envelope, scope3);
+    const content = noSecret2(text9(args.content, "content"), "content");
+    const confidence2 = text9(args.confidence ?? "unverified", "confidence");
+    if (!CONFIDENCE.has(confidence2)) throw new Error("confidence is unsupported");
+    const ids6 = evidenceIds(args.evidence_ids);
+    ids6.forEach((e) => this.store.get("evidence", e));
+    const sourceId = text9(args.source_id, "source_id");
+    const source = this.store.get("knowledge_source", sourceId);
+    if (source.status !== "active" || source.trust === "untrusted") throw new Error("Memory Source is unavailable");
+    const candidateId2 = String(args.candidate_id ?? id13("memory_candidate"));
+    const existing = this.store.find("memory_candidate", candidateId2);
+    let validUntil = existing && args.valid_until === void 0 ? typeof existing.valid_until === "string" ? existing.valid_until : null : null;
+    if (args.valid_until !== void 0 && args.valid_until !== null) {
+      const parsed2 = new Date(text9(args.valid_until, "valid_until"));
+      if (Number.isNaN(parsed2.valueOf())) throw new Error("valid_until must be an ISO timestamp");
+      validUntil = parsed2.toISOString();
+    }
+    if (validUntil === null && kind4 === "working") validUntil = new Date(Date.now() + 24 * 60 * 60 * 1e3).toISOString();
+    if (validUntil === null && kind4 === "episodic") validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3).toISOString();
+    if (kind4 === "procedural" && !ids6.length) throw new Error("procedural memory requires Evidence");
+    const topic = args.topic === void 0 ? "" : text9(args.topic, "topic");
+    const observedAt2 = args.observed_at === void 0 && typeof existing?.observed_at === "string" ? existing.observed_at : args.observed_at === void 0 ? (/* @__PURE__ */ new Date()).toISOString() : new Date(text9(args.observed_at, "observed_at")).toISOString();
+    const effectiveFrom = args.effective_from === void 0 && typeof existing?.effective_from === "string" ? existing.effective_from : args.effective_from === void 0 ? observedAt2 : new Date(text9(args.effective_from, "effective_from")).toISOString();
+    const identity = { source_id: sourceId, kind: kind4, scope: scope3, scope_envelope: envelope, topic, content_digest: digest16(content), sensitivity: String(args.sensitivity ?? "internal"), confidence: confidence2, evidence_ids: ids6, valid_until: validUntil, observed_at: observedAt2, effective_from: effectiveFrom };
+    if (existing) {
+      if (existing.identity_digest !== digest16(identity)) throw new Error("Memory candidate idempotency conflict");
+      return { candidate: existing, idempotent: true };
+    }
+    const conflicts = topic ? this.store.listScoped("memory_candidate", [scope3], 1e4, (item) => Boolean(!["rejected", "superseded", "expired"].includes(String(item.status)) && item.scope && JSON.stringify(item.scope) === JSON.stringify(identity.scope) && item.topic === topic && item.content_digest !== identity.content_digest)) : [];
+    const conflictingMemories = topic ? this.store.listScoped("memory_ledger", [scope3], 1e4, (item) => Boolean(item.status === "active" && item.topic === topic && item.scope && JSON.stringify(item.scope) === JSON.stringify(identity.scope) && item.content_digest !== identity.content_digest)) : [];
+    const status2 = conflicts.length || conflictingMemories.length ? "conflict_pending" : "candidate";
+    const candidate2 = this.store.create("memory_candidate", candidateId2, { ...identity, content, status: status2, conflict_ids: conflicts.map((x) => x.id), conflicting_memory_ids: conflictingMemories.map((x) => x.id), proposed_by: String(args.proposed_by ?? "agent"), identity_digest: digest16(identity) });
+    for (const conflict of conflicts) this.store.save("memory_candidate", String(conflict.id), { ...payload2(conflict), status: "conflict_pending", conflict_ids: [.../* @__PURE__ */ new Set([...conflict.conflict_ids ?? [], candidate2.id])] });
+    const eligible = args.proposal_only !== true && policy.mode === "governed" && conflicts.length === 0 && conflictingMemories.length === 0 && ids6.length > 0 && ids6.every((e) => {
+      const confidenceValue = String(this.store.get("evidence", e).confidence);
+      return policy.min_confidence === "bounded" ? ["bounded", "confirmed"].includes(confidenceValue) : confidenceValue === "confirmed";
+    });
+    if (eligible) {
+      const approved = this.store.save("memory_candidate", candidateId2, { ...payload2(candidate2), status: "approved", review: { reviewer: "governed-policy", reason_digest: digest16("policy threshold"), reviewed_at: (/* @__PURE__ */ new Date()).toISOString() } });
+      const memory = this.remember({ candidate_id: approved.id }).memory;
+      return { candidate: approved, conflicts, conflicting_memories: conflictingMemories, memory, auto_committed: true, idempotent: false, policy };
+    }
+    return { candidate: candidate2, conflicts, conflicting_memories: conflictingMemories, auto_committed: false, idempotent: false, policy };
+  }
+  review(args) {
+    const candidate2 = this.store.get("memory_candidate", text9(args.candidate_id, "candidate_id"));
+    const decision = text9(args.decision, "decision");
+    if (!(/* @__PURE__ */ new Set(["approve", "reject"])).has(decision)) throw new Error("decision must be approve or reject");
+    const reviewer = text9(args.reviewer, "reviewer");
+    const reason = noSecret2(text9(args.reason, "reason"), "reason");
+    if (decision === "approve") {
+      const ids6 = candidate2.evidence_ids;
+      const trusted = ids6.some((e) => ["bounded", "confirmed"].includes(String(this.store.get("evidence", e).confidence)));
+      if (!trusted) throw new Error("Memory candidate approval requires bounded or confirmed Evidence");
+      if (candidate2.status === "conflict_pending") throw new Error("Resolve Memory conflict before approval");
+    }
+    const saved = this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), status: decision === "approve" ? "approved" : "rejected", review: { reviewer, reason_digest: digest16(reason), reviewed_at: (/* @__PURE__ */ new Date()).toISOString() } });
+    return { candidate: saved };
+  }
+  remember(args) {
+    return this.store.transaction(() => {
+      const candidate2 = this.store.get("memory_candidate", text9(args.candidate_id, "candidate_id"));
+      if (candidate2.status !== "approved") throw new Error("Only approved Memory candidates can enter the Ledger");
+      const memoryId = candidate2.ledger_memory_id ?? args.memory_id ?? `memory_ledger_candidate_${digest16(candidate2.id).slice(-32)}`;
+      if (candidate2.ledger_memory_id) {
+        if (this.store.get("knowledge_source", String(candidate2.source_id)).status !== "active") throw new Error("Knowledge Source is not active");
+        if (args.memory_id !== void 0 && args.memory_id !== memoryId) throw new Error("Memory candidate Ledger identity conflict");
+        const memory2 = this.store.get("memory_ledger", String(memoryId));
+        return { candidate: candidate2, memory: memory2, superseded: [], idempotent: true };
+      }
+      const result = this.ledger.remember({ memory_id: memoryId, source_id: candidate2.source_id, kind: candidate2.kind, scope_kind: candidate2.scope.kind, scope_id: candidate2.scope.id, scope_envelope: candidate2.scope_envelope, content: candidate2.content, topic: candidate2.topic || void 0, sensitivity: candidate2.sensitivity, confidence: candidate2.confidence, evidence_ids: candidate2.evidence_ids, valid_until: candidate2.valid_until, observed_at: candidate2.observed_at, effective_from: candidate2.effective_from });
+      const memory = result.memory;
+      const supersededMemoryIds = Array.isArray(candidate2.supersedes_memory_ids) ? candidate2.supersedes_memory_ids : [];
+      const superseded = supersededMemoryIds.map((memoryId2) => {
+        const previous = this.store.get("memory_ledger", memoryId2);
+        if (previous.status !== "active") return previous;
+        return this.ledger.transition({ memory_id: previous.id, status: "superseded", replacement_id: memory.id, reason: `superseded by ${memory.id}` }).memory;
+      });
+      const saved = this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), ledger_memory_id: memory.id, status: "approved" });
+      return { candidate: saved, memory, superseded, idempotent: result.idempotent };
+    });
+  }
+  /** Topic recommendations require confirmation; no inferred topic overwrites durable Memory. */
+  topicSuggestions(args) {
+    const content = text9(args.content, "content"), query = retrievalTerms(content), scope3 = { kind: text9(args.scope_kind, "scope_kind"), id: text9(args.scope_id, "scope_id") };
+    const scored = this.store.listScoped("memory_ledger", [scope3], 10001, (item) => item.status === "active" && (item.sensitivity !== "restricted" || args.allow_restricted === true) && scopeAllows(scopeEnvelope(item.scope_envelope, scope3), scopeAccess(args))).map((item) => {
+      const languageHint = /\b(?:python|java|javascript|typescript|rust|golang)\b/iu.test(content) && /\b(?:python|java|javascript|typescript|rust|golang)\b/iu.test(String(item.content));
+      return { topic: item.topic || (languageHint ? "programming-language" : null), memory_id: item.id, memory_version: item.version, content_digest: item.content_digest, score: query.filter((term) => String(item.content).toLowerCase().includes(term)).length + Number(languageHint), classification: "confirmation_required_hint" };
+    }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score || String(a.topic).localeCompare(String(b.topic)));
+    return { suggestions: scored.slice(0, 5), requires_confirmation: true, changes_memory: false };
+  }
+  confirm(args) {
+    return this.store.transaction(() => {
+      if (args.explicit_consent !== true) throw new Error("Memory confirmation requires explicit consent");
+      const memory = this.ledger.get(args).memory;
+      if (memory.status !== "active" || args.expected_version !== memory.version) throw new Error("Memory confirmation version conflict or inactive entry");
+      const ids6 = evidenceIds(args.evidence_ids);
+      if (!ids6.some((id22) => {
+        const proof = this.store.get("evidence", id22);
+        return proof.source_type === "human" && ["bounded", "confirmed"].includes(String(proof.confidence));
+      })) throw new Error("Memory confirmation requires user Evidence");
+      const identity = { memory_id: memory.id, memory_version: memory.version, content_digest: memory.content_digest, evidence_ids: ids6 };
+      const confirmationId = `memory_confirmation_${digest16(identity).slice(-24)}`;
+      return { confirmation: this.store.find("memory_confirmation", confirmationId) ?? this.store.create("memory_confirmation", confirmationId, identity), changes_content: false };
+    });
+  }
+  governanceTasks(args) {
+    const scope3 = { kind: text9(args.scope_kind, "scope_kind"), id: text9(args.scope_id, "scope_id") };
+    const candidates = this.store.listScoped("memory_candidate", [scope3], 100, (candidate2) => ["candidate", "conflict_pending"].includes(String(candidate2.status)) && scopeAllows(scopeEnvelope(candidate2.scope_envelope, scope3), scopeAccess(args)));
+    const corrections = this.store.list("context_correction_task", 100, (task) => task.status === "pending_review" && task.asset_ref.member === "memory" && JSON.stringify(task.asset_ref.scope) === JSON.stringify(scope3));
+    return { candidates, corrections, changes_memory: false };
+  }
+  listConflicts(args = {}) {
+    return { conflicts: this.store.list("memory_candidate", Number(args.limit ?? 100), (x) => x.status === "conflict_pending") };
+  }
+  resolveConflict(args) {
+    const candidate2 = this.store.get("memory_candidate", text9(args.candidate_id, "candidate_id"));
+    const resolution = text9(args.resolution, "resolution");
+    if (!(/* @__PURE__ */ new Set(["keep", "supersede", "dismiss"])).has(resolution)) throw new Error("resolution is unsupported");
+    const reason = noSecret2(text9(args.reason, "reason"), "reason");
+    const conflictIds = Array.isArray(candidate2.conflict_ids) ? candidate2.conflict_ids : [];
+    const conflictingMemoryIds = Array.isArray(candidate2.conflicting_memory_ids) ? candidate2.conflicting_memory_ids : [];
+    const saved = this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), status: "candidate", conflict_resolution: { resolution, actor: text9(args.actor, "actor"), reason_digest: digest16(reason), at: (/* @__PURE__ */ new Date()).toISOString() }, conflict_ids: [], conflicting_memory_ids: [], ...resolution === "supersede" ? { supersedes_memory_ids: conflictingMemoryIds, supersedes_candidate_ids: conflictIds } : {} });
+    for (const conflictId of conflictIds) {
+      const other = this.store.find("memory_candidate", String(conflictId));
+      if (other) this.store.save("memory_candidate", String(other.id), { ...payload2(other), conflict_ids: (other.conflict_ids ?? []).filter((x) => x !== candidate2.id), status: "candidate" });
+    }
+    return { candidate: saved };
+  }
+  expirySweep(args = {}) {
+    const now3 = new Date(args.now === void 0 ? Date.now() : text9(args.now, "now"));
+    if (Number.isNaN(now3.valueOf())) throw new Error("now must be an ISO timestamp");
+    const expired = [];
+    for (const candidate2 of this.store.list("memory_candidate", 1e4, (x) => x.status === "candidate" || x.status === "approved")) if (candidate2.valid_until && Date.parse(String(candidate2.valid_until)) < now3.valueOf()) expired.push(this.store.save("memory_candidate", String(candidate2.id), { ...payload2(candidate2), status: "expired" }));
+    for (const memory of this.store.list("memory_ledger", 1e4, (x) => Boolean(x.status === "active" && x.valid_until && Date.parse(String(x.valid_until)) < now3.valueOf()))) expired.push(this.ledger.transition({ memory_id: memory.id, status: "expired", reason: "valid_until elapsed" }).memory);
+    return { expired, count: expired.length, now: now3.toISOString() };
+  }
+  sessionFinalize(args) {
+    const summary2 = noSecret2(text9(args.summary, "summary"), "summary");
+    const candidateIds = evidenceIds(args.candidate_ids);
+    const candidates = candidateIds.map((candidateId2) => this.store.get("memory_candidate", candidateId2));
+    return { session_id: text9(args.session_id, "session_id"), summary_digest: digest16(summary2), candidates: candidates.map((candidate2) => ({ candidate_id: candidate2.id, status: candidate2.status })), content_free: true };
+  }
+  consolidate(args) {
+    const ids6 = evidenceIds(args.candidate_ids);
+    if (ids6.length < 2) throw new Error("candidate_ids must contain at least two ids");
+    const candidates = ids6.map((candidateId2) => this.store.get("memory_candidate", candidateId2));
+    if (candidates.some((candidate2) => candidate2.status !== "approved")) throw new Error("Only approved candidates can be consolidated");
+    const consolidationId = String(args.consolidation_id ?? id13("memory_consolidation"));
+    const identity = { candidate_ids: ids6, summary_digest: digest16(noSecret2(text9(args.summary, "summary"), "summary")) };
+    const existing = this.store.find("memory_consolidation", consolidationId);
+    if (existing) {
+      if (existing.identity_digest !== digest16(identity)) throw new Error("Memory consolidation idempotency conflict");
+      return { consolidation: existing, idempotent: true };
+    }
+    return { consolidation: this.store.create("memory_consolidation", consolidationId, { ...identity, identity_digest: digest16(identity), status: "candidate", ledger_memory_id: null, content_free: true }), idempotent: false };
+  }
+};
+
+// capability/craft-memory/memory-signals.ts
+var HALF_LIFE_DAYS = 90;
+var ACCESS_CAP = 10;
+var ACCESS_BONUS = 0.15;
+var DECAY_FLOOR = 0.01;
+var TRUST_FACTOR = { verified: 1, bounded: 0.85 };
+function memoryDecayWeight(input) {
+  const confirmedAt = Date.parse(text(input.confirmed_at, "confirmed_at"));
+  const now3 = Date.parse(text(input.now, "now"));
+  if (Number.isNaN(confirmedAt)) throw new Error("confirmed_at must be an ISO timestamp");
+  if (Number.isNaN(now3)) throw new Error("now must be an ISO timestamp");
+  const accesses = Number(input.accesses ?? 0);
+  if (!Number.isInteger(accesses) || accesses < 0) throw new Error("accesses must be a non-negative integer");
+  const trust = input.trust ?? "bounded";
+  if (!(trust in TRUST_FACTOR)) throw new Error("trust must be verified or bounded");
+  const ageDays = Math.max(0, (now3 - confirmedAt) / 864e5);
+  const recency = 2 ** (-ageDays / HALF_LIFE_DAYS);
+  const usage2 = 1 + Math.min(accesses, ACCESS_CAP) * ACCESS_BONUS;
+  const weighted = Math.max(recency * usage2 * TRUST_FACTOR[trust], DECAY_FLOOR);
+  return Number(weighted.toFixed(6));
+}
+function rankWithDecay(candidates) {
+  return candidates.map((candidate2) => ({
+    id: candidate2.id,
+    base_score: candidate2.base_score,
+    decay: candidate2.decay,
+    score: Number((candidate2.base_score * candidate2.decay).toFixed(6))
+  })).sort((left, right) => right.score - left.score || left.id.localeCompare(right.id));
+}
+var STRONG_SIGNALS = ["durable_value", "user_correction", "decision_made"];
+var AUTOMATIC_KEYS = /* @__PURE__ */ new Set(["durable_value", "needs_execution"]);
+function shouldProposeMemory(input) {
+  const signals = Array.isArray(input.signals) ? input.signals.map((item) => text(item, "signal")) : [];
+  const succeeded = input.succeeded === true;
+  const corrections = Number(input.corrections ?? 0);
+  const retries = Number(input.retries ?? 0);
+  if (!Number.isInteger(corrections) || corrections < 0) throw new Error("corrections must be a non-negative integer");
+  if (!Number.isInteger(retries) || retries < 0) throw new Error("retries must be a non-negative integer");
+  const novel = input.novel === true;
+  const mode2 = String(input.mode ?? "review_by_exception");
+  if (!["strict", "review_by_exception"].includes(mode2)) throw new Error("memory capture mode is unsupported");
+  if (mode2 === "strict") {
+    const propose = signals.includes("durable_value");
+    return { propose, reasons: propose ? ["durable_value"] : [], policy: "strict" };
+  }
+  const reasons = [];
+  for (const signal of signals) {
+    if (STRONG_SIGNALS.includes(signal)) reasons.push(signal);
+    else if (AUTOMATIC_KEYS.has(signal)) reasons.push(`${signal}_automatic`);
+  }
+  if (corrections > 0) reasons.push(`corrections_${corrections}`);
+  if (retries > 0) reasons.push(`retries_${retries}`);
+  if (!reasons.length && novel) reasons.push("novel_situation");
+  const unique3 = [...new Set(reasons)].sort();
+  return { propose: unique3.length > 0, reasons: unique3, policy: "review_by_exception" };
+}
+function planLegacyPromotion(input) {
+  const legacyKind = text(input.legacy_kind, "legacy_kind");
+  if (!["memory_item", "episodic_memory", "semantic_memory"].includes(legacyKind)) throw new Error("Legacy Memory kind is unsupported");
+  const legacyId = text(input.legacy_id, "legacy_id");
+  const content = text(input.content, "content");
+  const scope3 = String(input.scope ?? "user");
+  if (!["user", "project", "workspace", "task"].includes(scope3)) throw new Error("Legacy Memory scope is unsupported");
+  const legacyVersion = Number(input.legacy_version ?? 1);
+  if (!Number.isInteger(legacyVersion) || legacyVersion < 1) throw new Error("legacy_version must be a positive integer");
+  const kind4 = legacyKind === "memory_item" ? String(input.kind ?? "fact") : legacyKind === "episodic_memory" ? "experience" : "fact";
+  if (!["fact", "preference", "decision", "experience"].includes(kind4)) throw new Error("Promoted Memory kind is unsupported");
+  return {
+    promotion_id: `promotion_${digestJson({ legacyKind, legacyId, legacyVersion, scope: scope3, kind: kind4 }).slice(7, 31)}`,
+    legacy_kind: legacyKind,
+    legacy_id: legacyId,
+    legacy_version: legacyVersion,
+    kind: kind4,
+    scope: scope3,
+    content_digest: digestJson(content),
+    // A promotion is a candidate like any other: it needs a source and approval
+    // before it can appear in resolutions.
+    requires_source: true,
+    requires_approval: true,
+    // Episodic content is raw experience and is the likeliest to hold secrets.
+    sensitivity: legacyKind === "episodic_memory" ? "restricted" : "internal",
+    migration_performed: false,
+    downgrade_policy: "reference_only_until_approved"
+  };
+}
+function hybridMemoryScores(candidates, options = { vectorEligible: false }) {
+  const k = options.k ?? 60;
+  if (!Number.isFinite(k) || k <= 0) throw new Error("Fusion k must be a positive number");
+  if (!options.vectorEligible) {
+    return candidates.map((candidate2) => ({ id: candidate2.id, score: candidate2.keyword_score, retrieval_mode: "keyword" })).filter((candidate2) => candidate2.score > 0).sort((left, right) => right.score - left.score || left.id.localeCompare(right.id));
+  }
+  const byKeyword = [...candidates].sort((left, right) => right.keyword_score - left.keyword_score || left.id.localeCompare(right.id));
+  const byVector = [...candidates].filter((candidate2) => candidate2.similarity !== null).sort((left, right) => right.similarity - left.similarity || left.id.localeCompare(right.id));
+  const scores = /* @__PURE__ */ new Map();
+  for (const [index, candidate2] of byKeyword.entries()) {
+    if (candidate2.keyword_score > 0) scores.set(candidate2.id, (scores.get(candidate2.id) ?? 0) + 1 / (k + index + 1));
+  }
+  for (const [index, candidate2] of byVector.entries()) {
+    scores.set(candidate2.id, (scores.get(candidate2.id) ?? 0) + 1 / (k + index + 1));
+  }
+  return [...scores].map(([id22, score]) => ({ id: id22, score: Number(score.toFixed(8)), retrieval_mode: "vector+keyword" })).sort((left, right) => right.score - left.score || left.id.localeCompare(right.id));
+}
+function memoryUsageEvidence(input) {
+  const memoryIds = Array.isArray(input.memory_ids) ? input.memory_ids.map((item) => text(item, "memory_id")) : [];
+  if (!memoryIds.length) throw new Error("memory_ids must not be empty");
+  if (new Set(memoryIds).size !== memoryIds.length) throw new Error("memory_ids must be unique");
+  const outcome2 = text(input.outcome, "outcome");
+  if (!["succeeded", "failed", "abandoned"].includes(outcome2)) throw new Error("outcome is unsupported");
+  const turnId = text(input.turn_id, "turn_id");
+  const receiptId = input.receipt_id === void 0 ? null : text(input.receipt_id, "receipt_id");
+  const used = outcome2 === "succeeded";
+  return {
+    evidence_id: `memory_usage_${digestJson({ turnId, memoryIds, outcome: outcome2 }).slice(7, 31)}`,
+    turn_id: turnId,
+    receipt_id: receiptId,
+    outcome: outcome2,
+    memory_ids: memoryIds,
+    counted_as_use: used,
+    // One record per memory, so the access counter is derivable by summing.
+    access_deltas: memoryIds.map((memoryId) => ({ memory_id: memoryId, delta: used ? 1 : 0 })),
+    content_free: true
+  };
+}
+
+// capability/craft-memory/contribution.ts
+var MemoryContribution = class {
+  member = "memory";
+  store;
+  constructor(store) {
+    this.store = store;
+  }
+  async contribute(request2) {
+    const budget = new ContextBudget(request2.max_items, request2.max_chars);
+    const now3 = new Date(request2.now === void 0 ? Date.now() : text(request2.now, "now"));
+    if (!Number.isFinite(now3.valueOf())) throw new Error("now must be an ISO timestamp");
+    const validAt2 = request2.as_of === void 0 ? now3 : new Date(text(request2.as_of, "as_of"));
+    if (!Number.isFinite(validAt2.valueOf())) throw new Error("as_of must be an ISO timestamp");
+    const historical = request2.history_view === true || request2.as_of !== void 0 || request2.known_at !== void 0;
+    const scopes = request2.scope_stack ?? [{ kind: request2.scope_kind, id: request2.scope_id }];
+    const requestedIds = request2.memory_ids ?? [], requiredRefs = request2.required_refs ?? [];
+    const sourceIds = request2.source_ids ?? [], selectedSourceIds = sourceIds.length ? new Set(sourceIds) : null;
+    const access4 = { principal_id: request2.principal_id, principal_ids: request2.principal_ids, tenant_id: request2.tenant_id, purpose: request2.cognitive_purpose };
+    const guard = new ContextReadGuard(this.store, void 0, scopes, sourceIds);
+    const sources = /* @__PURE__ */ new Map();
+    const sourceOf = (id22) => {
+      if (!sources.has(id22)) {
+        const source = this.store.find("knowledge_source", id22, void 0, false);
+        if (sources.size >= 10001) return source;
+        sources.set(id22, source);
+      }
+      return sources.get(id22);
+    };
+    for (const sourceId of sourceIds) {
+      guard.track("knowledge_source", sourceId);
+      const source = sourceOf(sourceId);
+      if (!source || source.status !== "active" || source.trust === "untrusted" || !sourceAllows(source, access4)) throw new Error("Requested Knowledge Source is unavailable in this Context");
+    }
+    const readable = (item) => {
+      const source = sourceOf(String(item.source_id));
+      const envelope = scopeEnvelope(item.scope_envelope, item.scope);
+      const latest = this.store.find("memory_ledger", String(item.id), void 0, false);
+      if (!latest) return false;
+      if (!scopeAllows(scopeEnvelope(latest.scope_envelope, latest.scope), access4) || canonicalJson(latest.scope) !== canonicalJson(item.scope) || request2.allow_restricted !== true && latest.sensitivity === "restricted") return false;
+      return (request2.history_view === true || item.status === "active") && source?.status === "active" && source.trust !== "untrusted" && sourceAllows(source, access4) && scopeAllows(envelope, access4) && (item.kind !== "working" || request2.include_working_notes === true || item.working_note !== true || requestedIds.includes(String(item.id))) && (request2.allow_restricted === true || item.sensitivity !== "restricted") && (selectedSourceIds === null || selectedSourceIds.has(String(item.source_id)));
+    };
+    const records2 = this.records(request2, readable, scopes);
+    const candidates = records2.map((memory) => ({ memory, body: this.content(memory) }));
+    const scopeRank = new Map(scopes.map((scope3, index) => [canonicalJson(scope3), index]));
+    const preferred = /* @__PURE__ */ new Map();
+    const topicOf = (memory) => typeof memory.topic === "string" && memory.topic ? memory.topic : `entry:${memory.id}`;
+    for (const { memory } of candidates) {
+      const topic = topicOf(memory), rank = scopeRank.get(canonicalJson(memory.scope));
+      preferred.set(topic, Math.min(preferred.get(topic) ?? Number.MAX_SAFE_INTEGER, rank));
+    }
+    const scoped = candidates.filter(({ memory }) => request2.history_view === true || scopeRank.get(canonicalJson(memory.scope)) === preferred.get(topicOf(memory)));
+    const temporal = temporalMemorySelect(scoped.map((item) => item.memory), validAt2, request2.history_view === true);
+    const available2 = scoped.filter((item) => temporal.selected.some((memory) => memory.id === item.memory.id && memory.version === item.memory.version));
+    for (const item of available2) {
+      guard.track("memory_ledger", String(item.memory.id));
+      guard.track("knowledge_source", String(item.memory.source_id));
+    }
+    const recheck = () => {
+      sources.clear();
+      if (available2.some((item) => !readable(item.memory))) throw new ContextAccessChangedError();
+      guard.assertCurrent();
+    };
+    const feedback = this.store.list("context_feedback", 1e4, (item) => item.outcome === "helpful" && item.evidence_verified === true, false);
+    const items2 = available2.map(({ memory, body: body3 }) => {
+      const confirmedAt = latestMemoryConfirmation(this.store, memory, now3.toISOString());
+      const usage2 = feedback.filter((item) => item.memory_refs.some((ref2) => ref2.memory_id === memory.id && ref2.content_digest === memory.content_digest)).length;
+      const weight = memoryDecayWeight({ confirmed_at: confirmedAt ?? memory.observed_at ?? memory.updated_at, now: now3.toISOString(), accesses: usage2, trust: sourceOf(String(memory.source_id)).trust === "verified" ? "verified" : "bounded" });
+      return {
+        memory_id: memory.id,
+        memory_version: memory.version,
+        source_id: memory.source_id,
+        content: body3,
+        content_digest: memory.content_digest,
+        sensitivity: memory.sensitivity,
+        status: memory.status,
+        scope: memory.scope,
+        scope_envelope: scopeEnvelopeReceipt(scopeEnvelope(memory.scope_envelope, memory.scope)),
+        ranking_weight: weight,
+        confirmed_at: confirmedAt,
+        execution_context: !historical
+      };
+    });
+    const required5 = (item) => requestedIds.includes(String(item.memory_id)) || requiredRefs.some((ref2) => contextAssetMatches(ref2, contextAssetRef("memory", item, item.scope)));
+    let selected = items2, matchingCount = items2.length;
+    if (request2.candidate_mode !== true) {
+      recheck();
+      const ranking = await new KeywordRetrievalPort().search(request2.query, items2.map((item) => ({ id: `${item.memory_id}@${item.memory_version}`, body: String(item.content) })));
+      recheck();
+      const scores = new Map(ranking.hits.map((hit) => [hit.id, hit.score]));
+      const ranked = items2.filter((item) => required5(item) || scores.has(`${item.memory_id}@${item.memory_version}`)).sort((a, b) => Number(required5(b)) - Number(required5(a)) || (scores.get(`${b.memory_id}@${b.memory_version}`) ?? 0) - (scores.get(`${a.memory_id}@${a.memory_version}`) ?? 0) || b.ranking_weight - a.ranking_weight || String(a.memory_id).localeCompare(String(b.memory_id)));
+      matchingCount = ranked.length;
+      for (const id22 of requestedIds) if (!ranked.some((item) => item.memory_id === id22)) throw new Error("Required Memory is unavailable in this Context");
+      for (const ref2 of requiredRefs.filter((ref3) => ref3.member === "memory")) if (!ranked.some((item) => contextAssetMatches(ref2, contextAssetRef("memory", item, item.scope)))) throw new Error("Required Context reference is unavailable");
+      selected = ranked.filter((item) => budget.reserve(1, String(item.content).length, required5(item), "Required Memory or Context reference exceeds Context budget"));
+    } else if (items2.length > request2.max_items || items2.reduce((n, item) => n + JSON.stringify(item).length, 0) > request2.max_chars) throw new Error("Memory candidate budget exceeded; narrow scope or source selection");
+    return this.store.transaction(() => {
+      recheck();
+      return {
+        member: this.member,
+        items: selected,
+        receipt_id: `memory_contribution_${stableDigest(selected).slice(-24)}`,
+        omitted_count: matchingCount - selected.length,
+        read_refs: guard.refs(),
+        diagnostics: { eligible_memory_count: candidates.length, after_scope_precedence_count: scoped.length, after_temporal_policy_count: available2.length, temporal_excluded: temporal.excluded }
+      };
+    });
+  }
+  records(request2, readable, scopes) {
+    if (request2.history_view !== true && request2.as_of === void 0 && request2.known_at === void 0) {
+      const candidates2 = this.store.listScoped("memory_ledger", scopes, 10001, readable);
+      if (candidates2.length > 1e4) throw new Error("Memory candidate budget exceeded; narrow scope or source selection");
+      return candidates2;
+    }
+    const knownAt = request2.known_at ?? request2.as_of;
+    if (knownAt !== void 0 && !Number.isFinite(Date.parse(knownAt))) throw new Error("known_at must be an ISO timestamp");
+    const candidates = this.store.listScoped("memory_ledger", scopes, 10001, readable, { known_at: knownAt, history: request2.history_view === true });
+    if (candidates.length > 1e4) throw new Error("Memory history budget exceeded; narrow the ledger before historical retrieval");
+    return candidates;
+  }
+  content(memory) {
+    if (typeof memory.content === "string") return memory.content;
+    if (!contentReference(memory.content_ref)) throw new Error("Memory content reference is missing");
+    return this.store.contentStore.readCompatSync(memory.content_ref).body;
+  }
+};
 
 // core/retrieval-evaluation.ts
 async function runRetrievalEvaluation(adapter, value) {
@@ -242537,20 +242811,12 @@ function noSecretValue(value, name) {
 }
 var ContextResolutionKernel = class {
   store;
-  /**
-   * The capabilities' read sides, in capability order.
-   *
-   * Passed in rather than imported, because which contributions exist is decided by assembly and
-   * this module must not name a package. Empty is the normal case for a deliberately minimal
-   * assembly; Knowledge and Experience declare their distinct projections when installed, and a
-   * core assembled without a capability set resolves exactly as it did before contributions
-   * existed.
-   */
+  /** Registered contributions; an explicit Memory provider replaces the legacy default adapter. */
   contributors;
   scopes;
   constructor(store, contributors = []) {
     this.store = store;
-    this.contributors = contributors;
+    this.contributors = contributors.some((provider) => provider.member === "memory") ? contributors : [new MemoryContribution(store), ...contributors];
     this.scopes = new ScopeIdentityKernel(store);
   }
   async searchKnowledge(args) {
@@ -242674,58 +242940,17 @@ var ContextResolutionKernel = class {
     const health = adapter ? this.retrievalHealth(adapter, now3) : null;
     const circuitOpen = health?.status === "open" && Date.parse(String(health.open_until)) > now3.valueOf();
     const requestedStrategy = adapter?.status === "eligible" && !circuitOpen ? adapter.strategy : "keyword";
-    const selectedSourceIds = sourceIds.length ? new Set(sourceIds) : null;
-    const sources = /* @__PURE__ */ new Map();
-    const sourceOf = (id22) => {
-      if (!sources.has(id22)) {
-        const source = this.store.find("knowledge_source", id22);
-        if (sources.size >= 10001) return source;
-        sources.set(id22, source);
-      }
-      return sources.get(id22);
-    };
     for (const sourceId of sourceIds) {
       guard.track("knowledge_source", sourceId);
-      const source = sourceOf(sourceId);
+      const source = this.store.find("knowledge_source", sourceId);
       if (!source || source.status !== "active" || source.trust === "untrusted" || !sourceAllows(source, access4)) throw new Error("Requested Knowledge Source is unavailable in this Context");
     }
     const historical = args.history_view === true || args.as_of !== void 0 || args.known_at !== void 0;
-    const validAt2 = args.as_of === void 0 ? now3 : new Date(text(args.as_of, "as_of"));
-    if (!Number.isFinite(validAt2.valueOf())) throw new Error("as_of must be an ISO timestamp");
-    const readable = (item) => {
-      const source = sourceOf(String(item.source_id));
-      const envelope = scopeEnvelope(item.scope_envelope, item.scope);
-      const latest = this.store.find("memory_ledger", String(item.id), void 0, false);
-      if (!latest) return false;
-      if (!scopeAllows(scopeEnvelope(latest.scope_envelope, latest.scope), access4) || canonicalJson(latest.scope) !== canonicalJson(item.scope) || !allowRestricted && latest.sensitivity === "restricted") return false;
-      return (args.history_view === true || item.status === "active") && source?.status === "active" && source.trust !== "untrusted" && sourceAllows(source, access4) && scopeAllows(envelope, access4) && (item.kind !== "working" || args.include_working_notes === true || item.working_note !== true || requestedIds.includes(String(item.id))) && (allowRestricted || item.sensitivity !== "restricted") && (selectedSourceIds === null || selectedSourceIds.has(String(item.source_id)));
-    };
-    const records2 = includeMemory ? this.memoryRecords(args, readable, scopeResolution.attempted_scopes) : [];
-    const candidates = records2.map((item) => ({ memory: item, envelope: scopeEnvelope(item.scope_envelope, item.scope), body: this.content(item), required: requestedIds.includes(String(item.id)) || requiredRefs.some((ref2) => contextAssetMatches(ref2, contextAssetRef("memory", { memory_id: item.id, memory_version: item.version, content_digest: item.content_digest }, item.scope))), key: historical ? `${String(item.id)}@${String(item.version)}` : String(item.id) }));
-    const scopeRank = new Map(scopeResolution.attempted_scopes.map((scope3, index) => [canonicalJson(scope3), index]));
-    const preferred = /* @__PURE__ */ new Map();
-    for (const candidate2 of candidates) {
-      const topic = typeof candidate2.memory.topic === "string" && candidate2.memory.topic ? candidate2.memory.topic : `entry:${candidate2.memory.id}`;
-      const rank = scopeRank.get(canonicalJson(candidate2.memory.scope));
-      preferred.set(topic, Math.min(preferred.get(topic) ?? Number.MAX_SAFE_INTEGER, rank));
-    }
-    const scopedCandidates = candidates.filter((candidate2) => {
-      const topic = typeof candidate2.memory.topic === "string" && candidate2.memory.topic ? candidate2.memory.topic : `entry:${candidate2.memory.id}`;
-      return args.history_view === true || scopeRank.get(canonicalJson(candidate2.memory.scope)) === preferred.get(topic);
-    });
-    const temporal = temporalMemorySelect(scopedCandidates.map((item) => item.memory), validAt2, args.history_view === true);
-    const available2 = scopedCandidates.filter((item) => temporal.selected.some((memory) => memory.id === item.memory.id && memory.version === item.memory.version));
-    for (const item of available2) {
-      guard.track("memory_ledger", String(item.memory.id));
-      guard.track("knowledge_source", String(item.memory.source_id));
-    }
-    const recheck = () => {
-      sources.clear();
-      if (available2.some((item) => !readable(item.memory))) throw new ContextAccessChangedError();
-      guard.assertCurrent();
-    };
+    if (args.as_of !== void 0 && !Number.isFinite(Date.parse(text(args.as_of, "as_of")))) throw new Error("as_of must be an ISO timestamp");
+    const recheck = () => guard.assertCurrent();
     const port = (requestedStrategy === "vector" || requestedStrategy === "hybrid") && adapter ? new OpenAiCompatibleEmbeddingRetrievalPort(adapter.configuration ?? {}, (0, import_node_path32.join)(this.store.paths.root, "retrieval-embeddings.sqlite"), recheck) : new KeywordRetrievalPort();
     const recalled = [];
+    let memoryPart;
     const contributorFailures = [];
     for (const contributor of this.contributors) {
       if (members3 !== null && !members3.has(contributor.member)) continue;
@@ -242742,19 +242967,30 @@ var ContextResolutionKernel = class {
           source_ids: sourceIds,
           scope_stack: scopeResolution.attempted_scopes,
           ...access4,
-          cognitive_purpose: access4.purpose
+          cognitive_purpose: access4.purpose,
+          memory_ids: requestedIds,
+          required_refs: requiredRefs,
+          allow_restricted: allowRestricted,
+          include_working_notes: args.include_working_notes === true,
+          history_view: args.history_view === true,
+          as_of: args.as_of,
+          known_at: args.known_at
         });
         if (contribution.member !== contributor.member || !Number.isSafeInteger(contribution.omitted_count) || contribution.omitted_count < 0) throw new Error("Context contributor returned invalid member or omission count");
         if (contribution.items.length > 1e4 || contribution.items.reduce((n, item) => n + JSON.stringify(item).length, 0) > 8e6)
           throw new Error("Context contributor exceeded the aggregate budget");
       } catch (error) {
-        if (args.allow_partial !== true) throw error;
+        if (contributor.member === "memory" || args.allow_partial !== true) throw error;
         contributorFailures.push({ member: contributor.member, reason: "contribution_unavailable" });
         continue;
       }
+      for (const ref2 of contribution.read_refs ?? []) guard.track(ref2.kind, ref2.id, ref2.version);
       for (const item of contribution.items) guard.contribution(contribution.member, item);
-      recalled.push(contribution);
+      if (contributor.member === "memory") memoryPart = contribution;
+      else recalled.push(contribution);
     }
+    const available2 = (memoryPart?.items ?? []).map((item) => ({ item, body: String(item.content), required: requestedIds.includes(String(item.memory_id)) || requiredRefs.some((ref2) => contextAssetMatches(ref2, contextAssetRef("memory", item, item.scope))), key: historical ? `${item.memory_id}@${item.memory_version}` : String(item.memory_id) }));
+    const memoryDiagnostics = memoryPart?.diagnostics ?? { eligible_memory_count: available2.length, after_scope_precedence_count: available2.length, after_temporal_policy_count: available2.length, temporal_excluded: [] };
     const extra = recalled.flatMap((part, group) => part.items.map((item, index) => ({
       id: `contribution:${group}:${index}`,
       group,
@@ -242785,18 +243021,15 @@ var ContextResolutionKernel = class {
     }
     recheck();
     const hitScores = new Map(retrieval.hits.map((hit) => [hit.id, hit]));
-    const feedback = this.store.list("context_feedback", 1e4, (item) => item.outcome === "helpful" && item.evidence_verified === true);
-    const usage2 = (memory) => feedback.filter((item) => item.memory_refs.some((ref2) => ref2.memory_id === memory.id && ref2.content_digest === memory.content_digest)).length;
-    const weight = (memory) => memoryDecayWeight({ confirmed_at: latestMemoryConfirmation(this.store, memory, now3.toISOString()) ?? memory.observed_at ?? memory.updated_at, now: now3.toISOString(), accesses: usage2(memory), trust: sources.get(String(memory.source_id)).trust === "verified" ? "verified" : "bounded" });
-    const candidatesRanked = available2.map((item) => ({ ...item, hit: hitScores.get(item.key) ?? null, score: hitScores.get(item.key)?.score ?? 0 })).filter((item) => item.required || item.score > 0).sort((left, right) => Number(right.required) - Number(left.required) || right.score - left.score || String(left.memory.id).localeCompare(String(right.memory.id)));
+    const candidatesRanked = available2.map((item) => ({ ...item, hit: hitScores.get(item.key) ?? null, score: hitScores.get(item.key)?.score ?? 0 })).filter((item) => item.required || item.score > 0).sort((left, right) => Number(right.required) - Number(left.required) || right.score - left.score || String(left.item.memory_id).localeCompare(String(right.item.memory_id)));
     if (!includeMemory && requestedIds.length) throw new Error("Requested Memory is excluded by Context members");
-    for (const memoryId of requestedIds) if (!candidatesRanked.some((item) => item.memory.id === memoryId)) throw new Error("Required Memory is unavailable in this Context");
+    for (const memoryId of requestedIds) if (!candidatesRanked.some((item) => item.item.memory_id === memoryId)) throw new Error("Required Memory is unavailable in this Context");
     const items2 = [];
     let usedChars = 0;
     const selectedExtras = /* @__PURE__ */ new Set();
     let contributionChars = 0;
     const pool = [
-      ...candidatesRanked.map((candidate2) => ({ id: candidate2.key, required: candidate2.required, score: candidate2.score, weight: weight(candidate2.memory), size: candidate2.body.length, memory: candidate2, extra: null })),
+      ...candidatesRanked.map((candidate2) => ({ id: candidate2.key, required: candidate2.required, score: candidate2.score, weight: Number(candidate2.item.ranking_weight ?? 1), size: candidate2.body.length, memory: candidate2, extra: null })),
       ...extra.filter((candidate2) => hitScores.has(candidate2.id) || candidate2.required).map((candidate2) => ({
         id: candidate2.id,
         required: candidate2.required,
@@ -242808,7 +243041,7 @@ var ContextResolutionKernel = class {
       }))
     ].sort((a, b) => Number(b.required) - Number(a.required) || b.score - a.score || b.weight - a.weight || a.id.localeCompare(b.id));
     for (const required5 of requiredRefs) {
-      const present = pool.some((candidate2) => contextAssetMatches(required5, candidate2.memory ? contextAssetRef("memory", { memory_id: candidate2.memory.memory.id, memory_version: candidate2.memory.memory.version, content_digest: candidate2.memory.memory.content_digest }, candidate2.memory.memory.scope) : contextAssetRef(recalled[candidate2.extra.group].member, candidate2.extra.item, scopeResolution.canonical_scope)));
+      const present = pool.some((candidate2) => contextAssetMatches(required5, candidate2.memory ? contextAssetRef("memory", candidate2.memory.item, candidate2.memory.item.scope) : contextAssetRef(recalled[candidate2.extra.group].member, candidate2.extra.item, scopeResolution.canonical_scope)));
       if (!present) throw new Error("Required Context reference is unavailable");
     }
     const selectedContent = /* @__PURE__ */ new Map();
@@ -242816,7 +243049,7 @@ var ContextResolutionKernel = class {
     const duplicateRefs = [];
     for (const candidate2 of pool) {
       const contentKey = candidate2.memory ? stableDigest(candidate2.memory.body) : candidate2.extra.item.procedure_id ? stableDigest(candidate2.extra.item) : stableDigest(candidate2.extra.item.content ?? candidate2.extra.body);
-      const reference3 = candidate2.memory ? { member: "memory", id: candidate2.memory.memory.id, version: candidate2.memory.memory.version, source_id: candidate2.memory.memory.source_id } : { member: recalled[candidate2.extra.group].member, id: candidate2.extra.item.claim_id ?? candidate2.extra.item.procedure_id, version: candidate2.extra.item.claim_version ?? candidate2.extra.item.procedure_version, source_id: candidate2.extra.item.source_id ?? null };
+      const reference3 = candidate2.memory ? { member: "memory", id: candidate2.memory.item.memory_id, version: candidate2.memory.item.memory_version, source_id: candidate2.memory.item.source_id } : { member: recalled[candidate2.extra.group].member, id: candidate2.extra.item.claim_id ?? candidate2.extra.item.procedure_id, version: candidate2.extra.item.claim_version ?? candidate2.extra.item.procedure_version, source_id: candidate2.extra.item.source_id ?? null };
       if (args.deduplicate === true && !historical && !candidate2.required && selectedContent.has(contentKey)) {
         duplicates++;
         if (duplicateRefs.length < 100) duplicateRefs.push({ omitted: reference3, retained: selectedContent.get(contentKey), content_digest: contentKey });
@@ -242826,21 +243059,8 @@ var ContextResolutionKernel = class {
       if (candidate2.memory) {
         const value = candidate2.memory;
         usedChars += candidate2.size;
-        items2.push({
-          memory_id: value.memory.id,
-          memory_version: value.memory.version,
-          source_id: value.memory.source_id,
-          content: value.body,
-          content_digest: value.memory.content_digest,
-          sensitivity: value.memory.sensitivity,
-          status: value.memory.status,
-          ranking_weight: candidate2.weight,
-          reason: value.required ? "required" : value.hit?.reason ?? "not_selected",
-          score: candidate2.score,
-          scope: value.memory.scope,
-          scope_envelope: scopeEnvelopeReceipt(value.envelope),
-          execution_context: !historical
-        });
+        const { confirmed_at: _confirmedAt, ...projection } = value.item;
+        items2.push({ ...projection, ranking_weight: candidate2.weight, reason: value.required ? "required" : value.hit?.reason ?? "not_selected", score: candidate2.score });
       } else {
         selectedExtras.add(candidate2.id);
         contributionChars += candidate2.size;
@@ -242861,10 +243081,7 @@ var ContextResolutionKernel = class {
     const selectedGuard = new ContextReadGuard(this.store, guard.refs());
     for (const alias of scopeResolution.matched_aliases) selectedGuard.track("scope_alias", String(alias.id));
     for (const sourceId of sourceIds) selectedGuard.track("knowledge_source", sourceId);
-    for (const item of items2) {
-      selectedGuard.track("memory_ledger", String(item.memory_id));
-      selectedGuard.track("knowledge_source", String(item.source_id));
-    }
+    for (const item of items2) selectedGuard.contribution("memory", item);
     for (const contribution of contributions) for (const item of contribution.items) selectedGuard.contribution(contribution.member, item);
     const identity = {
       read_refs: selectedGuard.refs(),
@@ -242882,7 +243099,7 @@ var ContextResolutionKernel = class {
       retrieval_mode: retrieval.execution.used,
       retrieval_execution: executionIdentity,
       allow_restricted: allowRestricted,
-      memory_refs: items2.map((item) => ({ memory_id: item.memory_id, memory_version: item.memory_version, content_digest: item.content_digest, reason: item.reason, score: item.score, confirmed_at: latestMemoryConfirmation(this.store, { id: item.memory_id, version: item.memory_version, content_digest: item.content_digest }, now3.toISOString()) })),
+      memory_refs: items2.map((item) => ({ memory_id: item.memory_id, memory_version: item.memory_version, content_digest: item.content_digest, reason: item.reason, score: item.score, confirmed_at: available2.find((candidate2) => candidate2.item.memory_id === item.memory_id && candidate2.item.memory_version === item.memory_version).item.confirmed_at ?? null })),
       max_items: maxItems,
       max_chars: maxChars,
       used_chars: usedChars,
@@ -242920,7 +243137,7 @@ var ContextResolutionKernel = class {
         if (existing.identity_digest !== identityDigest) throw new Error("Context Resolution Receipt idempotency conflict");
         return { receipt: existing, items: items2, contributions, idempotent: true };
       }
-      return { receipt: this.store.create("context_resolution_receipt", receiptId, { ...identity, retrieval_execution: retrieval.execution, scope_aliases: scopeResolution.matched_aliases.map((alias) => ({ id: alias.id, alias_kind: alias.alias_kind, alias_digest: alias.alias_digest })), excluded_scopes: [...scopeResolution.excluded_scopes, ...temporal.excluded], identity_digest: identityDigest, omitted_count: candidatesRanked.length - items2.length, explanation: { eligible_memory_count: candidates.length, after_scope_precedence_count: scopedCandidates.length, after_temporal_policy_count: available2.length, matching_memory_count: candidatesRanked.length, selected_memory_count: items2.length, budget_omitted_count: candidatesRanked.length - items2.length, selection: "scope_then_policy_then_shared_bm25_or_hybrid_then_required_and_budget" }, content_free: true }), items: items2, contributions, idempotent: false };
+      return { receipt: this.store.create("context_resolution_receipt", receiptId, { ...identity, retrieval_execution: retrieval.execution, scope_aliases: scopeResolution.matched_aliases.map((alias) => ({ id: alias.id, alias_kind: alias.alias_kind, alias_digest: alias.alias_digest })), excluded_scopes: [...scopeResolution.excluded_scopes, ...memoryDiagnostics.temporal_excluded], identity_digest: identityDigest, omitted_count: candidatesRanked.length - items2.length, explanation: { eligible_memory_count: memoryDiagnostics.eligible_memory_count, after_scope_precedence_count: memoryDiagnostics.after_scope_precedence_count, after_temporal_policy_count: memoryDiagnostics.after_temporal_policy_count, matching_memory_count: candidatesRanked.length, selected_memory_count: items2.length, budget_omitted_count: candidatesRanked.length - items2.length, selection: "scope_then_policy_then_shared_bm25_or_hybrid_then_required_and_budget" }, content_free: true }), items: items2, contributions, idempotent: false };
     });
   }
   feedback(args) {
@@ -242970,19 +243187,6 @@ var ContextResolutionKernel = class {
   receiptGet(args) {
     return { receipt: this.store.get("context_resolution_receipt", text(args.receipt_id, "receipt_id"), args.version === void 0 ? void 0 : Number(args.version)) };
   }
-  /** History is diagnostic. Current permissions also gate every historical version. */
-  memoryRecords(args, readable, scopes) {
-    if (args.history_view !== true && args.as_of === void 0 && args.known_at === void 0) {
-      const candidates2 = this.store.listScoped("memory_ledger", scopes, 10001, readable);
-      if (candidates2.length > 1e4) throw new Error("Memory candidate budget exceeded; narrow scope or source selection");
-      return candidates2;
-    }
-    const knownAt = args.known_at ?? args.as_of;
-    if (knownAt !== void 0 && (typeof knownAt !== "string" || !Number.isFinite(Date.parse(knownAt)))) throw new Error("known_at must be an ISO timestamp");
-    const candidates = this.store.listScoped("memory_ledger", scopes, 10001, readable, { known_at: knownAt, history: args.history_view === true });
-    if (candidates.length > 1e4) throw new Error("Memory history budget exceeded; narrow the ledger before historical retrieval");
-    return candidates;
-  }
   members(value) {
     if (value === void 0) return null;
     if (!Array.isArray(value) || !value.length) throw new Error("members must be a non-empty Context member list");
@@ -242994,19 +243198,6 @@ var ContextResolutionKernel = class {
       selected.add(member);
     }
     return selected;
-  }
-  /**
-   * One entry's body, from wherever it lives.
-   *
-   * A record written before the content store existed still carries `content` inline; otherwise
-   * the body is read back through its reference, so a moved or edited file cannot be mistaken
-   * for the memory the receipt names.
-   */
-  content(memory) {
-    if (typeof memory.content === "string") return memory.content;
-    const ref2 = memory.content_ref;
-    if (!contentReference(ref2)) throw new Error("Memory content reference is missing");
-    return this.store.contentStore.readCompatSync(ref2).body;
   }
   retrievalHealth(adapter, now3) {
     const health = this.store.find("retrieval_adapter_health", `retrieval_adapter_health_${String(adapter.id)}`);
@@ -250427,6 +250618,7 @@ var memoryCapability = {
   product: "craft-memory",
   evaluation: { input_contract: "scoped-memory-request", output_contract: "bounded-memory-ledger-result", fixture_id: "memory-fixture-v1", host_compatibility: ["fixture", "codex", "claude"] },
   owns: MEMORY_OWNS,
+  contributes: (registry) => new MemoryContribution(registry.require(CORE_KERNELS.store)),
   register(registry) {
     const store = registry.require(CORE_KERNELS.store);
     const ledger = new MemoryLedgerKernel(store);
@@ -251091,7 +251283,7 @@ ${String(value.description)}${contracts}`;
 
 // capability/craft-experience/ownership.ts
 var EXPERIENCE_FAMILIES = "craft_(?:experience_(?:ledger_|observe|patterns_list|procedure_(?:draft|submit|get|projection_(?:draft|get|list)|gate|skill_export))|procedure_(?:create|get|list|gate|export_skill)|automation_job_(?:save|pause|run|tick|get|eligibility)|evaluation_model_|route_workflow_proposal|workflow_(?:save|get|search|transition|rollback))";
-var EXPERIENCE_PRODUCT_EXTRAS = "craft_(?:experience_(?:graph_|pattern_|candidate_list|mine|shadow_experiment_|capture_|asset_)|procedure_(?:invocation_|configuration_|plan$)|component_(?:readiness_get|diagnose)|evidence_record|scope_identity_resolve_project|context_resolution_(?:resolve|feedback)|decision_context_gate_open|workflow_(?:checkpoint|resume|run_cancel|replan|export|import))";
+var EXPERIENCE_PRODUCT_EXTRAS = "craft_(?:experience_(?:graph_|pattern_|candidate_list|mine|shadow_experiment_|capture_|asset_)|procedure_(?:host_control$|decision_evaluate$|invocation_|configuration_|plan$)|component_(?:readiness_get|diagnose)|evidence_record|scope_identity_resolve_project|context_resolution_(?:resolve|feedback)|decision_context_gate_open|workflow_(?:checkpoint|resume|run_cancel|replan|export|import))";
 var EXPERIENCE_OWNS = new RegExp(`^${EXPERIENCE_FAMILIES}`);
 var EXPERIENCE_COMPONENT = new RegExp(`^(?:${EXPERIENCE_FAMILIES}|${EXPERIENCE_PRODUCT_EXTRAS})`);
 
@@ -251265,6 +251457,63 @@ var experienceCapability = {
    */
   contributes: (registry) => new ExperienceContribution(registry.require(CORE_KERNELS.store))
 };
+
+// capability/craft-codebase/context-search.ts
+var INTENTS2 = {
+  \u767B\u5F55: ["login", "auth", "session"],
+  \u7528\u6237: ["user", "account"],
+  \u6743\u9650: ["permission", "access", "policy"],
+  \u8BB0\u5FC6: ["memory"],
+  \u77E5\u8BC6: ["knowledge", "claim"],
+  \u7ECF\u9A8C: ["experience", "procedure"],
+  \u4E0A\u4E0B\u6587: ["context"],
+  \u7248\u672C: ["version", "revision"],
+  \u5DE5\u4F5C\u6D41: ["workflow", "graph"],
+  \u4EE3\u7801: ["code", "codebase"],
+  \u6D4B\u8BD5: ["test", "assert", "verify"],
+  \u7F13\u5B58: ["cache"],
+  \u68C0\u7D22: ["search", "retrieval"],
+  \u652F\u4ED8: ["payment", "pay"],
+  \u8BA2\u5355: ["order"],
+  \u6570\u636E\u5E93: ["database", "store"],
+  \u7F51\u7EDC: ["http", "request"]
+};
+function codeQueryTerms(query) {
+  return [.../* @__PURE__ */ new Set([...retrievalTerms(query), ...Object.entries(INTENTS2).filter(([word]) => query.includes(word)).flatMap(([, values3]) => values3)])];
+}
+function codeContextCandidates(index, query, limit3 = 100) {
+  if (!Number.isSafeInteger(limit3) || limit3 < 1 || limit3 > 1e3) throw new Error("Code Context limit must be between 1 and 1000");
+  const aliases = Object.entries(INTENTS2).filter(([word]) => query.includes(word)).flatMap(([, values3]) => values3);
+  const terms3 = codeQueryTerms(query);
+  const nodes = index.nodes;
+  const ranked = nodes.map((node) => ({ node, score: terms3.reduce((sum, term) => sum + Number(String(node.name).toLowerCase().includes(term)) * 3 + Number(String(node.path).toLowerCase().includes(term)), 0) })).filter((row) => row.score > 0).sort((a, b) => b.score - a.score || String(a.node.path).localeCompare(String(b.node.path)) || String(a.node.id).localeCompare(String(b.node.id)));
+  const edges = index.edges ?? [];
+  const seeds = ranked.slice(0, edges.length ? Math.ceil(limit3 * 2 / 3) : limit3);
+  const candidates = new Map(seeds.map((row) => [String(row.node.id), { ...row.node, score: row.score, selection_reason: "lexical_match" }]));
+  const byId = new Map(nodes.map((node) => [String(node.id), node]));
+  const neighbours = /* @__PURE__ */ new Map();
+  for (const edge of edges) {
+    const from = String(edge.from_node_id), to = String(edge.to_node_id);
+    for (const [seedId, neighbourId] of [[from, to], [to, from]]) {
+      const seed = candidates.get(seedId), neighbour = byId.get(neighbourId);
+      if (!seed || !neighbour || candidates.has(neighbourId)) continue;
+      const prior = neighbours.get(neighbourId), score = Number(seed.score) / 4;
+      if (!prior || Number(prior.score) < score) neighbours.set(neighbourId, { ...neighbour, score, selection_reason: "dependency_neighbour" });
+    }
+  }
+  const orderedNeighbours = [...neighbours.values()].sort((a, b) => Number(b.score) - Number(a.score) || String(a.path).localeCompare(String(b.path)) || String(a.id).localeCompare(String(b.id)));
+  const complete = new Map([...candidates.values(), ...orderedNeighbours, ...ranked.slice(seeds.length).map((row) => ({ ...row.node, score: row.score, selection_reason: "lexical_match" }))].map((node) => [String(node.id), node]));
+  const symbols = [...complete.values()].slice(0, limit3);
+  const selected = new Set(symbols.map((node) => String(node.id)));
+  const mapEdges = edges.filter((edge) => selected.has(String(edge.from_node_id)) && selected.has(String(edge.to_node_id)));
+  return {
+    symbols,
+    omitted_count: complete.size - symbols.length,
+    query_aliases: aliases,
+    candidate_only: true,
+    repo_map: { node_ids: [...selected], edges: mapEdges.slice(0, limit3 * 2), omitted_edges: Math.max(0, mapEdges.length - limit3 * 2), depth: 1, relations_analyzed: edges.length > 0 }
+  };
+}
 
 // capability/craft-codebase/typescript-analysis.ts
 var import_typescript = __toESM(require_typescript(), 1);
@@ -251567,6 +251816,55 @@ var CodebaseIndexKernel = class {
     const index = this.store.create("codebase_index", indexId, { ...identity, identity_digest: stableDigest(identity), status: "ready", analysis, source_file_count: files5.size, nodes: sorted(nodes), edges: sorted([...new Map(edges.map((edge) => [edge.id, edge])).values()]), diagnostics: input.diagnostics ?? [], raw_content_stored: false });
     return { index: this.indexStatus(index, workspace), idempotent: false };
   }
+  /** Governed code candidates, not an accumulated Context member or raw index. */
+  contextProjection(args) {
+    return this.store.transaction(() => {
+      const { index, workspace } = this.readyIndex(args);
+      const query = text19(args.query, "query"), limit3 = bounded2(args.limit, "limit", 100);
+      if (args.required_refs !== void 0 && !Array.isArray(args.required_refs)) throw new Error("required_refs must be an array");
+      const required5 = (args.required_refs ?? []).map(requiredContextRef).filter((ref2) => ref2.member === "codebase");
+      const scope3 = args.scope ?? { kind: "workspace", id: workspace.id };
+      const normalize2 = (node) => ({ node_id: node.id, path: node.path, name: node.name, kind: node.kind, language: node.language, selection_reason: node.selection_reason, span: node.span, source_digest: node.source_digest, version: index.version, index_id: index.id, checkpoint_id: index.checkpoint_id });
+      const found = codeContextCandidates(index, query, limit3);
+      const candidates = [...found.symbols];
+      for (const node of index.nodes) if (required5.some((ref2) => contextAssetMatches(ref2, contextAssetRef("codebase", normalize2(node), scope3))) && !candidates.some((candidate2) => candidate2.id === node.id)) candidates.unshift(node);
+      const references = candidates.map(normalize2);
+      for (const ref2 of required5) if (!references.some((item) => contextAssetMatches(ref2, contextAssetRef("codebase", item, scope3)))) throw new Error("Required Codebase reference is unavailable");
+      const activation = this.store.get("codebase_activation", String(args.activation_id ?? `codebase_activation_${workspace.id}`));
+      const checkpoint = this.store.get("workspace_checkpoint", String(index.checkpoint_id));
+      const readRefs = [
+        { kind: "codebase_index", id: String(index.id), version: Number(index.version) },
+        { kind: "workspace", id: String(workspace.id), version: Number(workspace.version) },
+        { kind: "workspace_checkpoint", id: String(checkpoint.id), version: Number(checkpoint.version) },
+        { kind: "codebase_activation", id: String(activation.id), version: Number(activation.version) }
+      ];
+      return {
+        workspace_id: workspace.id,
+        index_id: index.id,
+        checkpoint_id: index.checkpoint_id,
+        activation_id: activation.id,
+        candidates: references,
+        query_omitted_count: found.omitted_count,
+        read_refs: readRefs,
+        configuration_digest: this.repositoryConfigurationDigest(workspace),
+        candidate_only: true
+      };
+    });
+  }
+  /** Revalidate the exact index/activation and selected file digests after shared Context awaits. */
+  assertContextProjectionCurrent(projection, selected) {
+    assertContextReadCurrent(this.store, projection);
+    const { index, workspace } = this.readyIndex(projection);
+    if (this.repositoryConfigurationDigest(workspace) !== projection.configuration_digest) throw new Error("Codebase repository configuration changed during recall");
+    const checkpoint = this.store.get("workspace_checkpoint", String(index.checkpoint_id));
+    const entries2 = new Map(checkpoint.entries.map((entry2) => [String(entry2.path), entry2]));
+    for (const item of selected) if (!projection.candidates.some((candidate2) => stableDigest(candidate2) === stableDigest(item))) throw new Error("Codebase reference was not projected");
+    for (const path2 of new Set(selected.map((item) => String(item.path)))) {
+      const entry2 = entries2.get(path2);
+      if (!entry2) throw new Error("Codebase projection path is outside checkpoint");
+      this.sourceFile(String(workspace.root_path), entry2);
+    }
+  }
   findSymbol(args) {
     const { index, workspace } = this.readyIndex(args);
     const query = text19(args.query, "query").toLowerCase();
@@ -251627,6 +251925,13 @@ var CodebaseIndexKernel = class {
   requireActive(args, workspaceId) {
     const activation = this.store.find("codebase_activation", String(args.activation_id ?? `codebase_activation_${workspaceId}`));
     if (!activation || activation.workspace_id !== workspaceId || activation.status !== "active") throw new Error("Codebase is not explicitly active for this workspace");
+  }
+  repositoryConfigurationDigest(workspace) {
+    const path2 = safeChild2(String(workspace.root_path), ".craft-codebase.json");
+    const stat4 = (0, import_node_fs26.lstatSync)(path2, { throwIfNoEntry: false });
+    if (!stat4) return null;
+    if (!stat4.isFile() || stat4.isSymbolicLink()) throw new Error("Repository config must be a regular file");
+    return digest21((0, import_node_fs26.readFileSync)(path2, "utf8"));
   }
   readyIndex(args) {
     const index = this.store.get("codebase_index", identifier20(args.index_id, "index_id"));
@@ -255402,7 +255707,7 @@ var TASK_TOOLS = {
   recall: ["craft_context_open", "craft_context_resolution_feedback"],
   knowledge: ["craft_knowledge_search", "craft_knowledge_claim_save", "craft_knowledge_host_review", "craft_knowledge_source_ingest"],
   memory: ["craft_memory_governance", "craft_memory_capture_user_statement", "craft_memory_conflict_list", "craft_memory_conflict_resolve", "craft_memory_candidate_review", "craft_memory_ledger_remember_approved"],
-  experience: ["craft_experience_graph_inspect", "craft_experience_graph_edit", "craft_procedure_plan", "craft_procedure_invocation_bind", "craft_procedure_invocation_dispatch", "craft_procedure_invocation_report"],
+  experience: ["craft_experience_graph_inspect", "craft_experience_graph_edit", "craft_procedure_plan", "craft_procedure_host_control", "craft_procedure_decision_evaluate", "craft_procedure_invocation_bind", "craft_procedure_invocation_dispatch", "craft_procedure_invocation_report"],
   code: ["craft_codebase_symbol_find", "craft_codebase_callers_find", "craft_codebase_impact_query", "craft_codebase_context_slice"]
 };
 function discoverContextTools(args) {
@@ -255722,6 +256027,8 @@ function createActionHandlers(service, mountedComponent) {
     craft_experience_asset_restore: (a) => service.componentAssetRestore("experience", a),
     craft_codebase_asset_inspect: (a) => service.componentAssetInspect("codebase", a),
     craft_codebase_asset_restore: (a) => service.componentAssetRestore("codebase", a),
+    craft_procedure_host_control: (a) => service.procedureHostControl(a),
+    craft_procedure_decision_evaluate: (a) => service.procedureDecisionEvaluate(a),
     craft_procedure_invocation_bind: (a) => service.procedureInvocationBind(a),
     craft_procedure_invocation_dispatch: (a) => service.procedureInvocationDispatch(a),
     craft_procedure_invocation_report: (a) => service.procedureInvocationReport(a),
@@ -257754,63 +258061,6 @@ function repositoryFiles(root, _query = "") {
   return { root, state: "ready", files: files5, omitted };
 }
 
-// capability/craft-codebase/context-search.ts
-var INTENTS2 = {
-  \u767B\u5F55: ["login", "auth", "session"],
-  \u7528\u6237: ["user", "account"],
-  \u6743\u9650: ["permission", "access", "policy"],
-  \u8BB0\u5FC6: ["memory"],
-  \u77E5\u8BC6: ["knowledge", "claim"],
-  \u7ECF\u9A8C: ["experience", "procedure"],
-  \u4E0A\u4E0B\u6587: ["context"],
-  \u7248\u672C: ["version", "revision"],
-  \u5DE5\u4F5C\u6D41: ["workflow", "graph"],
-  \u4EE3\u7801: ["code", "codebase"],
-  \u6D4B\u8BD5: ["test", "assert", "verify"],
-  \u7F13\u5B58: ["cache"],
-  \u68C0\u7D22: ["search", "retrieval"],
-  \u652F\u4ED8: ["payment", "pay"],
-  \u8BA2\u5355: ["order"],
-  \u6570\u636E\u5E93: ["database", "store"],
-  \u7F51\u7EDC: ["http", "request"]
-};
-function codeQueryTerms(query) {
-  return [.../* @__PURE__ */ new Set([...retrievalTerms(query), ...Object.entries(INTENTS2).filter(([word]) => query.includes(word)).flatMap(([, values3]) => values3)])];
-}
-function codeContextCandidates(index, query, limit3 = 100) {
-  if (!Number.isSafeInteger(limit3) || limit3 < 1 || limit3 > 1e3) throw new Error("Code Context limit must be between 1 and 1000");
-  const aliases = Object.entries(INTENTS2).filter(([word]) => query.includes(word)).flatMap(([, values3]) => values3);
-  const terms3 = codeQueryTerms(query);
-  const nodes = index.nodes;
-  const ranked = nodes.map((node) => ({ node, score: terms3.reduce((sum, term) => sum + Number(String(node.name).toLowerCase().includes(term)) * 3 + Number(String(node.path).toLowerCase().includes(term)), 0) })).filter((row) => row.score > 0).sort((a, b) => b.score - a.score || String(a.node.path).localeCompare(String(b.node.path)) || String(a.node.id).localeCompare(String(b.node.id)));
-  const edges = index.edges ?? [];
-  const seeds = ranked.slice(0, edges.length ? Math.ceil(limit3 * 2 / 3) : limit3);
-  const candidates = new Map(seeds.map((row) => [String(row.node.id), { ...row.node, score: row.score, selection_reason: "lexical_match" }]));
-  const byId = new Map(nodes.map((node) => [String(node.id), node]));
-  const neighbours = /* @__PURE__ */ new Map();
-  for (const edge of edges) {
-    const from = String(edge.from_node_id), to = String(edge.to_node_id);
-    for (const [seedId, neighbourId] of [[from, to], [to, from]]) {
-      const seed = candidates.get(seedId), neighbour = byId.get(neighbourId);
-      if (!seed || !neighbour || candidates.has(neighbourId)) continue;
-      const prior = neighbours.get(neighbourId), score = Number(seed.score) / 4;
-      if (!prior || Number(prior.score) < score) neighbours.set(neighbourId, { ...neighbour, score, selection_reason: "dependency_neighbour" });
-    }
-  }
-  const orderedNeighbours = [...neighbours.values()].sort((a, b) => Number(b.score) - Number(a.score) || String(a.path).localeCompare(String(b.path)) || String(a.id).localeCompare(String(b.id)));
-  const complete = new Map([...candidates.values(), ...orderedNeighbours, ...ranked.slice(seeds.length).map((row) => ({ ...row.node, score: row.score, selection_reason: "lexical_match" }))].map((node) => [String(node.id), node]));
-  const symbols = [...complete.values()].slice(0, limit3);
-  const selected = new Set(symbols.map((node) => String(node.id)));
-  const mapEdges = edges.filter((edge) => selected.has(String(edge.from_node_id)) && selected.has(String(edge.to_node_id)));
-  return {
-    symbols,
-    omitted_count: complete.size - symbols.length,
-    query_aliases: aliases,
-    candidate_only: true,
-    repo_map: { node_ids: [...selected], edges: mapEdges.slice(0, limit3 * 2), omitted_edges: Math.max(0, mapEdges.length - limit3 * 2), depth: 1, relations_analyzed: edges.length > 0 }
-  };
-}
-
 // capability/craft-codebase/basic-analysis.ts
 var ANALYZER_VERSION = "2";
 function basicAnalysis(store, workspaceId, files5) {
@@ -257934,17 +258184,9 @@ async function openContext(service, args) {
   const taskKind = args.task_kind ?? (/review|bug|debug|code|开发|代码|修复|排查|重构|测试/iu.test(args.query) ? "code" : "general");
   if (!["code", "review", "debug", "development", "knowledge", "general"].includes(String(taskKind))) throw new Error("Unsupported Context task_kind");
   const codeFirst = ["code", "review", "debug", "development"].includes(String(taskKind)) || codeRequired.length > 0;
-  let queryOmitted = 0;
-  let candidates = [];
-  if (codebase.status === "ready") {
-    service.codebaseSymbolFind({ workspace_id: codebase.workspace_id, index_id: codebase.index_id, query: args.query, limit: 1 });
-    const index = service.store.get("codebase_index", String(codebase.index_id));
-    const found = codeContextCandidates(index, args.query, 100);
-    candidates = found.symbols;
-    queryOmitted = Number(found.omitted_count);
-    for (const node of index.nodes) if (codeRequired.some((ref2) => contextAssetMatches(ref2, contextAssetRef("codebase", { ...node, version: index.version, index_id: index.id, checkpoint_id: index.checkpoint_id }, scope3))) && !candidates.some((candidate2) => candidate2.id === node.id)) candidates.unshift(node);
-  }
-  const normalize2 = (node) => ({ node_id: node.id, path: node.path, name: node.name, kind: node.kind, language: node.language, selection_reason: node.selection_reason, span: node.span, source_digest: node.source_digest, version: service.store.get("codebase_index", String(codebase.index_id)).version, index_id: codebase.index_id, checkpoint_id: codebase.checkpoint_id });
+  const projection = codebase.status === "ready" ? service.codebase.contextProjection({ workspace_id: codebase.workspace_id, index_id: codebase.index_id, query: args.query, limit: 100, required_refs: codeRequired, scope: scope3 }) : null;
+  const queryOmitted = Number(projection?.query_omitted_count ?? 0);
+  const candidates = projection?.candidates ?? [];
   const context = await service.contextWorkingSets.resolve({
     ...controls,
     query: args.query,
@@ -257956,7 +258198,7 @@ async function openContext(service, args) {
     allow_partial: true,
     deduplicate: true,
     members: args.members ?? ["knowledge", "memory", "experience", "history", "state"],
-    codebase_candidates: candidates.map(normalize2),
+    codebase_candidates: candidates,
     prefer_codebase: codeFirst
   });
   const receipt = context.receipt;
@@ -257983,6 +258225,7 @@ async function openContext(service, args) {
   if (args.max_tokens !== void 0 && (!Number.isSafeInteger(args.max_tokens) || Number(args.max_tokens) < 1 || estimatedTokens > Number(args.max_tokens))) throw new Error("Context injection exceeds estimated token budget or max_tokens is invalid");
   return service.store.transaction(() => {
     assertContextReadCurrent(service.store, receipt);
+    if (projection) service.codebase.assertContextProjectionCurrent(projection, references);
     const packReceipt = service.store.find("context_pack_receipt", id22) ?? service.store.create("context_pack_receipt", id22, { ...packIdentity, identity_digest: stableDigest(packIdentity), content_free: true });
     return { ...context, items: injectionItems, contributions: injectionContributions, already_emitted_refs: alreadyEmitted, hook_reused: alreadyEmitted.length > 0, asset_refs: assetRefs, injection_measurement: { measurement_scope: "material_projection_excludes_protocol_envelope_and_host_history_bodies", serialized_chars: injection.length, estimated_tokens: estimatedTokens, tokenizer: "cjk_char_latin_four_char_estimate", exact: false, host_measured_tokens: null }, partial: reasons.length > 0, codebase: { ...codebase, references }, pack_receipt: packReceipt, host_execution_authority: false };
   });
@@ -258776,6 +259019,12 @@ var CraftService = class _CraftService extends ServiceFoundation {
       recordEvidence: (args) => this.evidenceRecord(args),
       saveClaim: (args) => this.knowledgeClaimSave(args)
     });
+  }
+  procedureHostControl(args) {
+    return procedureHostControl(this, args);
+  }
+  procedureDecisionEvaluate(args) {
+    return procedureDecisionEvaluate(this, args);
   }
   procedureConfigurationSave(args) {
     return new ProcedureConfiguration(this.store).save(args);
@@ -267068,6 +267317,8 @@ var DAILY_COMPONENT_TOOLS = {
     "craft_experience_procedure_draft",
     "craft_experience_procedure_submit",
     "craft_experience_procedure_get",
+    "craft_procedure_host_control",
+    "craft_procedure_decision_evaluate",
     "craft_procedure_invocation_bind",
     "craft_procedure_invocation_dispatch",
     "craft_procedure_invocation_report",

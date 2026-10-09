@@ -1,13 +1,13 @@
 {
   "product": "craft-common-use",
-  "craft_version": "0.12.39",
+  "craft_version": "0.12.40",
   "source_repository": "https://github.com/wdx9413/craft.git",
-  "source_commit": "851bfe29ee465240005c10c81898c475690f8564",
+  "source_commit": "3be188b671caa8c233b48e5cbb3f1ea0a0231a75",
   "source_state": "committed",
-  "source_note": "v0.12.39 payloads were synchronized from a clean checkout of 851bfe29ee465240005c10c81898c475690f8564; Git-visible source snapshot sha256:6541acccdc6543f7081cfcfbc5012246317b6f302f272e27e7981b58941c97f3. source_commit identifies HEAD, not dirty source contents; this snapshot does not attest the build process.",
+  "source_note": "v0.12.40 payloads were synchronized from a clean checkout of 3be188b671caa8c233b48e5cbb3f1ea0a0231a75; Git-visible source snapshot sha256:deacc3cc65f85371c374cc073e5a216b81a0ed3a0e33a1c68af21c6639711f3d. source_commit identifies HEAD, not dirty source contents; this snapshot does not attest the build process.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "3090491c17d5417ffc0f2e974037550be04358f75c41670ff0cbd51a891eb11d",
+    "craft_mcp_sha256": "5beef86987975cb1edc5e73c87cc58b1de46a3124d5846ad286ad413fcc6fd20",
     "parser_worker_sha256": "6bcc3de4457f40cb1243bae8b3c73d6112e5481b88ec23d187348302da4b165c"
   },
   "skills": [
@@ -24,5 +24,5 @@
     "craft-knowledge": "4a2fbb308a8583397bac80bab9c6b2d05efee47e93cd624433a17e64766cd135",
     "craft-memory": "8ea6c3ca8599672f852efb9dbf2913cf5a7075920d0b16c0698a6a2dbad76f04"
   },
-  "source_tree_digest": "sha256:6541acccdc6543f7081cfcfbc5012246317b6f302f272e27e7981b58941c97f3"
+  "source_tree_digest": "sha256:deacc3cc65f85371c374cc073e5a216b81a0ed3a0e33a1c68af21c6639711f3d"
 }
