@@ -2,12 +2,12 @@
   "product": "craft-common-use",
   "craft_version": "0.12.39",
   "source_repository": "https://github.com/wdx9413/craft.git",
-  "source_commit": "b9ded888d4172c64508ccda7134e41ccd44e80ce",
+  "source_commit": "851bfe29ee465240005c10c81898c475690f8564",
   "source_state": "committed",
-  "source_note": "v0.12.39 payloads were synchronized from a clean checkout of b9ded888d4172c64508ccda7134e41ccd44e80ce; Git-visible source snapshot sha256:cff1933b3c097fc4e19ac1d36dfc4cd3d5f83dffda79e929dd326b5fff47ddc0. source_commit identifies HEAD, not dirty source contents; this snapshot does not attest the build process.",
+  "source_note": "v0.12.39 payloads were synchronized from a clean checkout of 851bfe29ee465240005c10c81898c475690f8564; Git-visible source snapshot sha256:6541acccdc6543f7081cfcfbc5012246317b6f302f272e27e7981b58941c97f3. source_commit identifies HEAD, not dirty source contents; this snapshot does not attest the build process.",
   "distribution_repository": "https://github.com/wdx9413/craft-marketplace.git",
   "bundle": {
-    "craft_mcp_sha256": "3eab14306bd5e00b234b5c890a519f6f135906066828cfebbbd7f750d3618dd8",
+    "craft_mcp_sha256": "3090491c17d5417ffc0f2e974037550be04358f75c41670ff0cbd51a891eb11d",
     "parser_worker_sha256": "6bcc3de4457f40cb1243bae8b3c73d6112e5481b88ec23d187348302da4b165c"
   },
   "skills": [
@@ -19,10 +19,10 @@
   ],
   "skill_sha256": {
     "craft-codebase": "20a726b85f9465b41635b88cfb1ff8b1bca96f2afbf8912ce80bc38e82eacf54",
-    "craft-context": "3594e91daeb53435852a5bd8e4d0435de9efa01954827c869409f788ebb94772",
-    "craft-experience": "bb4a559ef5e180a333c68953a5478a9603189e444ec9eb0512b30faf27068317",
+    "craft-context": "7f6a8db0bd74e4e7a906c0df9271964e94c216dadde8a6ec4283de1de6ccdc8f",
+    "craft-experience": "5efcf45831f0b7947c3d61d5c5eebb343fb432832637405d0d6f5ff7ee9aa563",
     "craft-knowledge": "4a2fbb308a8583397bac80bab9c6b2d05efee47e93cd624433a17e64766cd135",
-    "craft-memory": "f9e91e2218ad0f52fff7b62144290fa4a0eac3e4276f7110de2a9c679ed61fc9"
+    "craft-memory": "8ea6c3ca8599672f852efb9dbf2913cf5a7075920d0b16c0698a6a2dbad76f04"
   },
-  "source_tree_digest": "sha256:cff1933b3c097fc4e19ac1d36dfc4cd3d5f83dffda79e929dd326b5fff47ddc0"
+  "source_tree_digest": "sha256:6541acccdc6543f7081cfcfbc5012246317b6f302f272e27e7981b58941c97f3"
 }

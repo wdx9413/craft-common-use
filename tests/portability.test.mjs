@@ -30,6 +30,24 @@ test('client dialects preserve unrelated entries and uninstall only owned config
   } finally { rmSync(root, { recursive: true, force: true }) }
 })
 
+test('distribution sync removes obsolete bundled templates and preserves files outside managed Skill trees', () => {
+  const root = mkdtempSync(join(tmpdir(), 'craft-portable-sync-')), market = join(root, 'market'), portable = join(root, 'portable')
+  const put = (path, body) => { mkdirSync(resolve(path, '..'), { recursive: true }); writeFileSync(path, body) }
+  try {
+    put(join(market, 'release.json'), JSON.stringify({ version: '0.12.39', components: ['craft-experience'], source_commit: 'fixture', source_state: 'dirty', source_tree_digest: 'sha256:fixture', source_note: 'fixture' }))
+    put(join(market, 'plugins/craft-experience/skills/craft-experience/SKILL.md'), 'Call the Runtime template tool\n')
+    for (const file of ['craft-mcp.cjs', 'craft-parser-worker.js']) put(join(market, 'plugins/craft-memory/dist/plugin', file), 'module.exports = {}\n')
+    put(join(portable, 'release.json'), '{}')
+    put(join(portable, 'scripts/sync-from-marketplace.mjs'), readFileSync(new URL('../scripts/sync-from-marketplace.mjs', import.meta.url), 'utf8'))
+    put(join(portable, 'bundle/placeholder'), 'owned output directory')
+    const stale = join(portable, 'skills/craft-experience/references/old-template.json'); put(stale, '{}')
+    put(join(portable, 'notes.md'), 'preserved')
+    execFileSync(process.execPath, [join(portable, 'scripts/sync-from-marketplace.mjs'), market, '--apply'], { stdio: 'pipe' })
+    assert.equal(existsSync(stale), false); assert.equal(readFileSync(join(portable, 'notes.md'), 'utf8'), 'preserved')
+    assert.equal(JSON.parse(readFileSync(join(portable, 'release.json'), 'utf8')).craft_version, '0.12.39')
+  } finally { rmSync(root, { recursive: true, force: true }) }
+})
+
 test('probe negotiates once, calls a real tool, fails closed, and never claims host activation', async () => {
   const root = mkdtempSync(join(tmpdir(), 'craft-probe-test-'))
   try {

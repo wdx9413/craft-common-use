@@ -1,4 +1,4 @@
-import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 
@@ -11,7 +11,11 @@ if (!products.length || new Set(products).size !== products.length) throw new Er
 const digest = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 for (const product of products) if (!existsSync(resolve(marketplace, "plugins", product, "skills", product, "SKILL.md"))) throw new Error(`missing marketplace Skill ${product}`);
 if (!apply) { process.stdout.write("Validated marketplace input; re-run with --apply to synchronize.\n"); process.exit(0); }
-for (const product of products) cpSync(resolve(marketplace, "plugins", product, "skills", product), resolve(root, "skills", product), { recursive: true, force: true });
+for (const product of products) {
+  const target = resolve(root, "skills", product);
+  rmSync(target, { recursive: true, force: true });
+  cpSync(resolve(marketplace, "plugins", product, "skills", product), target, { recursive: true, force: true });
+}
 for (const file of ["craft-mcp.cjs", "craft-parser-worker.js"]) cpSync(resolve(marketplace, "plugins", "craft-memory", "dist", "plugin", file), resolve(root, "bundle", file), { force: true });
 const local = JSON.parse(readFileSync(resolve(root, "release.json"), "utf8"));
 local.craft_version = release.version; local.source_commit = release.source_commit; local.source_state = release.source_state; local.source_note = release.source_note;
