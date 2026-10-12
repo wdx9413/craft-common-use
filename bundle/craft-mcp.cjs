@@ -995,14 +995,14 @@ var require_foldFlowLines = __commonJS({
     var FOLD_FLOW = "flow";
     var FOLD_BLOCK = "block";
     var FOLD_QUOTED = "quoted";
-    function foldFlowLines(text31, indent, mode2 = "flow", { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
+    function foldFlowLines(text32, indent, mode2 = "flow", { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
       if (!lineWidth || lineWidth < 0)
-        return text31;
+        return text32;
       if (lineWidth < minContentWidth)
         minContentWidth = 0;
       const endStep = Math.max(1 + minContentWidth, 1 + lineWidth - indent.length);
-      if (text31.length <= endStep)
-        return text31;
+      if (text32.length <= endStep)
+        return text32;
       const folds = [];
       const escapedFolds = {};
       let end = lineWidth - indent.length;
@@ -1019,14 +1019,14 @@ var require_foldFlowLines = __commonJS({
       let escStart = -1;
       let escEnd = -1;
       if (mode2 === FOLD_BLOCK) {
-        i = consumeMoreIndentedLines(text31, i, indent.length);
+        i = consumeMoreIndentedLines(text32, i, indent.length);
         if (i !== -1)
           end = i + endStep;
       }
-      for (let ch; ch = text31[i += 1]; ) {
+      for (let ch; ch = text32[i += 1]; ) {
         if (mode2 === FOLD_QUOTED && ch === "\\") {
           escStart = i;
-          switch (text31[i + 1]) {
+          switch (text32[i + 1]) {
             case "x":
               i += 3;
               break;
@@ -1043,12 +1043,12 @@ var require_foldFlowLines = __commonJS({
         }
         if (ch === "\n") {
           if (mode2 === FOLD_BLOCK)
-            i = consumeMoreIndentedLines(text31, i, indent.length);
+            i = consumeMoreIndentedLines(text32, i, indent.length);
           end = i + indent.length + endStep;
           split = void 0;
         } else {
           if (ch === " " && prev && prev !== " " && prev !== "\n" && prev !== "	") {
-            const next = text31[i + 1];
+            const next = text32[i + 1];
             if (next && next !== " " && next !== "\n" && next !== "	")
               split = i;
           }
@@ -1060,12 +1060,12 @@ var require_foldFlowLines = __commonJS({
             } else if (mode2 === FOLD_QUOTED) {
               while (prev === " " || prev === "	") {
                 prev = ch;
-                ch = text31[i += 1];
+                ch = text32[i += 1];
                 overflow = true;
               }
               const j = i > escEnd + 1 ? i - 2 : escStart - 1;
               if (escapedFolds[j])
-                return text31;
+                return text32;
               folds.push(j);
               escapedFolds[j] = true;
               end = j + endStep;
@@ -1080,39 +1080,39 @@ var require_foldFlowLines = __commonJS({
       if (overflow && onOverflow)
         onOverflow();
       if (folds.length === 0)
-        return text31;
+        return text32;
       if (onFold)
         onFold();
-      let res = text31.slice(0, folds[0]);
+      let res = text32.slice(0, folds[0]);
       for (let i2 = 0; i2 < folds.length; ++i2) {
         const fold = folds[i2];
-        const end2 = folds[i2 + 1] || text31.length;
+        const end2 = folds[i2 + 1] || text32.length;
         if (fold === 0)
           res = `
-${indent}${text31.slice(0, end2)}`;
+${indent}${text32.slice(0, end2)}`;
         else {
           if (mode2 === FOLD_QUOTED && escapedFolds[fold])
-            res += `${text31[fold]}\\`;
+            res += `${text32[fold]}\\`;
           res += `
-${indent}${text31.slice(fold + 1, end2)}`;
+${indent}${text32.slice(fold + 1, end2)}`;
         }
       }
       return res;
     }
-    function consumeMoreIndentedLines(text31, i, indent) {
+    function consumeMoreIndentedLines(text32, i, indent) {
       let end = i;
       let start2 = i + 1;
-      let ch = text31[start2];
+      let ch = text32[start2];
       while (ch === " " || ch === "	") {
         if (i < start2 + indent) {
-          ch = text31[++i];
+          ch = text32[++i];
         } else {
           do {
-            ch = text31[++i];
+            ch = text32[++i];
           } while (ch && ch !== "\n");
           end = i;
           start2 = i + 1;
-          ch = text31[start2];
+          ch = text32[start2];
         }
       }
       return end;
@@ -9776,9 +9776,9 @@ var require_typescript = __commonJS({
         }
         return false;
       }
-      function indexOfAnyCharCode(text31, charCodes, start2) {
-        for (let i = start2 ?? 0; i < text31.length; i++) {
-          if (contains(charCodes, text31.charCodeAt(i))) {
+      function indexOfAnyCharCode(text32, charCodes, start2) {
+        for (let i = start2 ?? 0; i < text32.length; i++) {
+          if (contains(charCodes, text32.charCodeAt(i))) {
             return i;
           }
         }
@@ -10690,8 +10690,8 @@ var require_typescript = __commonJS({
       function toArray(value) {
         return isArray(value) ? value : [value];
       }
-      function isString(text31) {
-        return typeof text31 === "string";
+      function isString(text32) {
+        return typeof text32 === "string";
       }
       function isNumber(x) {
         return typeof x === "number";
@@ -11351,8 +11351,8 @@ Node ${formatSyntaxKind(node.kind)} was unexpected.`,
           } else if (hasProperty(func, "name")) {
             return func.name;
           } else {
-            const text31 = Function.prototype.toString.call(func);
-            const match = /^function\s+([\w$]+)\s*\(/.exec(text31);
+            const text32 = Function.prototype.toString.call(func);
+            const match = /^function\s+([\w$]+)\s*\(/.exec(text32);
             return match ? match[1] : "";
           }
         }
@@ -11674,12 +11674,12 @@ Node ${formatSyntaxKind(node.kind)} was unexpected.`,
             },
             __debugTypeToString: {
               value() {
-                let text31 = weakTypeTextMap.get(this);
-                if (text31 === void 0) {
-                  text31 = this.checker.typeToString(this);
-                  weakTypeTextMap.set(this, text31);
+                let text32 = weakTypeTextMap.get(this);
+                if (text32 === void 0) {
+                  text32 = this.checker.typeToString(this);
+                  weakTypeTextMap.set(this, text32);
                 }
-                return text31;
+                return text32;
               }
             }
           });
@@ -11745,14 +11745,14 @@ Node ${formatSyntaxKind(node.kind)} was unexpected.`,
                 __debugGetText: {
                   value(includeTrivia) {
                     if (nodeIsSynthesized(this)) return "";
-                    let text31 = weakNodeTextMap.get(this);
-                    if (text31 === void 0) {
+                    let text32 = weakNodeTextMap.get(this);
+                    if (text32 === void 0) {
                       const parseNode = getParseTreeNode(this);
                       const sourceFile = parseNode && getSourceFileOfNode(parseNode);
-                      text31 = sourceFile ? getSourceTextOfNodeFromSourceFile(sourceFile, parseNode, includeTrivia) : "";
-                      weakNodeTextMap.set(this, text31);
+                      text32 = sourceFile ? getSourceTextOfNodeFromSourceFile(sourceFile, parseNode, includeTrivia) : "";
+                      weakNodeTextMap.set(this, text32);
                     }
-                    return text31;
+                    return text32;
                   }
                 }
               });
@@ -12008,9 +12008,9 @@ m2: ${this.mapper2.__debugToString().split("\n").join("\n    ")}`;
             );
           }
           function renderFlowNode(flowNode2, circular) {
-            let text31 = getHeader2(flowNode2.flags);
+            let text32 = getHeader2(flowNode2.flags);
             if (circular) {
-              text31 = `${text31}#${getDebugFlowNodeId(flowNode2)}`;
+              text32 = `${text32}#${getDebugFlowNodeId(flowNode2)}`;
             }
             if (isFlowSwitchClause(flowNode2)) {
               const clauses = [];
@@ -12023,13 +12023,13 @@ m2: ${this.mapper2.__debugToString().split("\n").join("\n    ")}`;
                   clauses.push(getNodeText(clause.expression));
                 }
               }
-              text31 += ` (${clauses.join(", ")})`;
+              text32 += ` (${clauses.join(", ")})`;
             } else if (hasNode(flowNode2)) {
               if (flowNode2.node) {
-                text31 += ` (${getNodeText(flowNode2.node)})`;
+                text32 += ` (${getNodeText(flowNode2.node)})`;
               }
             }
-            return circular === "circularity" ? `Circular(${text31})` : text31;
+            return circular === "circularity" ? `Circular(${text32})` : text32;
           }
           function renderGraph() {
             const columnCount = columnWidths.length;
@@ -12095,8 +12095,8 @@ m2: ${this.mapper2.__debugToString().split("\n").join("\n    ")}`;
             return `
 ${lanes.join("\n")}
 `;
-            function writeLane(lane, text31) {
-              lanes[lane] += text31;
+            function writeLane(lane, text32) {
+              lanes[lane] += text32;
             }
           }
           function getBoxCharacter(connector) {
@@ -12174,8 +12174,8 @@ ${lanes.join("\n")}
           this.prerelease = prereleaseArray;
           this.build = buildArray;
         }
-        static tryParse(text31) {
-          const result = tryParseComponents(text31);
+        static tryParse(text32) {
+          const result = tryParseComponents(text32);
           if (!result) return void 0;
           const { major, minor, patch, prerelease, build: build2 } = result;
           return new _Version2(major, minor, patch, prerelease, build2);
@@ -12216,8 +12216,8 @@ ${lanes.join("\n")}
       };
       _Version.zero = new _Version(0, 0, 0, ["0"]);
       var Version = _Version;
-      function tryParseComponents(text31) {
-        const match = versionRegExp.exec(text31);
+      function tryParseComponents(text32) {
+        const match = versionRegExp.exec(text32);
         if (!match) return void 0;
         const [, major, minor = "0", patch = "0", prerelease = "", build2 = ""] = match;
         if (prerelease && !prereleaseRegExp.test(prerelease)) return void 0;
@@ -12256,8 +12256,8 @@ ${lanes.join("\n")}
         constructor(spec) {
           this._alternatives = spec ? Debug.checkDefined(parseRange(spec), "Invalid range spec.") : emptyArray;
         }
-        static tryParse(text31) {
-          const sets = parseRange(text31);
+        static tryParse(text32) {
+          const sets = parseRange(text32);
           if (sets) {
             const range = new _VersionRange("");
             range._alternatives = sets;
@@ -12282,9 +12282,9 @@ ${lanes.join("\n")}
       var partialRegExp = /^([x*0]|[1-9]\d*)(?:\.([x*0]|[1-9]\d*)(?:\.([x*0]|[1-9]\d*)(?:-([a-z0-9-.]+))?(?:\+([a-z0-9-.]+))?)?)?$/i;
       var hyphenRegExp = /^\s*([a-z0-9-+.*]+)\s+-\s+([a-z0-9-+.*]+)\s*$/i;
       var rangeRegExp = /^([~^<>=]|<=|>=)?\s*([a-z0-9-+.*]+)$/i;
-      function parseRange(text31) {
+      function parseRange(text32) {
         const alternatives = [];
-        for (let range of text31.trim().split(logicalOrRegExp)) {
+        for (let range of text32.trim().split(logicalOrRegExp)) {
           if (!range) continue;
           const comparators = [];
           range = range.trim();
@@ -12301,8 +12301,8 @@ ${lanes.join("\n")}
         }
         return alternatives;
       }
-      function parsePartial(text31) {
-        const match = partialRegExp.exec(text31);
+      function parsePartial(text32) {
+        const match = partialRegExp.exec(text32);
         if (!match) return void 0;
         const [, major, minor = "*", patch = "*", prerelease, build2] = match;
         const version22 = new Version(
@@ -12329,8 +12329,8 @@ ${lanes.join("\n")}
         }
         return true;
       }
-      function parseComparator(operator, text31, comparators) {
-        const result = parsePartial(text31);
+      function parseComparator(operator, text32, comparators) {
+        const result = parsePartial(text32);
         if (!result) return false;
         const { version: version22, major, minor, patch } = result;
         if (!isWildcard(major)) {
@@ -19335,16 +19335,16 @@ ${lanes.join("\n")}
       function characterCodeToRegularExpressionFlag(ch) {
         return charCodeToRegExpFlag.get(ch);
       }
-      function computeLineStarts(text31) {
+      function computeLineStarts(text32) {
         const result = [];
         let pos = 0;
         let lineStart = 0;
-        while (pos < text31.length) {
-          const ch = text31.charCodeAt(pos);
+        while (pos < text32.length) {
+          const ch = text32.charCodeAt(pos);
           pos++;
           switch (ch) {
             case 13:
-              if (text31.charCodeAt(pos) === 10) {
+              if (text32.charCodeAt(pos) === 10) {
                 pos++;
               }
             // falls through
@@ -19440,8 +19440,8 @@ ${lanes.join("\n")}
       function isOctalDigit(ch) {
         return ch >= 48 && ch <= 55;
       }
-      function couldStartTrivia(text31, pos) {
-        const ch = text31.charCodeAt(pos);
+      function couldStartTrivia(text32, pos) {
+        const ch = text32.charCodeAt(pos);
         switch (ch) {
           case 13:
           case 10:
@@ -19463,16 +19463,16 @@ ${lanes.join("\n")}
             return ch > 127;
         }
       }
-      function skipTrivia(text31, pos, stopAfterLineBreak, stopAtComments, inJSDoc) {
+      function skipTrivia(text32, pos, stopAfterLineBreak, stopAtComments, inJSDoc) {
         if (positionIsSynthesized(pos)) {
           return pos;
         }
         let canConsumeStar = false;
         while (true) {
-          const ch = text31.charCodeAt(pos);
+          const ch = text32.charCodeAt(pos);
           switch (ch) {
             case 13:
-              if (text31.charCodeAt(pos + 1) === 10) {
+              if (text32.charCodeAt(pos + 1) === 10) {
                 pos++;
               }
             // falls through
@@ -19493,10 +19493,10 @@ ${lanes.join("\n")}
               if (stopAtComments) {
                 break;
               }
-              if (text31.charCodeAt(pos + 1) === 47) {
+              if (text32.charCodeAt(pos + 1) === 47) {
                 pos += 2;
-                while (pos < text31.length) {
-                  if (isLineBreak(text31.charCodeAt(pos))) {
+                while (pos < text32.length) {
+                  if (isLineBreak(text32.charCodeAt(pos))) {
                     break;
                   }
                   pos++;
@@ -19504,10 +19504,10 @@ ${lanes.join("\n")}
                 canConsumeStar = false;
                 continue;
               }
-              if (text31.charCodeAt(pos + 1) === 42) {
+              if (text32.charCodeAt(pos + 1) === 42) {
                 pos += 2;
-                while (pos < text31.length) {
-                  if (text31.charCodeAt(pos) === 42 && text31.charCodeAt(pos + 1) === 47) {
+                while (pos < text32.length) {
+                  if (text32.charCodeAt(pos) === 42 && text32.charCodeAt(pos + 1) === 47) {
                     pos += 2;
                     break;
                   }
@@ -19521,15 +19521,15 @@ ${lanes.join("\n")}
             case 124:
             case 61:
             case 62:
-              if (isConflictMarkerTrivia(text31, pos)) {
-                pos = scanConflictMarkerTrivia(text31, pos);
+              if (isConflictMarkerTrivia(text32, pos)) {
+                pos = scanConflictMarkerTrivia(text32, pos);
                 canConsumeStar = false;
                 continue;
               }
               break;
             case 35:
-              if (pos === 0 && isShebangTrivia(text31, pos)) {
-                pos = scanShebangTrivia(text31, pos);
+              if (pos === 0 && isShebangTrivia(text32, pos)) {
+                pos = scanShebangTrivia(text32, pos);
                 canConsumeStar = false;
                 continue;
               }
@@ -19552,29 +19552,29 @@ ${lanes.join("\n")}
         }
       }
       var mergeConflictMarkerLength = "<<<<<<<".length;
-      function isConflictMarkerTrivia(text31, pos) {
+      function isConflictMarkerTrivia(text32, pos) {
         Debug.assert(pos >= 0);
-        if (pos === 0 || isLineBreak(text31.charCodeAt(pos - 1))) {
-          const ch = text31.charCodeAt(pos);
-          if (pos + mergeConflictMarkerLength < text31.length) {
+        if (pos === 0 || isLineBreak(text32.charCodeAt(pos - 1))) {
+          const ch = text32.charCodeAt(pos);
+          if (pos + mergeConflictMarkerLength < text32.length) {
             for (let i = 0; i < mergeConflictMarkerLength; i++) {
-              if (text31.charCodeAt(pos + i) !== ch) {
+              if (text32.charCodeAt(pos + i) !== ch) {
                 return false;
               }
             }
-            return ch === 61 || text31.charCodeAt(pos + mergeConflictMarkerLength) === 32;
+            return ch === 61 || text32.charCodeAt(pos + mergeConflictMarkerLength) === 32;
           }
         }
         return false;
       }
-      function scanConflictMarkerTrivia(text31, pos, error2) {
+      function scanConflictMarkerTrivia(text32, pos, error2) {
         if (error2) {
           error2(Diagnostics.Merge_conflict_marker_encountered, pos, mergeConflictMarkerLength);
         }
-        const ch = text31.charCodeAt(pos);
-        const len = text31.length;
+        const ch = text32.charCodeAt(pos);
+        const len = text32.length;
         if (ch === 60 || ch === 62) {
-          while (pos < len && !isLineBreak(text31.charCodeAt(pos))) {
+          while (pos < len && !isLineBreak(text32.charCodeAt(pos))) {
             pos++;
           }
         } else {
@@ -19583,8 +19583,8 @@ ${lanes.join("\n")}
             /* equals */
           );
           while (pos < len) {
-            const currentChar = text31.charCodeAt(pos);
-            if ((currentChar === 61 || currentChar === 62) && currentChar !== ch && isConflictMarkerTrivia(text31, pos)) {
+            const currentChar = text32.charCodeAt(pos);
+            if ((currentChar === 61 || currentChar === 62) && currentChar !== ch && isConflictMarkerTrivia(text32, pos)) {
               break;
             }
             pos++;
@@ -19593,16 +19593,16 @@ ${lanes.join("\n")}
         return pos;
       }
       var shebangTriviaRegex = /^#!.*/;
-      function isShebangTrivia(text31, pos) {
+      function isShebangTrivia(text32, pos) {
         Debug.assert(pos === 0);
-        return shebangTriviaRegex.test(text31);
+        return shebangTriviaRegex.test(text32);
       }
-      function scanShebangTrivia(text31, pos) {
-        const shebang = shebangTriviaRegex.exec(text31)[0];
+      function scanShebangTrivia(text32, pos) {
+        const shebang = shebangTriviaRegex.exec(text32)[0];
         pos = pos + shebang.length;
         return pos;
       }
-      function iterateCommentRanges(reduce, text31, pos, trailing, cb, state4, initial) {
+      function iterateCommentRanges(reduce, text32, pos, trailing, cb, state4, initial) {
         let pendingPos;
         let pendingEnd;
         let pendingKind;
@@ -19612,17 +19612,17 @@ ${lanes.join("\n")}
         let accumulator = initial;
         if (pos === 0) {
           collecting = true;
-          const shebang = getShebang(text31);
+          const shebang = getShebang(text32);
           if (shebang) {
             pos = shebang.length;
           }
         }
         scan:
-          while (pos >= 0 && pos < text31.length) {
-            const ch = text31.charCodeAt(pos);
+          while (pos >= 0 && pos < text32.length) {
+            const ch = text32.charCodeAt(pos);
             switch (ch) {
               case 13:
-                if (text31.charCodeAt(pos + 1) === 10) {
+                if (text32.charCodeAt(pos + 1) === 10) {
                   pos++;
                 }
               // falls through
@@ -19643,23 +19643,23 @@ ${lanes.join("\n")}
                 pos++;
                 continue;
               case 47:
-                const nextChar = text31.charCodeAt(pos + 1);
+                const nextChar = text32.charCodeAt(pos + 1);
                 let hasTrailingNewLine = false;
                 if (nextChar === 47 || nextChar === 42) {
                   const kind4 = nextChar === 47 ? 2 : 3;
                   const startPos = pos;
                   pos += 2;
                   if (nextChar === 47) {
-                    while (pos < text31.length) {
-                      if (isLineBreak(text31.charCodeAt(pos))) {
+                    while (pos < text32.length) {
+                      if (isLineBreak(text32.charCodeAt(pos))) {
                         hasTrailingNewLine = true;
                         break;
                       }
                       pos++;
                     }
                   } else {
-                    while (pos < text31.length) {
-                      if (text31.charCodeAt(pos) === 42 && text31.charCodeAt(pos + 1) === 47) {
+                    while (pos < text32.length) {
+                      if (text32.charCodeAt(pos) === 42 && text32.charCodeAt(pos + 1) === 47) {
                         pos += 2;
                         break;
                       }
@@ -19698,11 +19698,11 @@ ${lanes.join("\n")}
         }
         return accumulator;
       }
-      function forEachLeadingCommentRange(text31, pos, cb, state4) {
+      function forEachLeadingCommentRange(text32, pos, cb, state4) {
         return iterateCommentRanges(
           /*reduce*/
           false,
-          text31,
+          text32,
           pos,
           /*trailing*/
           false,
@@ -19710,11 +19710,11 @@ ${lanes.join("\n")}
           state4
         );
       }
-      function forEachTrailingCommentRange(text31, pos, cb, state4) {
+      function forEachTrailingCommentRange(text32, pos, cb, state4) {
         return iterateCommentRanges(
           /*reduce*/
           false,
-          text31,
+          text32,
           pos,
           /*trailing*/
           true,
@@ -19722,11 +19722,11 @@ ${lanes.join("\n")}
           state4
         );
       }
-      function reduceEachLeadingCommentRange(text31, pos, cb, state4, initial) {
+      function reduceEachLeadingCommentRange(text32, pos, cb, state4, initial) {
         return iterateCommentRanges(
           /*reduce*/
           true,
-          text31,
+          text32,
           pos,
           /*trailing*/
           false,
@@ -19735,11 +19735,11 @@ ${lanes.join("\n")}
           initial
         );
       }
-      function reduceEachTrailingCommentRange(text31, pos, cb, state4, initial) {
+      function reduceEachTrailingCommentRange(text32, pos, cb, state4, initial) {
         return iterateCommentRanges(
           /*reduce*/
           true,
-          text31,
+          text32,
           pos,
           /*trailing*/
           true,
@@ -19752,9 +19752,9 @@ ${lanes.join("\n")}
         comments.push({ kind: kind4, pos, end, hasTrailingNewLine });
         return comments;
       }
-      function getLeadingCommentRanges(text31, pos) {
+      function getLeadingCommentRanges(text32, pos) {
         return reduceEachLeadingCommentRange(
-          text31,
+          text32,
           pos,
           appendCommentRange,
           /*state*/
@@ -19763,9 +19763,9 @@ ${lanes.join("\n")}
           void 0
         );
       }
-      function getTrailingCommentRanges(text31, pos) {
+      function getTrailingCommentRanges(text32, pos) {
         return reduceEachTrailingCommentRange(
-          text31,
+          text32,
           pos,
           appendCommentRange,
           /*state*/
@@ -19774,8 +19774,8 @@ ${lanes.join("\n")}
           void 0
         );
       }
-      function getShebang(text31) {
-        const match = shebangTriviaRegex.exec(text31);
+      function getShebang(text32) {
+        const match = shebangTriviaRegex.exec(text32);
         if (match) {
           return match[0];
         }
@@ -19800,7 +19800,7 @@ ${lanes.join("\n")}
         return true;
       }
       function createScanner(languageVersion, skipTrivia2, languageVariant = 0, textInitial, onError, start2, length2) {
-        var text31 = textInitial;
+        var text32 = textInitial;
         var pos;
         var end;
         var fullStartPos;
@@ -19812,7 +19812,7 @@ ${lanes.join("\n")}
         var skipJsDocLeadingAsterisks = 0;
         var scriptKind = 0;
         var jsDocParsingMode = 0;
-        setText(text31, start2, length2);
+        setText(text32, start2, length2);
         var scanner2 = {
           getTokenFullStart: () => fullStartPos,
           getStartPos: () => fullStartPos,
@@ -19821,7 +19821,7 @@ ${lanes.join("\n")}
           getToken: () => token,
           getTokenStart: () => tokenStart,
           getTokenPos: () => tokenStart,
-          getTokenText: () => text31.substring(tokenStart, pos),
+          getTokenText: () => text32.substring(tokenStart, pos),
           getTokenValue: () => tokenValue,
           hasUnicodeEscape: () => (tokenFlags & 1024) !== 0,
           hasExtendedUnicodeEscape: () => (tokenFlags & 8) !== 0,
@@ -19876,13 +19876,13 @@ ${lanes.join("\n")}
         }
         return scanner2;
         function codePointUnchecked(pos2) {
-          return codePointAt(text31, pos2);
+          return codePointAt(text32, pos2);
         }
         function codePointChecked(pos2) {
           return pos2 >= 0 && pos2 < end ? codePointUnchecked(pos2) : -1;
         }
         function charCodeUnchecked(pos2) {
-          return text31.charCodeAt(pos2);
+          return text32.charCodeAt(pos2);
         }
         function charCodeChecked(pos2) {
           return pos2 >= 0 && pos2 < end ? charCodeUnchecked(pos2) : -1;
@@ -19907,7 +19907,7 @@ ${lanes.join("\n")}
               if (allowSeparator) {
                 allowSeparator = false;
                 isPreviousTokenSeparator = true;
-                result += text31.substring(start22, pos);
+                result += text32.substring(start22, pos);
               } else {
                 tokenFlags |= 16384;
                 if (isPreviousTokenSeparator) {
@@ -19932,7 +19932,7 @@ ${lanes.join("\n")}
             tokenFlags |= 16384;
             error2(Diagnostics.Numeric_separators_are_not_allowed_here, pos - 1, 1);
           }
-          return result + text31.substring(start22, pos);
+          return result + text32.substring(start22, pos);
         }
         function scanNumber() {
           let start22 = pos;
@@ -19977,7 +19977,7 @@ ${lanes.join("\n")}
             if (!finalFragment) {
               error2(Diagnostics.Digit_expected);
             } else {
-              scientificFragment = text31.substring(end2, preNumericPart) + finalFragment;
+              scientificFragment = text32.substring(end2, preNumericPart) + finalFragment;
               end2 = pos;
             }
           }
@@ -19991,7 +19991,7 @@ ${lanes.join("\n")}
               result += scientificFragment;
             }
           } else {
-            result = text31.substring(start22, end2);
+            result = text32.substring(start22, end2);
           }
           if (tokenFlags & 8192) {
             error2(Diagnostics.Decimals_with_leading_zeros_are_not_allowed, start22, end2 - start22);
@@ -20015,7 +20015,7 @@ ${lanes.join("\n")}
           }
           const identifierStart = pos;
           const { length: length3 } = scanIdentifierParts();
-          if (length3 === 1 && text31[identifierStart] === "n") {
+          if (length3 === 1 && text32[identifierStart] === "n") {
             if (isScientific) {
               error2(Diagnostics.A_bigint_literal_cannot_use_exponential_notation, numericStart, identifierStart - numericStart + 1);
             } else {
@@ -20035,7 +20035,7 @@ ${lanes.join("\n")}
             }
             pos++;
           }
-          tokenValue = text31.substring(start22, pos);
+          tokenValue = text32.substring(start22, pos);
           return isOctal;
         }
         function scanExactNumberOfHexDigits(count3, canHaveSeparators) {
@@ -20101,19 +20101,19 @@ ${lanes.join("\n")}
           let start22 = pos;
           while (true) {
             if (pos >= end) {
-              result += text31.substring(start22, pos);
+              result += text32.substring(start22, pos);
               tokenFlags |= 4;
               error2(Diagnostics.Unterminated_string_literal);
               break;
             }
             const ch = charCodeUnchecked(pos);
             if (ch === quote22) {
-              result += text31.substring(start22, pos);
+              result += text32.substring(start22, pos);
               pos++;
               break;
             }
             if (ch === 92 && !jsxAttributeString) {
-              result += text31.substring(start22, pos);
+              result += text32.substring(start22, pos);
               result += scanEscapeSequence(
                 1 | 2
                 /* ReportErrors */
@@ -20122,7 +20122,7 @@ ${lanes.join("\n")}
               continue;
             }
             if ((ch === 10 || ch === 13) && !jsxAttributeString) {
-              result += text31.substring(start22, pos);
+              result += text32.substring(start22, pos);
               tokenFlags |= 4;
               error2(Diagnostics.Unterminated_string_literal);
               break;
@@ -20139,7 +20139,7 @@ ${lanes.join("\n")}
           let resultingToken;
           while (true) {
             if (pos >= end) {
-              contents += text31.substring(start22, pos);
+              contents += text32.substring(start22, pos);
               tokenFlags |= 4;
               error2(Diagnostics.Unterminated_template_literal);
               resultingToken = startedWithBacktick ? 15 : 18;
@@ -20147,25 +20147,25 @@ ${lanes.join("\n")}
             }
             const currChar = charCodeUnchecked(pos);
             if (currChar === 96) {
-              contents += text31.substring(start22, pos);
+              contents += text32.substring(start22, pos);
               pos++;
               resultingToken = startedWithBacktick ? 15 : 18;
               break;
             }
             if (currChar === 36 && pos + 1 < end && charCodeUnchecked(pos + 1) === 123) {
-              contents += text31.substring(start22, pos);
+              contents += text32.substring(start22, pos);
               pos += 2;
               resultingToken = startedWithBacktick ? 16 : 17;
               break;
             }
             if (currChar === 92) {
-              contents += text31.substring(start22, pos);
+              contents += text32.substring(start22, pos);
               contents += scanEscapeSequence(1 | (shouldEmitInvalidEscapeError ? 2 : 0));
               start22 = pos;
               continue;
             }
             if (currChar === 13) {
-              contents += text31.substring(start22, pos);
+              contents += text32.substring(start22, pos);
               pos++;
               if (pos < end && charCodeUnchecked(pos) === 10) {
                 pos++;
@@ -20213,7 +20213,7 @@ ${lanes.join("\n")}
               }
               tokenFlags |= 2048;
               if (flags & 6) {
-                const code = parseInt(text31.substring(start22 + 1, pos), 8);
+                const code = parseInt(text32.substring(start22 + 1, pos), 8);
                 if (flags & 4 && !(flags & 32) && ch !== 48) {
                   error2(Diagnostics.Octal_escape_sequences_and_backreferences_are_not_allowed_in_a_character_class_If_this_was_intended_as_an_escape_sequence_use_the_syntax_0_instead, start22, pos - start22, "\\x" + code.toString(16).padStart(2, "0"));
                 } else {
@@ -20221,7 +20221,7 @@ ${lanes.join("\n")}
                 }
                 return String.fromCharCode(code);
               }
-              return text31.substring(start22, pos);
+              return text32.substring(start22, pos);
             case 56:
             case 57:
               tokenFlags |= 2048;
@@ -20229,11 +20229,11 @@ ${lanes.join("\n")}
                 if (flags & 4 && !(flags & 32)) {
                   error2(Diagnostics.Decimal_escape_sequences_and_backreferences_are_not_allowed_in_a_character_class, start22, pos - start22);
                 } else {
-                  error2(Diagnostics.Escape_sequence_0_is_not_allowed, start22, pos - start22, text31.substring(start22, pos));
+                  error2(Diagnostics.Escape_sequence_0_is_not_allowed, start22, pos - start22, text32.substring(start22, pos));
                 }
                 return String.fromCharCode(ch);
               }
-              return text31.substring(start22, pos);
+              return text32.substring(start22, pos);
             case 98:
               return "\b";
             case 116:
@@ -20268,13 +20268,13 @@ ${lanes.join("\n")}
                   if (flags & 6) {
                     error2(Diagnostics.Hexadecimal_digit_expected);
                   }
-                  return text31.substring(start22, pos);
+                  return text32.substring(start22, pos);
                 }
               }
               tokenFlags |= 1024;
-              const escapedValue = parseInt(text31.substring(start22 + 2, pos), 16);
+              const escapedValue = parseInt(text32.substring(start22 + 2, pos), 16);
               const escapedValueString = String.fromCharCode(escapedValue);
-              if (flags & 16 && escapedValue >= 55296 && escapedValue <= 56319 && pos + 6 < end && text31.substring(pos, pos + 2) === "\\u" && charCodeUnchecked(pos + 2) !== 123) {
+              if (flags & 16 && escapedValue >= 55296 && escapedValue <= 56319 && pos + 6 < end && text32.substring(pos, pos + 2) === "\\u" && charCodeUnchecked(pos + 2) !== 123) {
                 const nextStart = pos;
                 let nextPos = pos + 2;
                 for (; nextPos < nextStart + 6; nextPos++) {
@@ -20282,7 +20282,7 @@ ${lanes.join("\n")}
                     return escapedValueString;
                   }
                 }
-                const nextEscapedValue = parseInt(text31.substring(nextStart + 2, nextPos), 16);
+                const nextEscapedValue = parseInt(text32.substring(nextStart + 2, nextPos), 16);
                 if (nextEscapedValue >= 56320 && nextEscapedValue <= 57343) {
                   pos = nextPos;
                   return escapedValueString + String.fromCharCode(nextEscapedValue);
@@ -20296,11 +20296,11 @@ ${lanes.join("\n")}
                   if (flags & 6) {
                     error2(Diagnostics.Hexadecimal_digit_expected);
                   }
-                  return text31.substring(start22, pos);
+                  return text32.substring(start22, pos);
                 }
               }
               tokenFlags |= 4096;
-              return String.fromCharCode(parseInt(text31.substring(start22 + 2, pos), 16));
+              return String.fromCharCode(parseInt(text32.substring(start22 + 2, pos), 16));
             // when encountering a LineContinuation (i.e. a backslash and a line terminator sequence),
             // the line terminator is interpreted to be "the empty code unit sequence".
             case 13:
@@ -20356,7 +20356,7 @@ ${lanes.join("\n")}
           }
           if (isInvalidExtendedEscape) {
             tokenFlags |= 2048;
-            return text31.substring(start22, pos);
+            return text32.substring(start22, pos);
           }
           tokenFlags |= 8;
           return utf16EncodeAsString(escapedValue);
@@ -20412,7 +20412,7 @@ ${lanes.join("\n")}
                 break;
               }
               tokenFlags |= 1024;
-              result += text31.substring(start22, pos);
+              result += text32.substring(start22, pos);
               result += utf16EncodeAsString(ch);
               pos += 6;
               start22 = pos;
@@ -20420,7 +20420,7 @@ ${lanes.join("\n")}
               break;
             }
           }
-          result += text31.substring(start22, pos);
+          result += text32.substring(start22, pos);
           return result;
         }
         function getIdentifierToken() {
@@ -20459,7 +20459,7 @@ ${lanes.join("\n")}
             if (!isDigit(ch) || ch - 48 >= base) {
               break;
             }
-            value += text31[pos];
+            value += text32[pos];
             pos++;
             isPreviousTokenSeparator = false;
           }
@@ -20492,8 +20492,8 @@ ${lanes.join("\n")}
             }
             const ch = codePointUnchecked(pos);
             if (pos === 0) {
-              if (ch === 35 && isShebangTrivia(text31, pos)) {
-                pos = scanShebangTrivia(text31, pos);
+              if (ch === 35 && isShebangTrivia(text32, pos)) {
+                pos = scanShebangTrivia(text32, pos);
                 if (skipTrivia2) {
                   continue;
                 } else {
@@ -20647,7 +20647,7 @@ ${lanes.join("\n")}
                   }
                   commentDirectives = appendIfCommentDirective(
                     commentDirectives,
-                    text31.slice(tokenStart, pos),
+                    text32.slice(tokenStart, pos),
                     commentDirectiveRegExSingleLine,
                     tokenStart
                   );
@@ -20678,7 +20678,7 @@ ${lanes.join("\n")}
                   if (isJSDoc2 && shouldParseJSDoc()) {
                     tokenFlags |= 2;
                   }
-                  commentDirectives = appendIfCommentDirective(commentDirectives, text31.slice(lastLineStart, pos), commentDirectiveRegExMultiLine, lastLineStart);
+                  commentDirectives = appendIfCommentDirective(commentDirectives, text32.slice(lastLineStart, pos), commentDirectiveRegExMultiLine, lastLineStart);
                   if (!commentClosed) {
                     error2(Diagnostics.Asterisk_Slash_expected);
                   }
@@ -20756,8 +20756,8 @@ ${lanes.join("\n")}
                 pos++;
                 return token = 27;
               case 60:
-                if (isConflictMarkerTrivia(text31, pos)) {
-                  pos = scanConflictMarkerTrivia(text31, pos, error2);
+                if (isConflictMarkerTrivia(text32, pos)) {
+                  pos = scanConflictMarkerTrivia(text32, pos, error2);
                   if (skipTrivia2) {
                     continue;
                   } else {
@@ -20779,8 +20779,8 @@ ${lanes.join("\n")}
                 pos++;
                 return token = 30;
               case 61:
-                if (isConflictMarkerTrivia(text31, pos)) {
-                  pos = scanConflictMarkerTrivia(text31, pos, error2);
+                if (isConflictMarkerTrivia(text32, pos)) {
+                  pos = scanConflictMarkerTrivia(text32, pos, error2);
                   if (skipTrivia2) {
                     continue;
                   } else {
@@ -20799,8 +20799,8 @@ ${lanes.join("\n")}
                 pos++;
                 return token = 64;
               case 62:
-                if (isConflictMarkerTrivia(text31, pos)) {
-                  pos = scanConflictMarkerTrivia(text31, pos, error2);
+                if (isConflictMarkerTrivia(text32, pos)) {
+                  pos = scanConflictMarkerTrivia(text32, pos, error2);
                   if (skipTrivia2) {
                     continue;
                   } else {
@@ -20837,8 +20837,8 @@ ${lanes.join("\n")}
                 pos++;
                 return token = 19;
               case 124:
-                if (isConflictMarkerTrivia(text31, pos)) {
-                  pos = scanConflictMarkerTrivia(text31, pos, error2);
+                if (isConflictMarkerTrivia(text32, pos)) {
+                  pos = scanConflictMarkerTrivia(text32, pos, error2);
                   if (skipTrivia2) {
                     continue;
                   } else {
@@ -20885,7 +20885,7 @@ ${lanes.join("\n")}
                 pos++;
                 return token = 0;
               case 35:
-                if (pos !== 0 && text31[pos + 1] === "!") {
+                if (pos !== 0 && text32[pos + 1] === "!") {
                   error2(Diagnostics.can_only_be_used_at_the_start_of_a_file, pos, 2);
                   pos++;
                   return token = 0;
@@ -20954,7 +20954,7 @@ ${lanes.join("\n")}
           if (jsDocParsingMode === 3) {
             return false;
           }
-          return jsDocSeeOrLink.test(text31.slice(fullStartPos, pos));
+          return jsDocSeeOrLink.test(text32.slice(fullStartPos, pos));
         }
         function reScanInvalidIdentifier() {
           Debug.assert(token === 0, "'reScanInvalidIdentifier' should only be called when the current token is 'SyntaxKind.Unknown'.");
@@ -20977,7 +20977,7 @@ ${lanes.join("\n")}
           if (isIdentifierStart(ch, languageVersion2)) {
             pos += charSize(ch);
             while (pos < end && isIdentifierPart(ch = codePointUnchecked(pos), languageVersion2)) pos += charSize(ch);
-            tokenValue = text31.substring(tokenStart, pos);
+            tokenValue = text32.substring(tokenStart, pos);
             if (ch === 92) {
               tokenValue += scanIdentifierParts();
             }
@@ -21110,7 +21110,7 @@ ${lanes.join("\n")}
                 });
               }
             }
-            tokenValue = text31.substring(tokenStart, pos);
+            tokenValue = text32.substring(tokenStart, pos);
             token = 14;
           }
           return token;
@@ -21538,7 +21538,7 @@ ${lanes.join("\n")}
             }
             let start22 = pos;
             let operand;
-            switch (text31.slice(pos, pos + 2)) {
+            switch (text32.slice(pos, pos + 2)) {
               // TODO: don't use slice
               case "--":
               case "&&":
@@ -21604,7 +21604,7 @@ ${lanes.join("\n")}
                     pos++;
                     error2(Diagnostics.Operators_must_not_be_mixed_within_a_character_class_Wrap_it_in_a_nested_class_instead, pos - 2, 2);
                     start22 = pos - 2;
-                    operand = text31.slice(start22, pos);
+                    operand = text32.slice(start22, pos);
                     continue;
                   } else {
                     if (!operand) {
@@ -21643,20 +21643,20 @@ ${lanes.join("\n")}
                   } else {
                     error2(Diagnostics.Unexpected_0_Did_you_mean_to_escape_it_with_backslash, pos - 1, 1, String.fromCharCode(ch));
                   }
-                  operand = text31.slice(start22, pos);
+                  operand = text32.slice(start22, pos);
                   continue;
               }
               if (isClassContentExit(charCodeChecked(pos))) {
                 break;
               }
               start22 = pos;
-              switch (text31.slice(pos, pos + 2)) {
+              switch (text32.slice(pos, pos + 2)) {
                 // TODO: don't use slice
                 case "--":
                 case "&&":
                   error2(Diagnostics.Operators_must_not_be_mixed_within_a_character_class_Wrap_it_in_a_nested_class_instead, pos, 2);
                   pos += 2;
-                  operand = text31.slice(start22, pos);
+                  operand = text32.slice(start22, pos);
                   break;
                 default:
                   operand = scanClassSetOperand();
@@ -21847,7 +21847,7 @@ ${lanes.join("\n")}
                 case 126:
                   error2(Diagnostics.A_character_class_must_not_contain_a_reserved_double_punctuator_Did_you_mean_to_escape_it_with_backslash, pos, 2);
                   pos += 2;
-                  return text31.substring(pos - 2, pos);
+                  return text32.substring(pos - 2, pos);
               }
             }
             switch (ch) {
@@ -21991,7 +21991,7 @@ ${lanes.join("\n")}
           function scanSourceCharacter() {
             const size = anyUnicodeMode ? charSize(codePointChecked(pos)) : 1;
             pos += size;
-            return size > 0 ? text31.substring(pos - size, pos) : "";
+            return size > 0 ? text32.substring(pos - size, pos) : "";
           }
           function scanExpectedChar(ch) {
             if (charCodeChecked(pos) === ch) {
@@ -22116,8 +22116,8 @@ ${lanes.join("\n")}
               break;
             }
             if (char === 60) {
-              if (isConflictMarkerTrivia(text31, pos)) {
-                pos = scanConflictMarkerTrivia(text31, pos, error2);
+              if (isConflictMarkerTrivia(text32, pos)) {
+                pos = scanConflictMarkerTrivia(text32, pos, error2);
                 return token = 7;
               }
               break;
@@ -22137,7 +22137,7 @@ ${lanes.join("\n")}
             }
             pos++;
           }
-          tokenValue = text31.substring(fullStartPos, pos);
+          tokenValue = text32.substring(fullStartPos, pos);
           return firstNonWhitespace === -1 ? 13 : 12;
         }
         function scanJsxIdentifier() {
@@ -22195,7 +22195,7 @@ ${lanes.join("\n")}
           if (pos === tokenStart) {
             return scanJsDocToken();
           }
-          tokenValue = text31.substring(tokenStart, pos);
+          tokenValue = text32.substring(tokenStart, pos);
           return token = 82;
         }
         function scanJsDocToken() {
@@ -22276,7 +22276,7 @@ ${lanes.join("\n")}
           if (isIdentifierStart(ch, languageVersion)) {
             let char = ch;
             while (pos < end && isIdentifierPart(char = codePointUnchecked(pos), languageVersion) || char === 45) pos += charSize(char);
-            tokenValue = text31.substring(tokenStart, pos);
+            tokenValue = text32.substring(tokenStart, pos);
             if (char === 92) {
               tokenValue += scanIdentifierParts();
             }
@@ -22312,7 +22312,7 @@ ${lanes.join("\n")}
           const saveTokenValue = tokenValue;
           const saveTokenFlags = tokenFlags;
           const saveErrorExpectations = commentDirectives;
-          setText(text31, start22, length3);
+          setText(text32, start22, length3);
           const result = callback();
           end = saveEnd;
           pos = savePos;
@@ -22339,14 +22339,14 @@ ${lanes.join("\n")}
           );
         }
         function getText() {
-          return text31;
+          return text32;
         }
         function clearCommentDirectives() {
           commentDirectives = void 0;
         }
         function setText(newText, start22, length3) {
-          text31 = newText || "";
-          end = length3 === void 0 ? text31.length : start22 + length3;
+          text32 = newText || "";
+          end = length3 === void 0 ? text32.length : start22 + length3;
           resetTokenState(start22 || 0);
         }
         function setOnError(errorCallback) {
@@ -23988,22 +23988,22 @@ ${lanes.join("\n")}
         if (parseTreeNode && parseTreeNode.kind === 170) {
           const paramIdx = parseTreeNode.parent.parameters.indexOf(parseTreeNode);
           const previousSibling = paramIdx > 0 ? parseTreeNode.parent.parameters[paramIdx - 1] : void 0;
-          const text31 = sourceFile.text;
+          const text32 = sourceFile.text;
           const commentRanges = previousSibling ? concatenate(
             // to handle
             // ... parameters, /** @internal */
             // public param: string
-            getTrailingCommentRanges(text31, skipTrivia(
-              text31,
+            getTrailingCommentRanges(text32, skipTrivia(
+              text32,
               previousSibling.end + 1,
               /*stopAfterLineBreak*/
               false,
               /*stopAtComments*/
               true
             )),
-            getLeadingCommentRanges(text31, node.pos)
-          ) : getTrailingCommentRanges(text31, skipTrivia(
-            text31,
+            getLeadingCommentRanges(text32, node.pos)
+          ) : getTrailingCommentRanges(text32, skipTrivia(
+            text32,
             node.pos,
             /*stopAfterLineBreak*/
             false,
@@ -24054,7 +24054,7 @@ ${lanes.join("\n")}
       var stringWriter = createSingleLineStringWriter();
       function createSingleLineStringWriter() {
         var str = "";
-        const writeText = (text31) => str += text31;
+        const writeText = (text32) => str += text32;
         return {
           getText: () => str,
           write: writeText,
@@ -24372,15 +24372,15 @@ ${lanes.join("\n")}
       function insertStatementAfterCustomPrologue(to, statement) {
         return insertStatementAfterPrologue(to, statement, isAnyPrologueDirective);
       }
-      function isRecognizedTripleSlashComment(text31, commentPos, commentEnd) {
-        if (text31.charCodeAt(commentPos + 1) === 47 && commentPos + 2 < commentEnd && text31.charCodeAt(commentPos + 2) === 47) {
-          const textSubStr = text31.substring(commentPos, commentEnd);
+      function isRecognizedTripleSlashComment(text32, commentPos, commentEnd) {
+        if (text32.charCodeAt(commentPos + 1) === 47 && commentPos + 2 < commentEnd && text32.charCodeAt(commentPos + 2) === 47) {
+          const textSubStr = text32.substring(commentPos, commentEnd);
           return fullTripleSlashReferencePathRegEx.test(textSubStr) || fullTripleSlashAMDReferencePathRegEx.test(textSubStr) || fullTripleSlashAMDModuleRegEx.test(textSubStr) || fullTripleSlashReferenceTypeReferenceDirectiveRegEx.test(textSubStr) || fullTripleSlashLibReferenceRegEx.test(textSubStr) || defaultLibReferenceRegEx.test(textSubStr) ? true : false;
         }
         return false;
       }
-      function isPinnedComment(text31, start2) {
-        return text31.charCodeAt(start2 + 1) === 42 && text31.charCodeAt(start2 + 2) === 33;
+      function isPinnedComment(text32, start2) {
+        return text32.charCodeAt(start2 + 1) === 42 && text32.charCodeAt(start2 + 2) === 33;
       }
       function createCommentDirectivesMap(sourceFile, commentDirectives) {
         const directivesByLine = new Map(
@@ -24465,11 +24465,11 @@ ${lanes.join("\n")}
         if (nodeIsMissing(node)) {
           return "";
         }
-        let text31 = sourceText.substring(includeTrivia ? node.pos : skipTrivia(sourceText, node.pos), node.end);
+        let text32 = sourceText.substring(includeTrivia ? node.pos : skipTrivia(sourceText, node.pos), node.end);
         if (isJSDocTypeExpressionOrChild(node)) {
-          text31 = text31.split(/\r\n|\n|\r/).map((line2) => line2.replace(/^\s*\*/, "").trimStart()).join("\n");
+          text32 = text32.split(/\r\n|\n|\r/).map((line2) => line2.replace(/^\s*\*/, "").trimStart()).join("\n");
         }
-        return text31;
+        return text32;
       }
       function getTextOfNode(node, includeTrivia = false) {
         return getSourceTextOfNodeFromSourceFile(getSourceFileOfNode(node), node, includeTrivia);
@@ -25678,12 +25678,12 @@ ${lanes.join("\n")}
       function getLeadingCommentRangesOfNode(node, sourceFileOfNode) {
         return node.kind !== 12 ? getLeadingCommentRanges(sourceFileOfNode.text, node.pos) : void 0;
       }
-      function getJSDocCommentRanges(node, text31) {
-        const commentRanges = node.kind === 170 || node.kind === 169 || node.kind === 219 || node.kind === 220 || node.kind === 218 || node.kind === 261 || node.kind === 282 ? concatenate(getTrailingCommentRanges(text31, node.pos), getLeadingCommentRanges(text31, node.pos)) : getLeadingCommentRanges(text31, node.pos);
+      function getJSDocCommentRanges(node, text32) {
+        const commentRanges = node.kind === 170 || node.kind === 169 || node.kind === 219 || node.kind === 220 || node.kind === 218 || node.kind === 261 || node.kind === 282 ? concatenate(getTrailingCommentRanges(text32, node.pos), getLeadingCommentRanges(text32, node.pos)) : getLeadingCommentRanges(text32, node.pos);
         return filter(
           commentRanges,
           (comment) => comment.end <= node.end && // Due to parse errors sometime empty parameter may get comments assigned to it that end up not in parameter range
-          text31.charCodeAt(comment.pos + 1) === 42 && text31.charCodeAt(comment.pos + 2) === 42 && text31.charCodeAt(comment.pos + 3) !== 47
+          text32.charCodeAt(comment.pos + 1) === 42 && text32.charCodeAt(comment.pos + 2) === 42 && text32.charCodeAt(comment.pos + 3) !== 47
           /* slash */
         );
       }
@@ -28347,10 +28347,10 @@ ${lanes.join("\n")}
         sourceFilePath = isSourceFileInCommonSourceDirectory ? sourceFilePath.substring(commonSourceDirectory.length) : sourceFilePath;
         return combinePaths(newDirPath, sourceFilePath);
       }
-      function writeFile11(host, diagnostics, fileName, text31, writeByteOrderMark, sourceFiles, data) {
+      function writeFile11(host, diagnostics, fileName, text32, writeByteOrderMark, sourceFiles, data) {
         host.writeFile(
           fileName,
-          text31,
+          text32,
           writeByteOrderMark,
           (hostErrorMessage) => {
             diagnostics.add(createCompilerDiagnostic(Diagnostics.Could_not_write_file_0_Colon_1, fileName, hostErrorMessage));
@@ -28504,7 +28504,7 @@ ${lanes.join("\n")}
           writer.writeLine();
         }
       }
-      function emitComments(text31, lineMap, writer, comments, leadingSeparator, trailingSeparator, newLine, writeComment) {
+      function emitComments(text32, lineMap, writer, comments, leadingSeparator, trailingSeparator, newLine, writeComment) {
         if (comments && comments.length > 0) {
           if (leadingSeparator) {
             writer.writeSpace(" ");
@@ -28515,7 +28515,7 @@ ${lanes.join("\n")}
               writer.writeSpace(" ");
               emitInterveningSeparator = false;
             }
-            writeComment(text31, lineMap, writer, comment.pos, comment.end, newLine);
+            writeComment(text32, lineMap, writer, comment.pos, comment.end, newLine);
             if (comment.hasTrailingNewLine) {
               writer.writeLine();
             } else {
@@ -28527,15 +28527,15 @@ ${lanes.join("\n")}
           }
         }
       }
-      function emitDetachedComments(text31, lineMap, writer, writeComment, node, newLine, removeComments) {
+      function emitDetachedComments(text32, lineMap, writer, writeComment, node, newLine, removeComments) {
         let leadingComments;
         let currentDetachedCommentInfo;
         if (removeComments) {
           if (node.pos === 0) {
-            leadingComments = filter(getLeadingCommentRanges(text31, node.pos), isPinnedCommentLocal);
+            leadingComments = filter(getLeadingCommentRanges(text32, node.pos), isPinnedCommentLocal);
           }
         } else {
-          leadingComments = getLeadingCommentRanges(text31, node.pos);
+          leadingComments = getLeadingCommentRanges(text32, node.pos);
         }
         if (leadingComments) {
           const detachedComments = [];
@@ -28553,11 +28553,11 @@ ${lanes.join("\n")}
           }
           if (detachedComments.length) {
             const lastCommentLine = getLineOfLocalPositionFromLineMap(lineMap, last(detachedComments).end);
-            const nodeLine = getLineOfLocalPositionFromLineMap(lineMap, skipTrivia(text31, node.pos));
+            const nodeLine = getLineOfLocalPositionFromLineMap(lineMap, skipTrivia(text32, node.pos));
             if (nodeLine >= lastCommentLine + 2) {
               emitNewLineBeforeLeadingComments(lineMap, writer, node, leadingComments);
               emitComments(
-                text31,
+                text32,
                 lineMap,
                 writer,
                 detachedComments,
@@ -28574,22 +28574,22 @@ ${lanes.join("\n")}
         }
         return currentDetachedCommentInfo;
         function isPinnedCommentLocal(comment) {
-          return isPinnedComment(text31, comment.pos);
+          return isPinnedComment(text32, comment.pos);
         }
       }
-      function writeCommentRange(text31, lineMap, writer, commentPos, commentEnd, newLine) {
-        if (text31.charCodeAt(commentPos + 1) === 42) {
+      function writeCommentRange(text32, lineMap, writer, commentPos, commentEnd, newLine) {
+        if (text32.charCodeAt(commentPos + 1) === 42) {
           const firstCommentLineAndCharacter = computeLineAndCharacterOfPosition(lineMap, commentPos);
           const lineCount = lineMap.length;
           let firstCommentLineIndent;
           for (let pos = commentPos, currentLine = firstCommentLineAndCharacter.line; pos < commentEnd; currentLine++) {
-            const nextLineStart = currentLine + 1 === lineCount ? text31.length + 1 : lineMap[currentLine + 1];
+            const nextLineStart = currentLine + 1 === lineCount ? text32.length + 1 : lineMap[currentLine + 1];
             if (pos !== commentPos) {
               if (firstCommentLineIndent === void 0) {
-                firstCommentLineIndent = calculateIndent(text31, lineMap[firstCommentLineAndCharacter.line], commentPos);
+                firstCommentLineIndent = calculateIndent(text32, lineMap[firstCommentLineAndCharacter.line], commentPos);
               }
               const currentWriterIndentSpacing = writer.getIndent() * getIndentSize();
-              const spacesToEmit = currentWriterIndentSpacing - firstCommentLineIndent + calculateIndent(text31, pos, nextLineStart);
+              const spacesToEmit = currentWriterIndentSpacing - firstCommentLineIndent + calculateIndent(text32, pos, nextLineStart);
               if (spacesToEmit > 0) {
                 let numberOfSingleSpacesToEmit = spacesToEmit % getIndentSize();
                 const indentSizeSpaceString = getIndentString((spacesToEmit - numberOfSingleSpacesToEmit) / getIndentSize());
@@ -28602,16 +28602,16 @@ ${lanes.join("\n")}
                 writer.rawWrite("");
               }
             }
-            writeTrimmedCurrentLine(text31, commentEnd, writer, newLine, pos, nextLineStart);
+            writeTrimmedCurrentLine(text32, commentEnd, writer, newLine, pos, nextLineStart);
             pos = nextLineStart;
           }
         } else {
-          writer.writeComment(text31.substring(commentPos, commentEnd));
+          writer.writeComment(text32.substring(commentPos, commentEnd));
         }
       }
-      function writeTrimmedCurrentLine(text31, commentEnd, writer, newLine, pos, nextLineStart) {
+      function writeTrimmedCurrentLine(text32, commentEnd, writer, newLine, pos, nextLineStart) {
         const end = Math.min(commentEnd, nextLineStart - 1);
-        const currentLineText = text31.substring(pos, end).trim();
+        const currentLineText = text32.substring(pos, end).trim();
         if (currentLineText) {
           writer.writeComment(currentLineText);
           if (end !== commentEnd) {
@@ -28621,10 +28621,10 @@ ${lanes.join("\n")}
           writer.rawWrite(newLine);
         }
       }
-      function calculateIndent(text31, pos, end) {
+      function calculateIndent(text32, pos, end) {
         let currentLineIndent = 0;
-        for (; pos < end && isWhiteSpaceSingleLine(text31.charCodeAt(pos)); pos++) {
-          if (text31.charCodeAt(pos) === 9) {
+        for (; pos < end && isWhiteSpaceSingleLine(text32.charCodeAt(pos)); pos++) {
+          if (text32.charCodeAt(pos) === 9) {
             currentLineIndent += getIndentSize() - currentLineIndent % getIndentSize();
           } else {
             currentLineIndent++;
@@ -29086,9 +29086,9 @@ ${lanes.join("\n")}
       function readJson(path2, host) {
         return readJsonOrUndefined(path2, host) || {};
       }
-      function tryParseJson(text31) {
+      function tryParseJson(text32) {
         try {
-          return JSON.parse(text31);
+          return JSON.parse(text32);
         } catch {
           return void 0;
         }
@@ -29559,9 +29559,9 @@ ${lanes.join("\n")}
         this.original = void 0;
         this.emitNode = void 0;
       }
-      function SourceMapSource(fileName, text31, skipTrivia2) {
+      function SourceMapSource(fileName, text32, skipTrivia2) {
         this.fileName = fileName;
-        this.text = text31;
+        this.text = text32;
         this.skipTrivia = skipTrivia2 || ((pos) => pos);
       }
       var objectAllocator = {
@@ -29584,8 +29584,8 @@ ${lanes.join("\n")}
         Object.assign(objectAllocator, alloc);
         forEach(objectAllocatorPatchers, (fn) => fn(objectAllocator));
       }
-      function formatStringFromArgs(text31, args) {
-        return text31.replace(/\{(\d+)\}/g, (_match, index) => "" + Debug.checkDefined(args[+index]));
+      function formatStringFromArgs(text32, args) {
+        return text32.replace(/\{(\d+)\}/g, (_match, index) => "" + Debug.checkDefined(args[+index]));
       }
       var localizedDiagnosticMessages;
       function setLocalizedDiagnosticMessages(messages) {
@@ -29604,15 +29604,15 @@ ${lanes.join("\n")}
           length2 = sourceText.length - start2;
         }
         assertDiagnosticLocation(sourceText, start2, length2);
-        let text31 = getLocaleSpecificMessage(message);
+        let text32 = getLocaleSpecificMessage(message);
         if (some(args)) {
-          text31 = formatStringFromArgs(text31, args);
+          text32 = formatStringFromArgs(text32, args);
         }
         return {
           file: void 0,
           start: start2,
           length: length2,
-          messageText: text31,
+          messageText: text32,
           category: message.category,
           code: message.code,
           reportsUnnecessary: message.reportsUnnecessary,
@@ -29660,15 +29660,15 @@ ${lanes.join("\n")}
       }
       function createFileDiagnostic(file, start2, length2, message, ...args) {
         assertDiagnosticLocation(file.text, start2, length2);
-        let text31 = getLocaleSpecificMessage(message);
+        let text32 = getLocaleSpecificMessage(message);
         if (some(args)) {
-          text31 = formatStringFromArgs(text31, args);
+          text32 = formatStringFromArgs(text32, args);
         }
         return {
           file,
           start: start2,
           length: length2,
-          messageText: text31,
+          messageText: text32,
           category: message.category,
           code: message.code,
           reportsUnnecessary: message.reportsUnnecessary,
@@ -29676,22 +29676,22 @@ ${lanes.join("\n")}
         };
       }
       function formatMessage(message, ...args) {
-        let text31 = getLocaleSpecificMessage(message);
+        let text32 = getLocaleSpecificMessage(message);
         if (some(args)) {
-          text31 = formatStringFromArgs(text31, args);
+          text32 = formatStringFromArgs(text32, args);
         }
-        return text31;
+        return text32;
       }
       function createCompilerDiagnostic(message, ...args) {
-        let text31 = getLocaleSpecificMessage(message);
+        let text32 = getLocaleSpecificMessage(message);
         if (some(args)) {
-          text31 = formatStringFromArgs(text31, args);
+          text32 = formatStringFromArgs(text32, args);
         }
         return {
           file: void 0,
           start: void 0,
           length: void 0,
-          messageText: text31,
+          messageText: text32,
           category: message.category,
           code: message.code,
           reportsUnnecessary: message.reportsUnnecessary,
@@ -29710,12 +29710,12 @@ ${lanes.join("\n")}
         };
       }
       function chainDiagnosticMessages(details, message, ...args) {
-        let text31 = getLocaleSpecificMessage(message);
+        let text32 = getLocaleSpecificMessage(message);
         if (some(args)) {
-          text31 = formatStringFromArgs(text31, args);
+          text32 = formatStringFromArgs(text32, args);
         }
         return {
-          messageText: text31,
+          messageText: text32,
           category: message.category,
           code: message.code,
           next: details === void 0 || Array.isArray(details) ? details : [details]
@@ -30300,8 +30300,8 @@ ${lanes.join("\n")}
         return withoutPrefix === void 0 ? void 0 : stripLeadingDirectorySeparator(withoutPrefix);
       }
       var reservedCharacterPattern = /[^\w\s/]/g;
-      function regExpEscape(text31) {
-        return text31.replace(reservedCharacterPattern, escapeRegExpCharacter);
+      function regExpEscape(text32) {
+        return text32.replace(reservedCharacterPattern, escapeRegExpCharacter);
       }
       function escapeRegExpCharacter(match) {
         return "\\" + match;
@@ -30660,7 +30660,7 @@ ${lanes.join("\n")}
         return ModuleSpecifierEnding2;
       })(ModuleSpecifierEnding || {});
       function usesExtensionsOnImports({ imports }, hasExtension2 = or(hasJSFileExtension, hasTSFileExtension)) {
-        return firstDefined2(imports, ({ text: text31 }) => pathIsRelative(text31) && !fileExtensionIsOneOf(text31, extensionsNotSupportingExtensionlessResolution) ? hasExtension2(text31) : void 0) || false;
+        return firstDefined2(imports, ({ text: text32 }) => pathIsRelative(text32) && !fileExtensionIsOneOf(text32, extensionsNotSupportingExtensionlessResolution) ? hasExtension2(text32) : void 0) || false;
       }
       function getModuleSpecifierEndingPreference(preference, resolutionMode, compilerOptions, sourceFile) {
         const moduleResolution = getEmitModuleResolutionKind(compilerOptions);
@@ -30986,19 +30986,19 @@ ${lanes.join("\n")}
       function pseudoBigIntToString({ negative, base10Value }) {
         return (negative && base10Value !== "0" ? "-" : "") + base10Value;
       }
-      function parseBigInt(text31) {
+      function parseBigInt(text32) {
         if (!isValidBigIntString(
-          text31,
+          text32,
           /*roundTripOnly*/
           false
         )) {
           return void 0;
         }
-        return parseValidBigInt(text31);
+        return parseValidBigInt(text32);
       }
-      function parseValidBigInt(text31) {
-        const negative = text31.startsWith("-");
-        const base10Value = parsePseudoBigInt(`${negative ? text31.slice(1) : text31}n`);
+      function parseValidBigInt(text32) {
+        const negative = text32.startsWith("-");
+        const base10Value = parsePseudoBigInt(`${negative ? text32.slice(1) : text32}n`);
         return { negative, base10Value };
       }
       function isValidBigIntString(s, roundTripOnly) {
@@ -31237,8 +31237,8 @@ ${lanes.join("\n")}
       function isFunctionExpressionOrArrowFunction(node) {
         return node.kind === 219 || node.kind === 220;
       }
-      function escapeSnippetText(text31) {
-        return text31.replace(/\$/g, () => "\\$");
+      function escapeSnippetText(text32) {
+        return text32.replace(/\$/g, () => "\\$");
       }
       function isNumericLiteralName(name) {
         return (+name).toString() === name;
@@ -33926,13 +33926,13 @@ ${lanes.join("\n")}
           return update(updated, original);
         }
         function createNumericLiteral(value, numericLiteralFlags = 0) {
-          const text31 = typeof value === "number" ? value + "" : value;
-          Debug.assert(text31.charCodeAt(0) !== 45, "Negative numbers should be created in combination with createPrefixUnaryExpression");
+          const text32 = typeof value === "number" ? value + "" : value;
+          Debug.assert(text32.charCodeAt(0) !== 45, "Negative numbers should be created in combination with createPrefixUnaryExpression");
           const node = createBaseDeclaration(
             9
             /* NumericLiteral */
           );
-          node.text = text31;
+          node.text = text32;
           node.numericLiteralFlags = numericLiteralFlags;
           if (numericLiteralFlags & 384) node.transformFlags |= 1024;
           return node;
@@ -33946,17 +33946,17 @@ ${lanes.join("\n")}
           node.transformFlags |= 32;
           return node;
         }
-        function createBaseStringLiteral(text31, isSingleQuote) {
+        function createBaseStringLiteral(text32, isSingleQuote) {
           const node = createBaseDeclaration(
             11
             /* StringLiteral */
           );
-          node.text = text31;
+          node.text = text32;
           node.singleQuote = isSingleQuote;
           return node;
         }
-        function createStringLiteral(text31, isSingleQuote, hasExtendedUnicodeEscape) {
-          const node = createBaseStringLiteral(text31, isSingleQuote);
+        function createStringLiteral(text32, isSingleQuote, hasExtendedUnicodeEscape) {
+          const node = createBaseStringLiteral(text32, isSingleQuote);
           node.hasExtendedUnicodeEscape = hasExtendedUnicodeEscape;
           if (hasExtendedUnicodeEscape) node.transformFlags |= 1024;
           return node;
@@ -33970,48 +33970,48 @@ ${lanes.join("\n")}
           node.textSourceNode = sourceNode;
           return node;
         }
-        function createRegularExpressionLiteral(text31) {
+        function createRegularExpressionLiteral(text32) {
           const node = createBaseToken(
             14
             /* RegularExpressionLiteral */
           );
-          node.text = text31;
+          node.text = text32;
           return node;
         }
-        function createLiteralLikeNode(kind4, text31) {
+        function createLiteralLikeNode(kind4, text32) {
           switch (kind4) {
             case 9:
               return createNumericLiteral(
-                text31,
+                text32,
                 /*numericLiteralFlags*/
                 0
               );
             case 10:
-              return createBigIntLiteral(text31);
+              return createBigIntLiteral(text32);
             case 11:
               return createStringLiteral(
-                text31,
+                text32,
                 /*isSingleQuote*/
                 void 0
               );
             case 12:
               return createJsxText(
-                text31,
+                text32,
                 /*containsOnlyTriviaWhiteSpaces*/
                 false
               );
             case 13:
               return createJsxText(
-                text31,
+                text32,
                 /*containsOnlyTriviaWhiteSpaces*/
                 true
               );
             case 14:
-              return createRegularExpressionLiteral(text31);
+              return createRegularExpressionLiteral(text32);
             case 15:
               return createTemplateLiteralLikeNode(
                 kind4,
-                text31,
+                text32,
                 /*rawText*/
                 void 0,
                 /*templateFlags*/
@@ -34030,8 +34030,8 @@ ${lanes.join("\n")}
           node.symbol = void 0;
           return node;
         }
-        function createBaseGeneratedIdentifier(text31, autoGenerateFlags, prefix, suffix) {
-          const node = createBaseIdentifier(escapeLeadingUnderscores(text31));
+        function createBaseGeneratedIdentifier(text32, autoGenerateFlags, prefix, suffix) {
+          const node = createBaseIdentifier(escapeLeadingUnderscores(text32));
           setIdentifierAutoGenerate(node, {
             flags: autoGenerateFlags,
             id: nextAutoGenerateId,
@@ -34041,14 +34041,14 @@ ${lanes.join("\n")}
           nextAutoGenerateId++;
           return node;
         }
-        function createIdentifier(text31, originalKeywordKind, hasExtendedUnicodeEscape) {
-          if (originalKeywordKind === void 0 && text31) {
-            originalKeywordKind = stringToToken(text31);
+        function createIdentifier(text32, originalKeywordKind, hasExtendedUnicodeEscape) {
+          if (originalKeywordKind === void 0 && text32) {
+            originalKeywordKind = stringToToken(text32);
           }
           if (originalKeywordKind === 80) {
             originalKeywordKind = void 0;
           }
-          const node = createBaseIdentifier(escapeLeadingUnderscores(text31));
+          const node = createBaseIdentifier(escapeLeadingUnderscores(text32));
           if (hasExtendedUnicodeEscape) node.flags |= 256;
           if (node.escapedText === "await") {
             node.transformFlags |= 67108864;
@@ -34079,14 +34079,14 @@ ${lanes.join("\n")}
             void 0
           );
         }
-        function createUniqueName(text31, flags2 = 0, prefix, suffix) {
+        function createUniqueName(text32, flags2 = 0, prefix, suffix) {
           Debug.assert(!(flags2 & 7), "Argument out of range: flags");
           Debug.assert((flags2 & (16 | 32)) !== 32, "GeneratedIdentifierFlags.FileLevel cannot be set without also setting GeneratedIdentifierFlags.Optimistic");
-          return createBaseGeneratedIdentifier(text31, 3 | flags2, prefix, suffix);
+          return createBaseGeneratedIdentifier(text32, 3 | flags2, prefix, suffix);
         }
         function getGeneratedNameForNode(node, flags2 = 0, prefix, suffix) {
           Debug.assert(!(flags2 & 7), "Argument out of range: flags");
-          const text31 = !node ? "" : isMemberName(node) ? formatGeneratedName(
+          const text32 = !node ? "" : isMemberName(node) ? formatGeneratedName(
             /*privateName*/
             false,
             prefix,
@@ -34095,7 +34095,7 @@ ${lanes.join("\n")}
             idText
           ) : `generated@${getNodeId(node)}`;
           if (prefix || suffix) flags2 |= 16;
-          const name = createBaseGeneratedIdentifier(text31, 4 | flags2, prefix, suffix);
+          const name = createBaseGeneratedIdentifier(text32, 4 | flags2, prefix, suffix);
           name.original = node;
           return name;
         }
@@ -34108,12 +34108,12 @@ ${lanes.join("\n")}
           node.transformFlags |= 16777216;
           return node;
         }
-        function createPrivateIdentifier(text31) {
-          if (!startsWith(text31, "#")) Debug.fail("First character of private identifier must be #: " + text31);
-          return createBasePrivateIdentifier(escapeLeadingUnderscores(text31));
+        function createPrivateIdentifier(text32) {
+          if (!startsWith(text32, "#")) Debug.fail("First character of private identifier must be #: " + text32);
+          return createBasePrivateIdentifier(escapeLeadingUnderscores(text32));
         }
-        function createBaseGeneratedPrivateIdentifier(text31, autoGenerateFlags, prefix, suffix) {
-          const node = createBasePrivateIdentifier(escapeLeadingUnderscores(text31));
+        function createBaseGeneratedPrivateIdentifier(text32, autoGenerateFlags, prefix, suffix) {
+          const node = createBasePrivateIdentifier(escapeLeadingUnderscores(text32));
           setIdentifierAutoGenerate(node, {
             flags: autoGenerateFlags,
             id: nextAutoGenerateId,
@@ -34123,13 +34123,13 @@ ${lanes.join("\n")}
           nextAutoGenerateId++;
           return node;
         }
-        function createUniquePrivateName(text31, prefix, suffix) {
-          if (text31 && !startsWith(text31, "#")) Debug.fail("First character of private identifier must be #: " + text31);
-          const autoGenerateFlags = 8 | (text31 ? 3 : 1);
-          return createBaseGeneratedPrivateIdentifier(text31 ?? "", autoGenerateFlags, prefix, suffix);
+        function createUniquePrivateName(text32, prefix, suffix) {
+          if (text32 && !startsWith(text32, "#")) Debug.fail("First character of private identifier must be #: " + text32);
+          const autoGenerateFlags = 8 | (text32 ? 3 : 1);
+          return createBaseGeneratedPrivateIdentifier(text32 ?? "", autoGenerateFlags, prefix, suffix);
         }
         function getGeneratedPrivateNameForNode(node, prefix, suffix) {
-          const text31 = isMemberName(node) ? formatGeneratedName(
+          const text32 = isMemberName(node) ? formatGeneratedName(
             /*privateName*/
             true,
             prefix,
@@ -34138,7 +34138,7 @@ ${lanes.join("\n")}
             idText
           ) : `#generated@${getNodeId(node)}`;
           const flags2 = prefix || suffix ? 16 : 0;
-          const name = createBaseGeneratedPrivateIdentifier(text31, 4 | flags2, prefix, suffix);
+          const name = createBaseGeneratedPrivateIdentifier(text32, 4 | flags2, prefix, suffix);
           name.original = node;
           return name;
         }
@@ -35530,24 +35530,24 @@ ${lanes.join("\n")}
         function updateTemplateExpression(node, head, templateSpans) {
           return node.head !== head || node.templateSpans !== templateSpans ? update(createTemplateExpression(head, templateSpans), node) : node;
         }
-        function checkTemplateLiteralLikeNode(kind4, text31, rawText, templateFlags = 0) {
+        function checkTemplateLiteralLikeNode(kind4, text32, rawText, templateFlags = 0) {
           Debug.assert(!(templateFlags & ~7176), "Unsupported template flags.");
           let cooked = void 0;
-          if (rawText !== void 0 && rawText !== text31) {
+          if (rawText !== void 0 && rawText !== text32) {
             cooked = getCookedText(kind4, rawText);
             if (typeof cooked === "object") {
               return Debug.fail("Invalid raw text");
             }
           }
-          if (text31 === void 0) {
+          if (text32 === void 0) {
             if (cooked === void 0) {
               return Debug.fail("Arguments 'text' and 'rawText' may not both be undefined.");
             }
-            text31 = cooked;
+            text32 = cooked;
           } else if (cooked !== void 0) {
-            Debug.assert(text31 === cooked, "Expected argument 'text' to be the normalized (i.e. 'cooked') version of argument 'rawText'.");
+            Debug.assert(text32 === cooked, "Expected argument 'text' to be the normalized (i.e. 'cooked') version of argument 'rawText'.");
           }
-          return text31;
+          return text32;
         }
         function getTransformFlagsOfTemplateLiteralLike(templateFlags) {
           let transformFlags = 1024;
@@ -35556,43 +35556,43 @@ ${lanes.join("\n")}
           }
           return transformFlags;
         }
-        function createTemplateLiteralLikeToken(kind4, text31, rawText, templateFlags) {
+        function createTemplateLiteralLikeToken(kind4, text32, rawText, templateFlags) {
           const node = createBaseToken(kind4);
-          node.text = text31;
+          node.text = text32;
           node.rawText = rawText;
           node.templateFlags = templateFlags & 7176;
           node.transformFlags = getTransformFlagsOfTemplateLiteralLike(node.templateFlags);
           return node;
         }
-        function createTemplateLiteralLikeDeclaration(kind4, text31, rawText, templateFlags) {
+        function createTemplateLiteralLikeDeclaration(kind4, text32, rawText, templateFlags) {
           const node = createBaseDeclaration(kind4);
-          node.text = text31;
+          node.text = text32;
           node.rawText = rawText;
           node.templateFlags = templateFlags & 7176;
           node.transformFlags = getTransformFlagsOfTemplateLiteralLike(node.templateFlags);
           return node;
         }
-        function createTemplateLiteralLikeNode(kind4, text31, rawText, templateFlags) {
+        function createTemplateLiteralLikeNode(kind4, text32, rawText, templateFlags) {
           if (kind4 === 15) {
-            return createTemplateLiteralLikeDeclaration(kind4, text31, rawText, templateFlags);
+            return createTemplateLiteralLikeDeclaration(kind4, text32, rawText, templateFlags);
           }
-          return createTemplateLiteralLikeToken(kind4, text31, rawText, templateFlags);
+          return createTemplateLiteralLikeToken(kind4, text32, rawText, templateFlags);
         }
-        function createTemplateHead(text31, rawText, templateFlags) {
-          text31 = checkTemplateLiteralLikeNode(16, text31, rawText, templateFlags);
-          return createTemplateLiteralLikeNode(16, text31, rawText, templateFlags);
+        function createTemplateHead(text32, rawText, templateFlags) {
+          text32 = checkTemplateLiteralLikeNode(16, text32, rawText, templateFlags);
+          return createTemplateLiteralLikeNode(16, text32, rawText, templateFlags);
         }
-        function createTemplateMiddle(text31, rawText, templateFlags) {
-          text31 = checkTemplateLiteralLikeNode(16, text31, rawText, templateFlags);
-          return createTemplateLiteralLikeNode(17, text31, rawText, templateFlags);
+        function createTemplateMiddle(text32, rawText, templateFlags) {
+          text32 = checkTemplateLiteralLikeNode(16, text32, rawText, templateFlags);
+          return createTemplateLiteralLikeNode(17, text32, rawText, templateFlags);
         }
-        function createTemplateTail(text31, rawText, templateFlags) {
-          text31 = checkTemplateLiteralLikeNode(16, text31, rawText, templateFlags);
-          return createTemplateLiteralLikeNode(18, text31, rawText, templateFlags);
+        function createTemplateTail(text32, rawText, templateFlags) {
+          text32 = checkTemplateLiteralLikeNode(16, text32, rawText, templateFlags);
+          return createTemplateLiteralLikeNode(18, text32, rawText, templateFlags);
         }
-        function createNoSubstitutionTemplateLiteral(text31, rawText, templateFlags) {
-          text31 = checkTemplateLiteralLikeNode(16, text31, rawText, templateFlags);
-          return createTemplateLiteralLikeDeclaration(15, text31, rawText, templateFlags);
+        function createNoSubstitutionTemplateLiteral(text32, rawText, templateFlags) {
+          text32 = checkTemplateLiteralLikeNode(16, text32, rawText, templateFlags);
+          return createTemplateLiteralLikeDeclaration(15, text32, rawText, templateFlags);
         }
         function createYieldExpression(asteriskToken, expression) {
           Debug.assert(!asteriskToken || !!expression, "A `YieldExpression` with an asteriskToken must have an expression.");
@@ -36754,41 +36754,41 @@ ${lanes.join("\n")}
         function updateJSDocMemberName(node, left, right) {
           return node.left !== left || node.right !== right ? update(createJSDocMemberName(left, right), node) : node;
         }
-        function createJSDocLink(name, text31) {
+        function createJSDocLink(name, text32) {
           const node = createBaseNode(
             325
             /* JSDocLink */
           );
           node.name = name;
-          node.text = text31;
+          node.text = text32;
           return node;
         }
-        function updateJSDocLink(node, name, text31) {
-          return node.name !== name ? update(createJSDocLink(name, text31), node) : node;
+        function updateJSDocLink(node, name, text32) {
+          return node.name !== name ? update(createJSDocLink(name, text32), node) : node;
         }
-        function createJSDocLinkCode(name, text31) {
+        function createJSDocLinkCode(name, text32) {
           const node = createBaseNode(
             326
             /* JSDocLinkCode */
           );
           node.name = name;
-          node.text = text31;
+          node.text = text32;
           return node;
         }
-        function updateJSDocLinkCode(node, name, text31) {
-          return node.name !== name ? update(createJSDocLinkCode(name, text31), node) : node;
+        function updateJSDocLinkCode(node, name, text32) {
+          return node.name !== name ? update(createJSDocLinkCode(name, text32), node) : node;
         }
-        function createJSDocLinkPlain(name, text31) {
+        function createJSDocLinkPlain(name, text32) {
           const node = createBaseNode(
             327
             /* JSDocLinkPlain */
           );
           node.name = name;
-          node.text = text31;
+          node.text = text32;
           return node;
         }
-        function updateJSDocLinkPlain(node, name, text31) {
-          return node.name !== name ? update(createJSDocLinkPlain(name, text31), node) : node;
+        function updateJSDocLinkPlain(node, name, text32) {
+          return node.name !== name ? update(createJSDocLinkPlain(name, text32), node) : node;
         }
         function updateJSDocImplementsTag(node, tagName = getDefaultTagName(node), className, comment) {
           return node.tagName !== tagName || node.class !== className || node.comment !== comment ? update(createJSDocImplementsTag(tagName, className, comment), node) : node;
@@ -36839,16 +36839,16 @@ ${lanes.join("\n")}
         function updateJSDocImportTag(node, tagName, importClause, moduleSpecifier, attributes, comment) {
           return node.tagName !== tagName || node.comment !== comment || node.importClause !== importClause || node.moduleSpecifier !== moduleSpecifier || node.attributes !== attributes ? update(createJSDocImportTag(tagName, importClause, moduleSpecifier, attributes, comment), node) : node;
         }
-        function createJSDocText(text31) {
+        function createJSDocText(text32) {
           const node = createBaseNode(
             322
             /* JSDocText */
           );
-          node.text = text31;
+          node.text = text32;
           return node;
         }
-        function updateJSDocText(node, text31) {
-          return node.text !== text31 ? update(createJSDocText(text31), node) : node;
+        function updateJSDocText(node, text32) {
+          return node.text !== text32 ? update(createJSDocText(text32), node) : node;
         }
         function createJSDocComment(comment, tags2) {
           const node = createBaseNode(
@@ -36936,18 +36936,18 @@ ${lanes.join("\n")}
         function updateJsxFragment(node, openingFragment, children, closingFragment) {
           return node.openingFragment !== openingFragment || node.children !== children || node.closingFragment !== closingFragment ? update(createJsxFragment(openingFragment, children, closingFragment), node) : node;
         }
-        function createJsxText(text31, containsOnlyTriviaWhiteSpaces) {
+        function createJsxText(text32, containsOnlyTriviaWhiteSpaces) {
           const node = createBaseNode(
             12
             /* JsxText */
           );
-          node.text = text31;
+          node.text = text32;
           node.containsOnlyTriviaWhiteSpaces = !!containsOnlyTriviaWhiteSpaces;
           node.transformFlags |= 2;
           return node;
         }
-        function updateJsxText(node, text31, containsOnlyTriviaWhiteSpaces) {
-          return node.text !== text31 || node.containsOnlyTriviaWhiteSpaces !== containsOnlyTriviaWhiteSpaces ? update(createJsxText(text31, containsOnlyTriviaWhiteSpaces), node) : node;
+        function updateJsxText(node, text32, containsOnlyTriviaWhiteSpaces) {
+          return node.text !== text32 || node.containsOnlyTriviaWhiteSpaces !== containsOnlyTriviaWhiteSpaces ? update(createJsxText(text32, containsOnlyTriviaWhiteSpaces), node) : node;
         }
         function createJsxOpeningFragment() {
           const node = createBaseNode(
@@ -38226,8 +38226,8 @@ ${lanes.join("\n")}
       };
       var factory = createNodeFactory(4, syntheticFactory);
       var SourceMapSource2;
-      function createSourceMapSource(fileName, text31, skipTrivia2) {
-        return new (SourceMapSource2 || (SourceMapSource2 = objectAllocator.getSourceMapSourceConstructor()))(fileName, text31, skipTrivia2);
+      function createSourceMapSource(fileName, text32, skipTrivia2) {
+        return new (SourceMapSource2 || (SourceMapSource2 = objectAllocator.getSourceMapSourceConstructor()))(fileName, text32, skipTrivia2);
       }
       function setOriginalNode(node, original) {
         if (node.original !== original) {
@@ -38397,8 +38397,8 @@ ${lanes.join("\n")}
         getOrCreateEmitNode(node).leadingComments = comments;
         return node;
       }
-      function addSyntheticLeadingComment(node, kind4, text31, hasTrailingNewLine) {
-        return setSyntheticLeadingComments(node, append(getSyntheticLeadingComments(node), { kind: kind4, pos: -1, end: -1, hasTrailingNewLine, text: text31 }));
+      function addSyntheticLeadingComment(node, kind4, text32, hasTrailingNewLine) {
+        return setSyntheticLeadingComments(node, append(getSyntheticLeadingComments(node), { kind: kind4, pos: -1, end: -1, hasTrailingNewLine, text: text32 }));
       }
       function getSyntheticTrailingComments(node) {
         var _a;
@@ -38408,8 +38408,8 @@ ${lanes.join("\n")}
         getOrCreateEmitNode(node).trailingComments = comments;
         return node;
       }
-      function addSyntheticTrailingComment(node, kind4, text31, hasTrailingNewLine) {
-        return setSyntheticTrailingComments(node, append(getSyntheticTrailingComments(node), { kind: kind4, pos: -1, end: -1, hasTrailingNewLine, text: text31 }));
+      function addSyntheticTrailingComment(node, kind4, text32, hasTrailingNewLine) {
+        return setSyntheticTrailingComments(node, append(getSyntheticTrailingComments(node), { kind: kind4, pos: -1, end: -1, hasTrailingNewLine, text: text32 }));
       }
       function moveSyntheticComments(node, original) {
         setSyntheticLeadingComments(node, getSyntheticLeadingComments(original));
@@ -41473,8 +41473,8 @@ ${lanes.join("\n")}
           }
         }
       }
-      function isJSDocLikeText(text31, start2) {
-        return text31.charCodeAt(start2 + 1) === 42 && text31.charCodeAt(start2 + 2) === 42 && text31.charCodeAt(start2 + 3) !== 47;
+      function isJSDocLikeText(text32, start2) {
+        return text32.charCodeAt(start2 + 1) === 42 && text32.charCodeAt(start2 + 2) === 42 && text32.charCodeAt(start2 + 3) !== 47;
       }
       function isFileProbablyExternalModule(sourceFile) {
         return forEach(sourceFile.statements, isAnExternalModuleIndicatorNode) || getImportMetaIfNecessary(sourceFile);
@@ -42608,8 +42608,8 @@ ${lanes.join("\n")}
         (_b = tracing) == null ? void 0 : _b.pop();
         return result;
       }
-      function parseIsolatedEntityName(text31, languageVersion) {
-        return Parser.parseIsolatedEntityName(text31, languageVersion);
+      function parseIsolatedEntityName(text32, languageVersion) {
+        return Parser.parseIsolatedEntityName(text32, languageVersion);
       }
       function parseJsonText(fileName, sourceText) {
         return Parser.parseJsonText(fileName, sourceText);
@@ -43630,10 +43630,10 @@ ${lanes.join("\n")}
           ) : kind4 === 283 ? factory2.createMissingDeclaration() : factoryCreateToken(kind4);
           return finishNode(result, pos);
         }
-        function internIdentifier(text31) {
-          let identifier21 = identifiers.get(text31);
+        function internIdentifier(text32) {
+          let identifier21 = identifiers.get(text32);
           if (identifier21 === void 0) {
-            identifiers.set(text31, identifier21 = text31);
+            identifiers.set(text32, identifier21 = text32);
           }
           return identifier21;
         }
@@ -43642,10 +43642,10 @@ ${lanes.join("\n")}
             identifierCount++;
             const pos = scanner2.hasPrecedingJSDocLeadingAsterisks() ? scanner2.getTokenStart() : getNodePos();
             const originalKeywordKind = token();
-            const text31 = internIdentifier(scanner2.getTokenValue());
+            const text32 = internIdentifier(scanner2.getTokenValue());
             const hasExtendedUnicodeEscape = scanner2.hasExtendedUnicodeEscape();
             nextTokenWithoutCheck();
-            return finishNode(factoryCreateIdentifier(text31, originalKeywordKind, hasExtendedUnicodeEscape), pos);
+            return finishNode(factoryCreateIdentifier(text32, originalKeywordKind, hasExtendedUnicodeEscape), pos);
           }
           if (token() === 81) {
             parseErrorAtCurrentToken(privateIdentifierDiagnosticMessage || Diagnostics.Private_identifiers_are_not_allowed_outside_class_bodies);
@@ -49537,12 +49537,12 @@ ${lanes.join("\n")}
               let state4 = 1;
               let margin;
               let indent3 = start2 - (content.lastIndexOf("\n", start2) + 1) + 4;
-              function pushComment(text31) {
+              function pushComment(text32) {
                 if (!margin) {
                   margin = indent3;
                 }
-                comments.push(text31);
-                indent3 += text31.length;
+                comments.push(text32);
+                indent3 += text32.length;
               }
               nextTokenJSDoc();
               while (parseOptionalJsdoc(
@@ -49806,12 +49806,12 @@ ${lanes.join("\n")}
               let linkEnd2;
               let state4 = 0;
               let margin;
-              function pushComment(text31) {
+              function pushComment(text32) {
                 if (!margin) {
                   margin = indent3;
                 }
-                comments2.push(text31);
-                indent3 += text31.length;
+                comments2.push(text32);
+                indent3 += text32.length;
               }
               if (initialMargin !== void 0) {
                 if (initialMargin !== "") {
@@ -49913,13 +49913,13 @@ ${lanes.join("\n")}
               nextTokenJSDoc();
               skipWhitespace();
               const name = parseJSDocLinkName();
-              const text31 = [];
+              const text32 = [];
               while (token() !== 20 && token() !== 4 && token() !== 1) {
-                text31.push(scanner2.getTokenText());
+                text32.push(scanner2.getTokenText());
                 nextTokenJSDoc();
               }
               const create = linkType === "link" ? factory2.createJSDocLink : linkType === "linkcode" ? factory2.createJSDocLinkCode : factory2.createJSDocLinkPlain;
-              return finishNode(create(name, text31.join("")), start22, scanner2.getTokenEnd());
+              return finishNode(create(name, text32.join("")), start22, scanner2.getTokenEnd());
             }
             function parseJSDocLinkName() {
               if (tokenIsIdentifierOrKeyword(token())) {
@@ -50520,8 +50520,8 @@ ${lanes.join("\n")}
               const start22 = scanner2.getTokenStart();
               const end2 = scanner2.getTokenEnd();
               const originalKeywordKind = token();
-              const text31 = internIdentifier(scanner2.getTokenValue());
-              const result2 = finishNode(factoryCreateIdentifier(text31, originalKeywordKind), start22, end2);
+              const text32 = internIdentifier(scanner2.getTokenValue());
+              const result2 = finishNode(factoryCreateIdentifier(text32, originalKeywordKind), start22, end2);
               nextTokenJSDoc();
               return result2;
             }
@@ -50644,14 +50644,14 @@ ${lanes.join("\n")}
           }
           return;
           function visitNode3(node) {
-            let text31 = "";
+            let text32 = "";
             if (aggressiveChecks && shouldCheckNode(node)) {
-              text31 = oldText.substring(node.pos, node.end);
+              text32 = oldText.substring(node.pos, node.end);
             }
             unsetNodeChildren(node, origSourceFile);
             setTextRangePosEnd(node, node.pos + delta, node.end + delta);
             if (aggressiveChecks && shouldCheckNode(node)) {
-              Debug.assert(text31 === newText.substring(node.pos, node.end));
+              Debug.assert(text32 === newText.substring(node.pos, node.end));
             }
             forEachChild(node, visitNode3, visitArray2);
             if (hasJSDocNodes(node)) {
@@ -51054,8 +51054,8 @@ ${lanes.join("\n")}
       }
       var tripleSlashXMLCommentStartRegEx = /^\/\/\/\s*<(\S+)\s.*?\/>/m;
       var singleLinePragmaRegEx = /^\/\/\/?\s*@([^\s:]+)((?:[^\S\r\n]|:).*)?$/m;
-      function extractPragmas(pragmas, range, text31) {
-        const tripleSlash = range.kind === 2 && tripleSlashXMLCommentStartRegEx.exec(text31);
+      function extractPragmas(pragmas, range, text32) {
+        const tripleSlash = range.kind === 2 && tripleSlashXMLCommentStartRegEx.exec(text32);
         if (tripleSlash) {
           const name = tripleSlash[1].toLowerCase();
           const pragma = commentPragmas[name];
@@ -51066,7 +51066,7 @@ ${lanes.join("\n")}
             const argument = {};
             for (const arg of pragma.args) {
               const matcher = getNamedArgRegEx(arg.name);
-              const matchResult = matcher.exec(text31);
+              const matchResult = matcher.exec(text32);
               if (!matchResult && !arg.optional) {
                 return;
               } else if (matchResult) {
@@ -51089,14 +51089,14 @@ ${lanes.join("\n")}
           }
           return;
         }
-        const singleLine = range.kind === 2 && singleLinePragmaRegEx.exec(text31);
+        const singleLine = range.kind === 2 && singleLinePragmaRegEx.exec(text32);
         if (singleLine) {
           return addPragmaForMatch(pragmas, range, 2, singleLine);
         }
         if (range.kind === 3) {
           const multiLinePragmaRegEx = /@(\S+)(\s+(?:\S.*)?)?$/gm;
           let multiLineMatch;
-          while (multiLineMatch = multiLinePragmaRegEx.exec(text31)) {
+          while (multiLineMatch = multiLinePragmaRegEx.exec(text32)) {
             addPragmaForMatch(pragmas, range, 4, multiLineMatch);
           }
         }
@@ -51114,10 +51114,10 @@ ${lanes.join("\n")}
         pragmas.push({ name, args: { arguments: argument, range } });
         return;
       }
-      function getNamedPragmaArguments(pragma, text31) {
-        if (!text31) return {};
+      function getNamedPragmaArguments(pragma, text32) {
+        if (!text32) return {};
         if (!pragma.args) return {};
-        const args = text31.trim().split(/\s+/);
+        const args = text32.trim().split(/\s+/);
         const argMap = {};
         for (let i = 0; i < pragma.args.length; i++) {
           const argument = pragma.args[i];
@@ -52903,29 +52903,29 @@ ${lanes.join("\n")}
           }
         }
         function parseResponseFile(fileName) {
-          const text31 = tryReadFile(fileName, readFile11 || ((fileName2) => sys.readFile(fileName2)));
-          if (!isString(text31)) {
-            errors.push(text31);
+          const text32 = tryReadFile(fileName, readFile11 || ((fileName2) => sys.readFile(fileName2)));
+          if (!isString(text32)) {
+            errors.push(text32);
             return;
           }
           const args = [];
           let pos = 0;
           while (true) {
-            while (pos < text31.length && text31.charCodeAt(pos) <= 32) pos++;
-            if (pos >= text31.length) break;
+            while (pos < text32.length && text32.charCodeAt(pos) <= 32) pos++;
+            if (pos >= text32.length) break;
             const start2 = pos;
-            if (text31.charCodeAt(start2) === 34) {
+            if (text32.charCodeAt(start2) === 34) {
               pos++;
-              while (pos < text31.length && text31.charCodeAt(pos) !== 34) pos++;
-              if (pos < text31.length) {
-                args.push(text31.substring(start2 + 1, pos));
+              while (pos < text32.length && text32.charCodeAt(pos) !== 34) pos++;
+              if (pos < text32.length) {
+                args.push(text32.substring(start2 + 1, pos));
                 pos++;
               } else {
                 errors.push(createCompilerDiagnostic(Diagnostics.Unterminated_quoted_string_in_response_file_0, fileName));
               }
             } else {
-              while (text31.charCodeAt(pos) > 32) pos++;
-              args.push(text31.substring(start2, pos));
+              while (text32.charCodeAt(pos) > 32) pos++;
+              args.push(text32.substring(start2, pos));
             }
           }
           parseStrings(args);
@@ -53110,13 +53110,13 @@ ${lanes.join("\n")}
         return isString(textOrDiagnostic) ? parseJsonText(fileName, textOrDiagnostic) : { fileName, parseDiagnostics: [textOrDiagnostic] };
       }
       function tryReadFile(fileName, readFile11) {
-        let text31;
+        let text32;
         try {
-          text31 = readFile11(fileName);
+          text32 = readFile11(fileName);
         } catch (e) {
           return createCompilerDiagnostic(Diagnostics.Cannot_read_file_0_Colon_1, fileName, e.message);
         }
-        return text31 === void 0 ? createCompilerDiagnostic(Diagnostics.Cannot_read_file_0, fileName) : text31;
+        return text32 === void 0 ? createCompilerDiagnostic(Diagnostics.Cannot_read_file_0, fileName) : text32;
       }
       function commandLineOptionsToMap(options) {
         return arrayToMap(options, getOptionName);
@@ -59097,10 +59097,10 @@ ${lanes.join("\n")}
             } else {
               let pattern;
               if (node.name.kind === 11) {
-                const { text: text31 } = node.name;
-                pattern = tryParsePattern(text31);
+                const { text: text32 } = node.name;
+                pattern = tryParsePattern(text32);
                 if (pattern === void 0) {
-                  errorOnFirstToken(node.name, Diagnostics.Pattern_0_can_have_at_most_one_Asterisk_character, text31);
+                  errorOnFirstToken(node.name, Diagnostics.Pattern_0_can_have_at_most_one_Asterisk_character, text32);
                 }
               }
               const symbol = declareSymbolAndAddToSymbolTable(
@@ -69443,14 +69443,14 @@ ${lanes.join("\n")}
             if (context.flags & 4) {
               const rawtext = result.escapedText;
               let i = ((_c = context.typeParameterNamesByTextNextNameCount) == null ? void 0 : _c.get(rawtext)) || 0;
-              let text31 = rawtext;
-              while (((_d = context.typeParameterNamesByText) == null ? void 0 : _d.has(text31)) || typeParameterShadowsOtherTypeParameterInScope(text31, context, type)) {
+              let text32 = rawtext;
+              while (((_d = context.typeParameterNamesByText) == null ? void 0 : _d.has(text32)) || typeParameterShadowsOtherTypeParameterInScope(text32, context, type)) {
                 i++;
-                text31 = `${rawtext}_${i}`;
+                text32 = `${rawtext}_${i}`;
               }
-              if (text31 !== rawtext) {
+              if (text32 !== rawtext) {
                 const typeArguments = getIdentifierTypeArguments(result);
-                result = factory.createIdentifier(text31);
+                result = factory.createIdentifier(text32);
                 setIdentifierTypeArguments(result, typeArguments);
               }
               if (context.mustCreateTypeParametersNamesLookups) {
@@ -69461,7 +69461,7 @@ ${lanes.join("\n")}
               }
               context.typeParameterNamesByTextNextNameCount.set(rawtext, i);
               context.typeParameterNames.set(getTypeId(type), result);
-              context.typeParameterNamesByText.add(text31);
+              context.typeParameterNamesByText.add(text32);
             }
             return result;
           }
@@ -72914,9 +72914,9 @@ ${lanes.join("\n")}
               objectFlags |= 512;
               return;
             }
-            const text31 = getPropertyNameFromType(exprType);
+            const text32 = getPropertyNameFromType(exprType);
             const flags = 4 | (e.initializer ? 16777216 : 0);
-            const symbol = createSymbol(flags, text31);
+            const symbol = createSymbol(flags, text32);
             symbol.links.type = getTypeFromBindingElement(e, includePatternInType, reportErrors2);
             members3.set(symbol.escapedName, symbol);
           });
@@ -77049,15 +77049,15 @@ ${lanes.join("\n")}
         }
         function getUnresolvedSymbolForEntityName(name) {
           const identifier21 = name.kind === 167 ? name.right : name.kind === 212 ? name.name : name;
-          const text31 = identifier21.escapedText;
-          if (text31) {
+          const text32 = identifier21.escapedText;
+          if (text32) {
             const parentSymbol = name.kind === 167 ? getUnresolvedSymbolForEntityName(name.left) : name.kind === 212 ? getUnresolvedSymbolForEntityName(name.expression) : void 0;
-            const path2 = parentSymbol ? `${getSymbolPath(parentSymbol)}.${text31}` : text31;
+            const path2 = parentSymbol ? `${getSymbolPath(parentSymbol)}.${text32}` : text32;
             let result = unresolvedSymbols.get(path2);
             if (!result) {
               unresolvedSymbols.set(path2, result = createSymbol(
                 524288,
-                text31,
+                text32,
                 1048576
                 /* Unresolved */
               ));
@@ -78841,14 +78841,14 @@ ${lanes.join("\n")}
           }
           const newTypes = [];
           const newTexts = [];
-          let text31 = texts[0];
+          let text32 = texts[0];
           if (!addSpans(texts, types)) {
             return stringType;
           }
           if (newTypes.length === 0) {
-            return getStringLiteralType(text31);
+            return getStringLiteralType(text32);
           }
-          newTexts.push(text31);
+          newTexts.push(text32);
           if (every(newTexts, (t) => t === "")) {
             if (every(newTypes, (t) => !!(t.flags & 32))) {
               return stringType;
@@ -78867,16 +78867,16 @@ ${lanes.join("\n")}
             for (let i = 0; i < types2.length; i++) {
               const t = types2[i];
               if (t.flags & (15360 | 8 | 4)) {
-                text31 += getTemplateStringForType(t) || "";
-                text31 += texts2[i + 1];
+                text32 += getTemplateStringForType(t) || "";
+                text32 += texts2[i + 1];
               } else if (t.flags & 4194304) {
-                text31 += t.texts[0];
+                text32 += t.texts[0];
                 if (!addSpans(t.texts, t.types)) return false;
-                text31 += texts2[i + 1];
+                text32 += texts2[i + 1];
               } else if (isGenericIndexType(t) || isPatternLiteralPlaceholderType(t)) {
                 newTypes.push(t);
-                newTexts.push(text31);
-                text31 = texts2[i + 1];
+                newTexts.push(text32);
+                text32 = texts2[i + 1];
               } else {
                 return false;
               }
@@ -85617,8 +85617,8 @@ ${lanes.join("\n")}
           const n = +s;
           return isFinite(n) && (!roundTripOnly || "" + n === s);
         }
-        function parseBigIntLiteralType(text31) {
-          return getBigIntLiteralType(parseValidBigInt(text31));
+        function parseBigIntLiteralType(text32) {
+          return getBigIntLiteralType(parseValidBigInt(text32));
         }
         function isMemberOfStringMapping(source, target) {
           if (target.flags & 1) {
@@ -86996,8 +86996,8 @@ ${lanes.join("\n")}
           var _a;
           const nameType = getLiteralTypeFromPropertyName(name);
           if (!isTypeUsableAsPropertyName(nameType)) return errorType;
-          const text31 = getPropertyNameFromType(nameType);
-          return getTypeOfPropertyOfType(type, text31) || includeUndefinedInIndexSignature((_a = getApplicableIndexInfoForName(type, text31)) == null ? void 0 : _a.type) || errorType;
+          const text32 = getPropertyNameFromType(nameType);
+          return getTypeOfPropertyOfType(type, text32) || includeUndefinedInIndexSignature((_a = getApplicableIndexInfoForName(type, text32)) == null ? void 0 : _a.type) || errorType;
         }
         function getTypeOfDestructuredArrayElement(type, index) {
           return everyType(type, isTupleLikeType) && getTupleElementType(type, index) || includeUndefinedInIndexSignature(checkIteratedTypeOrElementType(
@@ -87133,8 +87133,8 @@ ${lanes.join("\n")}
           }
           const witnesses = [];
           for (const clause of switchStatement.caseBlock.clauses) {
-            const text31 = clause.kind === 297 ? clause.expression.text : void 0;
-            witnesses.push(text31 && !contains(witnesses, text31) ? text31 : void 0);
+            const text32 = clause.kind === 297 ? clause.expression.text : void 0;
+            witnesses.push(text32 && !contains(witnesses, text32) ? text32 : void 0);
           }
           return witnesses;
         }
@@ -88530,7 +88530,7 @@ ${lanes.join("\n")}
               return filterType(type, (t) => getTypeFacts(t, notEqualFacts) === notEqualFacts);
             }
             const clauseWitnesses = witnesses.slice(clauseStart, clauseEnd);
-            return getUnionType(map(clauseWitnesses, (text31) => text31 ? narrowTypeByTypeName(type, text31) : neverType));
+            return getUnionType(map(clauseWitnesses, (text32) => text32 ? narrowTypeByTypeName(type, text32) : neverType));
           }
           function narrowTypeBySwitchOnTrue(type, { switchStatement, clauseStart, clauseEnd }) {
             const defaultIndex = findIndex(
@@ -90202,8 +90202,8 @@ ${lanes.join("\n")}
           }
           const nameType = getLiteralTypeFromPropertyName(name);
           if (isTypeUsableAsPropertyName(nameType)) {
-            const text31 = getPropertyNameFromType(nameType);
-            return getTypeOfPropertyOfType(parentType, text31);
+            const text32 = getPropertyNameFromType(nameType);
+            return getTypeOfPropertyOfType(parentType, text32);
           }
         }
         function getContextualTypeForStaticPropertyDeclaration(declaration, contextFlags) {
@@ -94756,9 +94756,9 @@ ${lanes.join("\n")}
             } else {
               let relatedInformation;
               if (node.arguments.length === 1) {
-                const text31 = getSourceFileOfNode(node).text;
-                if (isLineBreak(text31.charCodeAt(skipTrivia(
-                  text31,
+                const text32 = getSourceFileOfNode(node).text;
+                if (isLineBreak(text32.charCodeAt(skipTrivia(
+                  text32,
                   node.expression.end,
                   /*stopAfterLineBreak*/
                   true
@@ -97606,8 +97606,8 @@ ${lanes.join("\n")}
             const name = property.name;
             const exprType = getLiteralTypeFromPropertyName(name);
             if (isTypeUsableAsPropertyName(exprType)) {
-              const text31 = getPropertyNameFromType(exprType);
-              const prop = getPropertyOfType(objectLiteralType, text31);
+              const text32 = getPropertyNameFromType(exprType);
+              const prop = getPropertyOfType(objectLiteralType, text32);
               if (prop) {
                 markPropertyAsReferenced(prop, property, rightIsThis);
                 checkPropertyAccessibility(
@@ -104100,8 +104100,8 @@ ${lanes.join("\n")}
           } else if (isBigIntLiteral(member.name)) {
             error2(member.name, Diagnostics.An_enum_member_cannot_have_a_numeric_name);
           } else {
-            const text31 = getTextOfPropertyName(member.name);
-            if (isNumericLiteralName(text31) && !isInfinityOrNaNString(text31)) {
+            const text32 = getTextOfPropertyName(member.name);
+            if (isNumericLiteralName(text32) && !isInfinityOrNaNString(text32)) {
               error2(member.name, Diagnostics.An_enum_member_cannot_have_a_numeric_name);
             }
           }
@@ -107830,26 +107830,26 @@ ${lanes.join("\n")}
                 case 125:
                 case 124:
                 case 123:
-                  const text31 = visibilityToString(modifierToFlag(modifier.kind));
+                  const text32 = visibilityToString(modifierToFlag(modifier.kind));
                   if (flags & 7) {
                     return grammarErrorOnNode(modifier, Diagnostics.Accessibility_modifier_already_seen);
                   } else if (flags & 16) {
-                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text31, "override");
+                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text32, "override");
                   } else if (flags & 256) {
-                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text31, "static");
+                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text32, "static");
                   } else if (flags & 512) {
-                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text31, "accessor");
+                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text32, "accessor");
                   } else if (flags & 8) {
-                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text31, "readonly");
+                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text32, "readonly");
                   } else if (flags & 1024) {
-                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text31, "async");
+                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text32, "async");
                   } else if (node.parent.kind === 269 || node.parent.kind === 308) {
-                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_appear_on_a_module_or_namespace_element, text31);
+                    return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_appear_on_a_module_or_namespace_element, text32);
                   } else if (flags & 64) {
                     if (modifier.kind === 123) {
-                      return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_1_modifier, text31, "abstract");
+                      return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_1_modifier, text32, "abstract");
                     } else {
-                      return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text31, "abstract");
+                      return grammarErrorOnNode(modifier, Diagnostics._0_modifier_must_precede_1_modifier, text32, "abstract");
                     }
                   } else if (isPrivateIdentifierClassElementDeclaration(node)) {
                     return grammarErrorOnNode(modifier, Diagnostics.An_accessibility_modifier_cannot_be_used_with_a_private_identifier);
@@ -111810,10 +111810,10 @@ ${lanes.join("\n")}
       var sourceMapCommentRegExpDontCareLineStart = /\/\/[@#] source[M]appingURL=(.+)\r?\n?$/;
       var sourceMapCommentRegExp = /^\/\/[@#] source[M]appingURL=(.+)\r?\n?$/;
       var whitespaceOrMapCommentRegExp = /^\s*(\/\/[@#] .*)?$/;
-      function getLineInfo(text31, lineStarts) {
+      function getLineInfo(text32, lineStarts) {
         return {
           getLineCount: () => lineStarts.length,
-          getLineText: (line2) => text31.substring(lineStarts[line2], lineStarts[line2 + 1])
+          getLineText: (line2) => text32.substring(lineStarts[line2], lineStarts[line2 + 1])
         };
       }
       function tryGetSourceMappingURL(lineInfo) {
@@ -111833,9 +111833,9 @@ ${lanes.join("\n")}
       function isRawSourceMap(x) {
         return x !== null && typeof x === "object" && x.version === 3 && typeof x.file === "string" && typeof x.mappings === "string" && isArray(x.sources) && every(x.sources, isString) && (x.sourceRoot === void 0 || x.sourceRoot === null || typeof x.sourceRoot === "string") && (x.sourcesContent === void 0 || x.sourcesContent === null || isArray(x.sourcesContent) && every(x.sourcesContent, isStringOrNull)) && (x.names === void 0 || x.names === null || isArray(x.names) && every(x.names, isString));
       }
-      function tryParseRawSourceMap(text31) {
+      function tryParseRawSourceMap(text32) {
         try {
-          const parsed2 = JSON.parse(text31);
+          const parsed2 = JSON.parse(text32);
           if (isRawSourceMap(parsed2)) {
             return parsed2;
           }
@@ -112323,9 +112323,9 @@ ${lanes.join("\n")}
             }
           }
         } else if (!isGeneratedIdentifier(decl.name)) {
-          const text31 = idText(decl.name);
-          if (!uniqueExports.get(text31)) {
-            uniqueExports.set(text31, true);
+          const text32 = idText(decl.name);
+          if (!uniqueExports.get(text32)) {
+            uniqueExports.set(text32, true);
             exportedNames = append(exportedNames, decl.name);
             if (isLocalName(decl.name)) {
               multiMapSparseArrayAdd(exportedBindings, getOriginalNodeId(decl), decl.name);
@@ -113424,15 +113424,15 @@ ${lanes.join("\n")}
         return template.templateFlags & 26656 ? factory2.createVoidZero() : factory2.createStringLiteral(template.text);
       }
       function getRawLiteral(factory2, node, currentSourceFile) {
-        let text31 = node.rawText;
-        if (text31 === void 0) {
+        let text32 = node.rawText;
+        if (text32 === void 0) {
           Debug.assertIsDefined(currentSourceFile, "Template literal node is missing 'rawText' and does not have a source file. Possibly bad transform.");
-          text31 = getSourceTextOfNodeFromSourceFile(currentSourceFile, node);
+          text32 = getSourceTextOfNodeFromSourceFile(currentSourceFile, node);
           const isLast = node.kind === 15 || node.kind === 18;
-          text31 = text31.substring(1, text31.length - (isLast ? 1 : 2));
+          text32 = text32.substring(1, text32.length - (isLast ? 1 : 2));
         }
-        text31 = text31.replace(/\r\n?/g, "\n");
-        return setTextRange(factory2.createStringLiteral(text31), node);
+        text32 = text32.replace(/\r\n?/g, "\n");
+        return setTextRange(factory2.createStringLiteral(text32), node);
       }
       var USE_NEW_TYPE_METADATA_FORMAT = false;
       function transformTypeScript(context) {
@@ -117420,8 +117420,8 @@ ${lanes.join("\n")}
           return identifier21;
         }
         function createHoistedVariableForPrivateName(name, suffix) {
-          const text31 = tryGetTextOfPropertyName(name);
-          return createHoistedVariableForClass((text31 == null ? void 0 : text31.substring(1)) ?? name, name, suffix);
+          const text32 = tryGetTextOfPropertyName(name);
+          return createHoistedVariableForClass((text32 == null ? void 0 : text32.substring(1)) ?? name, name, suffix);
         }
         function accessPrivateIdentifier2(name) {
           const info = accessPrivateIdentifier(lexicalEnvironment, name);
@@ -124464,15 +124464,15 @@ ${lanes.join("\n")}
           const fixed = fixupWhitespaceAndDecodeEntities(node.text);
           return fixed === void 0 ? void 0 : factory2.createStringLiteral(fixed);
         }
-        function fixupWhitespaceAndDecodeEntities(text31) {
+        function fixupWhitespaceAndDecodeEntities(text32) {
           let acc;
           let firstNonWhitespace = 0;
           let lastNonWhitespace = -1;
-          for (let i = 0; i < text31.length; i++) {
-            const c = text31.charCodeAt(i);
+          for (let i = 0; i < text32.length; i++) {
+            const c = text32.charCodeAt(i);
             if (isLineBreak(c)) {
               if (firstNonWhitespace !== -1 && lastNonWhitespace !== -1) {
-                acc = addLineOfJsxText(acc, text31.substr(firstNonWhitespace, lastNonWhitespace - firstNonWhitespace + 1));
+                acc = addLineOfJsxText(acc, text32.substr(firstNonWhitespace, lastNonWhitespace - firstNonWhitespace + 1));
               }
               firstNonWhitespace = -1;
             } else if (!isWhiteSpaceSingleLine(c)) {
@@ -124482,14 +124482,14 @@ ${lanes.join("\n")}
               }
             }
           }
-          return firstNonWhitespace !== -1 ? addLineOfJsxText(acc, text31.substr(firstNonWhitespace)) : acc;
+          return firstNonWhitespace !== -1 ? addLineOfJsxText(acc, text32.substr(firstNonWhitespace)) : acc;
         }
         function addLineOfJsxText(acc, trimmedLine) {
           const decoded = decodeEntities(trimmedLine);
           return acc === void 0 ? decoded : acc + " " + decoded;
         }
-        function decodeEntities(text31) {
-          return text31.replace(/&((#((\d+)|x([\da-fA-F]+)))|(\w+));/g, (match, _all, _number, _digits, decimal, hex, word) => {
+        function decodeEntities(text32) {
+          return text32.replace(/&((#((\d+)|x([\da-fA-F]+)))|(\w+));/g, (match, _all, _number, _digits, decimal, hex, word) => {
             if (decimal) {
               return utf16EncodeAsString(parseInt(decimal, 10));
             } else if (hex) {
@@ -124500,9 +124500,9 @@ ${lanes.join("\n")}
             }
           });
         }
-        function tryDecodeEntities(text31) {
-          const decoded = decodeEntities(text31);
-          return decoded === text31 ? void 0 : decoded;
+        function tryDecodeEntities(text32) {
+          const decoded = decodeEntities(text32);
+          return decoded === text32 ? void 0 : decoded;
         }
         function getTagName(node) {
           if (node.kind === 285) {
@@ -124521,8 +124521,8 @@ ${lanes.join("\n")}
         function getAttributeName(node) {
           const name = node.name;
           if (isIdentifier(name)) {
-            const text31 = idText(name);
-            return /^[A-Z_]\w*$/i.test(text31) ? name : factory2.createStringLiteral(text31);
+            const text32 = idText(name);
+            return /^[A-Z_]\w*$/i.test(text32) ? name : factory2.createStringLiteral(text32);
           }
           return factory2.createStringLiteral(idText(name.namespace) + ":" + idText(name.name));
         }
@@ -129923,8 +129923,8 @@ ${lanes.join("\n")}
             name = variable.name;
             hoistVariableDeclaration(variable.name);
           } else {
-            const text31 = idText(variable.name);
-            name = declareLocal(text31);
+            const text32 = idText(variable.name);
+            name = declareLocal(text32);
             if (!renamedCatchVariables) {
               renamedCatchVariables = /* @__PURE__ */ new Map();
               renamedCatchVariableDeclarations = [];
@@ -129933,7 +129933,7 @@ ${lanes.join("\n")}
                 /* Identifier */
               );
             }
-            renamedCatchVariables.set(text31, true);
+            renamedCatchVariables.set(text32, true);
             renamedCatchVariableDeclarations[getOriginalNodeId(variable)] = name;
           }
           const exception = peekBlock();
@@ -132867,12 +132867,12 @@ ${lanes.join("\n")}
           for (const externalImport of externalImports) {
             const externalModuleName = getExternalModuleNameLiteral(factory2, externalImport, currentSourceFile, host, resolver, compilerOptions);
             if (externalModuleName) {
-              const text31 = externalModuleName.text;
-              const groupIndex = groupIndices.get(text31);
+              const text32 = externalModuleName.text;
+              const groupIndex = groupIndices.get(text32);
               if (groupIndex !== void 0) {
                 dependencyGroups[groupIndex].externalImports.push(externalImport);
               } else {
-                groupIndices.set(text31, dependencyGroups.length);
+                groupIndices.set(text32, dependencyGroups.length);
                 dependencyGroups.push({
                   name: externalModuleName,
                   externalImports: [externalImport]
@@ -137830,9 +137830,9 @@ ${lanes.join("\n")}
           } else {
             writer.writeLine();
           }
-          const text31 = writer.getText();
+          const text32 = writer.getText();
           const data = { sourceMapUrlPos, diagnostics: transform2.diagnostics };
-          writeFile11(host, emitterDiagnostics, jsFilePath, text31, !!compilerOptions.emitBOM, sourceFiles, data);
+          writeFile11(host, emitterDiagnostics, jsFilePath, text32, !!compilerOptions.emitBOM, sourceFiles, data);
           writer.clear();
           return !data.skippedDtsWrite;
         }
@@ -138121,9 +138121,9 @@ ${lanes.join("\n")}
           return ownWriter || (ownWriter = createTextWriter(newLine));
         }
         function endPrint() {
-          const text31 = ownWriter.getText();
+          const text32 = ownWriter.getText();
           ownWriter.clear();
-          return text31;
+          return text32;
         }
         function print(hint, node, sourceFile) {
           if (sourceFile) {
@@ -138803,7 +138803,7 @@ ${lanes.join("\n")}
           );
         }
         function emitLiteral(node, jsxAttributeEscape) {
-          const text31 = getLiteralTextOfNode(
+          const text32 = getLiteralTextOfNode(
             node,
             /*sourceFile*/
             void 0,
@@ -138811,9 +138811,9 @@ ${lanes.join("\n")}
             jsxAttributeEscape
           );
           if ((printerOptions.sourceMap || printerOptions.inlineSourceMap) && (node.kind === 11 || isTemplateLiteralKind(node.kind))) {
-            writeLiteral(text31);
+            writeLiteral(text32);
           } else {
-            writeStringLiteral(text31);
+            writeStringLiteral(text32);
           }
         }
         function emitSnippetNode(hint, node, snippet) {
@@ -139321,7 +139321,7 @@ ${lanes.join("\n")}
         function mayNeedDotDotForPropertyAccess(expression) {
           expression = skipPartiallyEmittedExpressions(expression);
           if (isNumericLiteral(expression)) {
-            const text31 = getLiteralTextOfNode(
+            const text32 = getLiteralTextOfNode(
               expression,
               /*sourceFile*/
               void 0,
@@ -139330,13 +139330,13 @@ ${lanes.join("\n")}
               /*jsxAttributeEscape*/
               false
             );
-            return !(expression.numericLiteralFlags & 448) && !text31.includes(tokenToString(
+            return !(expression.numericLiteralFlags & 448) && !text32.includes(tokenToString(
               25
               /* DotToken */
-            )) && !text31.includes(String.fromCharCode(
+            )) && !text32.includes(String.fromCharCode(
               69
               /* E */
-            )) && !text31.includes(String.fromCharCode(
+            )) && !text32.includes(String.fromCharCode(
               101
               /* e */
             ));
@@ -140719,9 +140719,9 @@ ${lanes.join("\n")}
         function emitJSDoc(node) {
           write("/**");
           if (node.comment) {
-            const text31 = getTextOfJSDocComment(node.comment);
-            if (text31) {
-              const lines = text31.split(/\r\n?|\n/);
+            const text32 = getTextOfJSDocComment(node.comment);
+            if (text32) {
+              const lines = text32.split(/\r\n?|\n/);
               for (const line2 of lines) {
                 writeLine();
                 writeSpace();
@@ -140891,10 +140891,10 @@ ${lanes.join("\n")}
           emit(tagName);
         }
         function emitJSDocComment(comment) {
-          const text31 = getTextOfJSDocComment(comment);
-          if (text31) {
+          const text32 = getTextOfJSDocComment(comment);
+          if (text32) {
             writeSpace();
-            write(text31);
+            write(text32);
           }
         }
         function emitJSDocTypeExpression(typeExpression) {
@@ -141466,8 +141466,8 @@ ${lanes.join("\n")}
             writeLine();
           }
         }
-        function writeLines(text31) {
-          const lines = text31.split(/\r\n?|\n/);
+        function writeLines(text32) {
+          const lines = text32.split(/\r\n?|\n/);
           const indentation = guessIndentation(lines);
           for (const lineText of lines) {
             const line2 = indentation ? lineText.slice(indentation) : lineText;
@@ -141701,8 +141701,8 @@ ${lanes.join("\n")}
           if (node.kind === 11 && node.textSourceNode) {
             const textSourceNode = node.textSourceNode;
             if (isIdentifier(textSourceNode) || isPrivateIdentifier(textSourceNode) || isNumericLiteral(textSourceNode) || isJsxNamespacedName(textSourceNode)) {
-              const text31 = isNumericLiteral(textSourceNode) ? textSourceNode.text : getTextOfNode2(textSourceNode);
-              return jsxAttributeEscape ? `"${escapeJsxAttributeString(text31)}"` : neverAsciiEscape || getEmitFlags(node) & 16777216 ? `"${escapeString(text31)}"` : `"${escapeNonAsciiString(text31)}"`;
+              const text32 = isNumericLiteral(textSourceNode) ? textSourceNode.text : getTextOfNode2(textSourceNode);
+              return jsxAttributeEscape ? `"${escapeJsxAttributeString(text32)}"` : neverAsciiEscape || getEmitFlags(node) & 16777216 ? `"${escapeString(text32)}"` : `"${escapeNonAsciiString(text32)}"`;
             } else {
               return getLiteralTextOfNode(textSourceNode, getSourceFileOfNode(textSourceNode), neverAsciiEscape, jsxAttributeEscape);
             }
@@ -142299,9 +142299,9 @@ ${lanes.join("\n")}
           }
         }
         function writeSynthesizedComment(comment) {
-          const text31 = formatSynthesizedComment(comment);
-          const lineMap = comment.kind === 3 ? computeLineStarts(text31) : void 0;
-          writeCommentRange(text31, lineMap, writer, 0, text31.length, newLine);
+          const text32 = formatSynthesizedComment(comment);
+          const lineMap = comment.kind === 3 ? computeLineStarts(text32) : void 0;
+          writeCommentRange(text32, lineMap, writer, 0, text32.length, newLine);
         }
         function formatSynthesizedComment(comment) {
           return comment.kind === 3 ? `/*${comment.text}*/` : `//${comment.text}`;
@@ -142376,9 +142376,9 @@ ${lanes.join("\n")}
             emitLeadingComment(commentPos, commentEnd, kind4, hasTrailingNewLine, rangePos);
           }
         }
-        function shouldWriteComment(text31, pos) {
+        function shouldWriteComment(text32, pos) {
           if (printerOptions.onlyPrintJsDocStyle) {
-            return isJSDocLikeText(text31, pos) || isPinnedComment(text31, pos);
+            return isJSDocLikeText(text32, pos) || isPinnedComment(text32, pos);
           }
           return true;
         }
@@ -142499,10 +142499,10 @@ ${lanes.join("\n")}
             }
           }
         }
-        function emitComment(text31, lineMap, writer2, commentPos, commentEnd, newLine2) {
+        function emitComment(text32, lineMap, writer2, commentPos, commentEnd, newLine2) {
           if (!currentSourceFile || !shouldWriteComment(currentSourceFile.text, commentPos)) return;
           emitPos(commentPos);
-          writeCommentRange(text31, lineMap, writer2, commentPos, commentEnd, newLine2);
+          writeCommentRange(text32, lineMap, writer2, commentPos, commentEnd, newLine2);
           emitPos(commentEnd);
         }
         function isTripleSlashComment(commentPos, commentEnd) {
@@ -143218,19 +143218,19 @@ ${lanes.join("\n")}
       }
       function createGetSourceFile(readFile11, setParentNodes) {
         return (fileName, languageVersionOrOptions, onError) => {
-          let text31;
+          let text32;
           try {
             mark("beforeIORead");
-            text31 = readFile11(fileName);
+            text32 = readFile11(fileName);
             mark("afterIORead");
             measure("I/O Read", "beforeIORead", "afterIORead");
           } catch (e) {
             if (onError) {
               onError(e.message);
             }
-            text31 = "";
+            text32 = "";
           }
-          return text31 !== void 0 ? createSourceFile(fileName, text31, languageVersionOrOptions, setParentNodes) : void 0;
+          return text32 !== void 0 ? createSourceFile(fileName, text32, languageVersionOrOptions, setParentNodes) : void 0;
         };
       }
       function createWriteFileMeasuringIO(actualWriteFile, createDirectory, directoryExists) {
@@ -143457,8 +143457,8 @@ ${lanes.join("\n")}
             return "\x1B[94m";
         }
       }
-      function formatColorAndReset(text31, formatStyle) {
-        return formatStyle + text31 + resetEscapeSequence;
+      function formatColorAndReset(text32, formatStyle) {
+        return formatStyle + text32 + resetEscapeSequence;
       }
       function formatCodeSpan(file, start2, length2, indent3, squiggleColor, host) {
         const { line: firstLine, character: firstLineChar } = getLineAndCharacterOfPosition(file, start2);
@@ -144878,8 +144878,8 @@ ${lanes.join("\n")}
             getGlobalTypingsCacheLocation: program.getGlobalTypingsCacheLocation
           };
         }
-        function writeFile22(fileName, text31, writeByteOrderMark, onError, sourceFiles, data) {
-          host.writeFile(fileName, text31, writeByteOrderMark, onError, sourceFiles, data);
+        function writeFile22(fileName, text32, writeByteOrderMark, onError, sourceFiles, data) {
+          host.writeFile(fileName, text32, writeByteOrderMark, onError, sourceFiles, data);
         }
         function emitBuildInfo(writeFileCallback) {
           var _a2, _b2;
@@ -145430,8 +145430,8 @@ ${lanes.join("\n")}
         function moduleNameIsEqualTo(a, b) {
           return a.kind === 80 ? b.kind === 80 && a.escapedText === b.escapedText : b.kind === 11 && a.text === b.text;
         }
-        function createSyntheticImport(text31, file) {
-          const externalHelpersModuleReference = factory.createStringLiteral(text31);
+        function createSyntheticImport(text32, file) {
+          const externalHelpersModuleReference = factory.createStringLiteral(text32);
           const importDecl = factory.createImportDeclaration(
             /*modifiers*/
             void 0,
@@ -147439,8 +147439,8 @@ ${lanes.join("\n")}
         const outputFiles = [];
         const { emitSkipped, diagnostics } = program.emit(sourceFile, writeFile22, cancellationToken, emitOnlyDtsFiles, customTransformers, forceDtsEmit);
         return { outputFiles, emitSkipped, diagnostics };
-        function writeFile22(fileName, text31, writeByteOrderMark) {
-          outputFiles.push({ name: fileName, writeByteOrderMark, text: text31 });
+        function writeFile22(fileName, text32, writeByteOrderMark) {
+          outputFiles.push({ name: fileName, writeByteOrderMark, text: text32 });
         }
       }
       var SignatureInfo = /* @__PURE__ */ ((SignatureInfo2) => {
@@ -147658,13 +147658,13 @@ ${lanes.join("\n")}
         function computeDtsSignature(programOfThisState, sourceFile, cancellationToken, host, onNewSignature) {
           programOfThisState.emit(
             sourceFile,
-            (fileName, text31, _writeByteOrderMark, _onError, sourceFiles, data) => {
+            (fileName, text32, _writeByteOrderMark, _onError, sourceFiles, data) => {
               Debug.assert(isDeclarationFileName(fileName), `File extension for signature expected to be dts: Got:: ${fileName}`);
               onNewSignature(
                 computeSignatureWithDiagnostics(
                   programOfThisState,
                   sourceFile,
-                  text31,
+                  text32,
                   host,
                   data
                 ),
@@ -148737,17 +148737,17 @@ ${lanes.join("\n")}
         }
         return { host, newProgram, oldProgram, configFileParsingDiagnostics: configFileParsingDiagnostics || emptyArray };
       }
-      function getTextHandlingSourceMapForSignature(text31, data) {
-        return (data == null ? void 0 : data.sourceMapUrlPos) !== void 0 ? text31.substring(0, data.sourceMapUrlPos) : text31;
+      function getTextHandlingSourceMapForSignature(text32, data) {
+        return (data == null ? void 0 : data.sourceMapUrlPos) !== void 0 ? text32.substring(0, data.sourceMapUrlPos) : text32;
       }
-      function computeSignatureWithDiagnostics(program, sourceFile, text31, host, data) {
+      function computeSignatureWithDiagnostics(program, sourceFile, text32, host, data) {
         var _a;
-        text31 = getTextHandlingSourceMapForSignature(text31, data);
+        text32 = getTextHandlingSourceMapForSignature(text32, data);
         let sourceFileDirectory;
         if ((_a = data == null ? void 0 : data.diagnostics) == null ? void 0 : _a.length) {
-          text31 += data.diagnostics.map((diagnostic) => `${locationInfo(diagnostic)}${DiagnosticCategory[diagnostic.category]}${diagnostic.code}: ${flattenDiagnosticMessageText2(diagnostic.messageText)}`).join("\n");
+          text32 += data.diagnostics.map((diagnostic) => `${locationInfo(diagnostic)}${DiagnosticCategory[diagnostic.category]}${diagnostic.code}: ${flattenDiagnosticMessageText2(diagnostic.messageText)}`).join("\n");
         }
-        return (host.createHash ?? generateDjb2Hash)(text31);
+        return (host.createHash ?? generateDjb2Hash)(text32);
         function flattenDiagnosticMessageText2(diagnostic) {
           return isString(diagnostic) ? diagnostic : diagnostic === void 0 ? "" : !diagnostic.next ? diagnostic.messageText : diagnostic.messageText + diagnostic.next.map(flattenDiagnosticMessageText2).join("\n");
         }
@@ -148761,8 +148761,8 @@ ${lanes.join("\n")}
           ))}(${diagnostic.start},${diagnostic.length})`;
         }
       }
-      function computeSignature(text31, host, data) {
-        return (host.createHash ?? generateDjb2Hash)(getTextHandlingSourceMapForSignature(text31, data));
+      function computeSignature(text32, host, data) {
+        return (host.createHash ?? generateDjb2Hash)(getTextHandlingSourceMapForSignature(text32, data));
       }
       function createBuilderProgram(kind4, { newProgram, host, oldProgram, configFileParsingDiagnostics }) {
         let oldState = oldProgram && oldProgram.state;
@@ -148939,7 +148939,7 @@ ${lanes.join("\n")}
         function getWriteFileCallback(writeFile22, customTransformers) {
           Debug.assert(isBuilderProgramStateWithDefinedProgram(state4));
           if (!getEmitDeclarations(state4.compilerOptions)) return writeFile22 || maybeBind(host, host.writeFile);
-          return (fileName, text31, writeByteOrderMark, onError, sourceFiles, data) => {
+          return (fileName, text32, writeByteOrderMark, onError, sourceFiles, data) => {
             var _a, _b, _c;
             if (isDeclarationFileName(fileName)) {
               if (!state4.compilerOptions.outFile) {
@@ -148952,7 +148952,7 @@ ${lanes.join("\n")}
                     const signature = computeSignatureWithDiagnostics(
                       state4.program,
                       file,
-                      text31,
+                      text32,
                       host,
                       data
                     );
@@ -148989,12 +148989,12 @@ ${lanes.join("\n")}
                 state4.outSignature = newSignature;
               }
             }
-            if (writeFile22) writeFile22(fileName, text31, writeByteOrderMark, onError, sourceFiles, data);
-            else if (host.writeFile) host.writeFile(fileName, text31, writeByteOrderMark, onError, sourceFiles, data);
-            else state4.program.writeFile(fileName, text31, writeByteOrderMark, onError, sourceFiles, data);
+            if (writeFile22) writeFile22(fileName, text32, writeByteOrderMark, onError, sourceFiles, data);
+            else if (host.writeFile) host.writeFile(fileName, text32, writeByteOrderMark, onError, sourceFiles, data);
+            else state4.program.writeFile(fileName, text32, writeByteOrderMark, onError, sourceFiles, data);
             function handleNewSignature(oldSignatureFormat, newSignature) {
               const oldSignature = !oldSignatureFormat || isString(oldSignatureFormat) ? oldSignatureFormat : oldSignatureFormat[0];
-              newSignature ?? (newSignature = computeSignature(text31, host, data));
+              newSignature ?? (newSignature = computeSignature(text32, host, data));
               if (newSignature === oldSignature) {
                 if (oldSignatureFormat === oldSignature) return void 0;
                 else if (data) data.differsOnlyInMap = true;
@@ -151074,15 +151074,15 @@ ${lanes.join("\n")}
         };
         return compilerHost;
       }
-      function getSourceFileVersionAsHashFromText(host, text31) {
-        if (text31.match(sourceMapCommentRegExpDontCareLineStart)) {
-          let lineEnd = text31.length;
+      function getSourceFileVersionAsHashFromText(host, text32) {
+        if (text32.match(sourceMapCommentRegExpDontCareLineStart)) {
+          let lineEnd = text32.length;
           let lineStart = lineEnd;
           for (let pos = lineEnd - 1; pos >= 0; pos--) {
-            const ch = text31.charCodeAt(pos);
+            const ch = text32.charCodeAt(pos);
             switch (ch) {
               case 10:
-                if (pos && text31.charCodeAt(pos - 1) === 13) {
+                if (pos && text32.charCodeAt(pos - 1) === 13) {
                   pos--;
                 }
               // falls through
@@ -151095,9 +151095,9 @@ ${lanes.join("\n")}
                 }
                 break;
             }
-            const line2 = text31.substring(lineStart, lineEnd);
+            const line2 = text32.substring(lineStart, lineEnd);
             if (line2.match(sourceMapCommentRegExp)) {
-              text31 = text31.substring(0, lineStart);
+              text32 = text32.substring(0, lineStart);
               break;
             } else if (!line2.match(whitespaceOrMapCommentRegExp)) {
               break;
@@ -151105,7 +151105,7 @@ ${lanes.join("\n")}
             lineEnd = lineStart;
           }
         }
-        return (host.createHash || generateDjb2Hash)(text31);
+        return (host.createHash || generateDjb2Hash)(text32);
       }
       function setGetSourceFileAsHashVersioned(compilerHost) {
         const originalGetSourceFile = compilerHost.getSourceFile;
@@ -151594,8 +151594,8 @@ ${lanes.join("\n")}
           const hostSourceFile = sourceFilesCache.get(path2);
           if (!hostSourceFile) return void 0;
           if (hostSourceFile.version) return hostSourceFile.version;
-          const text31 = readFileWithCache(path2);
-          return text31 !== void 0 ? getSourceFileVersionAsHashFromText(compilerHost, text31) : void 0;
+          const text32 = readFileWithCache(path2);
+          return text32 !== void 0 ? getSourceFileVersionAsHashFromText(compilerHost, text32) : void 0;
         }
         function onReleaseOldSourceFile(oldSourceFile, _oldOptions, hasSourceFileByPath) {
           const hostSourceFileInfo = sourceFilesCache.get(oldSourceFile.resolvedPath);
@@ -152575,7 +152575,7 @@ ${lanes.join("\n")}
             state4.write,
             /*reportSummary*/
             void 0,
-            (name, text31, writeByteOrderMark, onError, sourceFiles, data) => {
+            (name, text32, writeByteOrderMark, onError, sourceFiles, data) => {
               var _a2;
               const path2 = toPath2(state4, name);
               emittedOutputs.set(toPath2(state4, name), name);
@@ -152599,7 +152599,7 @@ ${lanes.join("\n")}
               const modifiedTime = (data == null ? void 0 : data.differsOnlyInMap) ? getModifiedTime(state4.host, name) : void 0;
               (writeFileCallback || compilerHost.writeFile)(
                 name,
-                text31,
+                text32,
                 writeByteOrderMark,
                 onError,
                 sourceFiles,
@@ -152994,8 +152994,8 @@ ${lanes.join("\n")}
               if (!buildInfoVersionMap) buildInfoVersionMap = getBuildInfoFileVersionMap(incrementalBuildInfo, buildInfoPath, host);
               const resolvedInputPath = buildInfoVersionMap.roots.get(inputPath);
               version22 = buildInfoVersionMap.fileInfos.get(resolvedInputPath ?? inputPath);
-              const text31 = version22 ? state4.readFileWithCache(resolvedInputPath ?? inputFile) : void 0;
-              currentVersion = text31 !== void 0 ? getSourceFileVersionAsHashFromText(host, text31) : void 0;
+              const text32 = version22 ? state4.readFileWithCache(resolvedInputPath ?? inputFile) : void 0;
+              currentVersion = text32 !== void 0 ? getSourceFileVersionAsHashFromText(host, text32) : void 0;
               if (version22 && version22 === currentVersion) pseudoInputUpToDate = true;
             }
             if (!version22 || version22 !== currentVersion) {
@@ -153893,7 +153893,7 @@ ${lanes.join("\n")}
       }
       function generateOptionOutput(sys2, option2, rightAlignOfLeft, leftAlignOfRight) {
         var _a;
-        const text31 = [];
+        const text32 = [];
         const colors = createColors(sys2);
         const name = getDisplayNameTextOfOption(option2);
         const valueCandidates = getValueCandidate(option2);
@@ -153907,7 +153907,7 @@ ${lanes.join("\n")}
           if (option2.description) {
             description3 = getDiagnosticText(option2.description);
           }
-          text31.push(...getPrettyOutput(
+          text32.push(...getPrettyOutput(
             name,
             description3,
             rightAlignOfLeft,
@@ -153918,7 +153918,7 @@ ${lanes.join("\n")}
           ), sys2.newLine);
           if (showAdditionalInfoOutput(valueCandidates, option2)) {
             if (valueCandidates) {
-              text31.push(...getPrettyOutput(
+              text32.push(...getPrettyOutput(
                 valueCandidates.valueType,
                 valueCandidates.possibleValues,
                 rightAlignOfLeft,
@@ -153929,7 +153929,7 @@ ${lanes.join("\n")}
               ), sys2.newLine);
             }
             if (defaultValueDescription) {
-              text31.push(...getPrettyOutput(
+              text32.push(...getPrettyOutput(
                 getDiagnosticText(Diagnostics.default_Colon),
                 defaultValueDescription,
                 rightAlignOfLeft,
@@ -153940,28 +153940,28 @@ ${lanes.join("\n")}
               ), sys2.newLine);
             }
           }
-          text31.push(sys2.newLine);
+          text32.push(sys2.newLine);
         } else {
-          text31.push(colors.blue(name), sys2.newLine);
+          text32.push(colors.blue(name), sys2.newLine);
           if (option2.description) {
             const description3 = getDiagnosticText(option2.description);
-            text31.push(description3);
+            text32.push(description3);
           }
-          text31.push(sys2.newLine);
+          text32.push(sys2.newLine);
           if (showAdditionalInfoOutput(valueCandidates, option2)) {
             if (valueCandidates) {
-              text31.push(`${valueCandidates.valueType} ${valueCandidates.possibleValues}`);
+              text32.push(`${valueCandidates.valueType} ${valueCandidates.possibleValues}`);
             }
             if (defaultValueDescription) {
-              if (valueCandidates) text31.push(sys2.newLine);
+              if (valueCandidates) text32.push(sys2.newLine);
               const diagType = getDiagnosticText(Diagnostics.default_Colon);
-              text31.push(`${diagType} ${defaultValueDescription}`);
+              text32.push(`${diagType} ${defaultValueDescription}`);
             }
-            text31.push(sys2.newLine);
+            text32.push(sys2.newLine);
           }
-          text31.push(sys2.newLine);
+          text32.push(sys2.newLine);
         }
-        return text31;
+        return text32;
         function formatDefaultValue(defaultValue, type) {
           return defaultValue !== void 0 && typeof type === "object" ? arrayFrom(type.entries()).filter(([, value]) => value === defaultValue).map(([name2]) => name2).join("/") : String(defaultValue);
         }
@@ -156562,8 +156562,8 @@ ${lanes.join("\n")}
       var ScriptSnapshot;
       ((ScriptSnapshot2) => {
         class StringScriptSnapshot {
-          constructor(text31) {
-            this.text = text31;
+          constructor(text32) {
+            this.text = text32;
           }
           getText(start2, end) {
             return start2 === 0 && end === this.text.length ? this.text : this.text.substring(start2, end);
@@ -156575,8 +156575,8 @@ ${lanes.join("\n")}
             return void 0;
           }
         }
-        function fromString(text31) {
-          return new StringScriptSnapshot(text31);
+        function fromString(text32) {
+          return new StringScriptSnapshot(text32);
         }
         ScriptSnapshot2.fromString = fromString;
       })(ScriptSnapshot || (ScriptSnapshot = {}));
@@ -158374,9 +158374,9 @@ ${lanes.join("\n")}
           void 0
         );
       }
-      function makeStringLiteral(text31, quotePreference) {
+      function makeStringLiteral(text32, quotePreference) {
         return factory.createStringLiteral(
-          text31,
+          text32,
           quotePreference === 0
           /* Single */
         );
@@ -158520,9 +158520,9 @@ ${lanes.join("\n")}
         }
         return void 0;
       }
-      function isTextWhiteSpaceLike(text31, startPos, endPos) {
+      function isTextWhiteSpaceLike(text32, startPos, endPos) {
         for (let i = startPos; i < endPos; i++) {
-          if (!isWhiteSpaceLike(text31.charCodeAt(i))) {
+          if (!isWhiteSpaceLike(text32.charCodeAt(i))) {
             return false;
           }
         }
@@ -158582,8 +158582,8 @@ ${lanes.join("\n")}
         let indent3;
         let length2;
         resetWriter();
-        const unknownWrite = (text31) => writeKind(
-          text31,
+        const unknownWrite = (text32) => writeKind(
+          text32,
           17
           /* text */
         );
@@ -158606,48 +158606,48 @@ ${lanes.join("\n")}
             }
             return displayParts;
           },
-          writeKeyword: (text31) => writeKind(
-            text31,
+          writeKeyword: (text32) => writeKind(
+            text32,
             5
             /* keyword */
           ),
-          writeOperator: (text31) => writeKind(
-            text31,
+          writeOperator: (text32) => writeKind(
+            text32,
             12
             /* operator */
           ),
-          writePunctuation: (text31) => writeKind(
-            text31,
+          writePunctuation: (text32) => writeKind(
+            text32,
             15
             /* punctuation */
           ),
-          writeTrailingSemicolon: (text31) => writeKind(
-            text31,
+          writeTrailingSemicolon: (text32) => writeKind(
+            text32,
             15
             /* punctuation */
           ),
-          writeSpace: (text31) => writeKind(
-            text31,
+          writeSpace: (text32) => writeKind(
+            text32,
             16
             /* space */
           ),
-          writeStringLiteral: (text31) => writeKind(
-            text31,
+          writeStringLiteral: (text32) => writeKind(
+            text32,
             8
             /* stringLiteral */
           ),
-          writeParameter: (text31) => writeKind(
-            text31,
+          writeParameter: (text32) => writeKind(
+            text32,
             13
             /* parameterName */
           ),
-          writeProperty: (text31) => writeKind(
-            text31,
+          writeProperty: (text32) => writeKind(
+            text32,
             14
             /* propertyName */
           ),
-          writeLiteral: (text31) => writeKind(
-            text31,
+          writeLiteral: (text32) => writeKind(
+            text32,
             8
             /* stringLiteral */
           ),
@@ -158687,17 +158687,17 @@ ${lanes.join("\n")}
             lineStart = false;
           }
         }
-        function writeKind(text31, kind4) {
+        function writeKind(text32, kind4) {
           if (length2 > absoluteMaximumLength) return;
           writeIndent();
-          length2 += text31.length;
-          displayParts.push(displayPart(text31, kind4));
+          length2 += text32.length;
+          displayParts.push(displayPart(text32, kind4));
         }
-        function writeSymbol(text31, symbol) {
+        function writeSymbol(text32, symbol) {
           if (length2 > absoluteMaximumLength) return;
           writeIndent();
-          length2 += text31.length;
-          displayParts.push(symbolPart(text31, symbol));
+          length2 += text32.length;
+          displayParts.push(symbolPart(text32, symbol));
         }
         function writeLine() {
           if (length2 > absoluteMaximumLength) return;
@@ -158712,8 +158712,8 @@ ${lanes.join("\n")}
           length2 = 0;
         }
       }
-      function symbolPart(text31, symbol) {
-        return displayPart(text31, displayPartKind(symbol));
+      function symbolPart(text32, symbol) {
+        return displayPart(text32, displayPartKind(symbol));
         function displayPartKind(symbol2) {
           const flags = symbol2.flags;
           if (flags & 3) {
@@ -158735,8 +158735,8 @@ ${lanes.join("\n")}
           return 17;
         }
       }
-      function displayPart(text31, kind4) {
-        return { text: text31, kind: SymbolDisplayPartKind[kind4] };
+      function displayPart(text32, kind4) {
+        return { text: text32, kind: SymbolDisplayPartKind[kind4] };
       }
       function spacePart() {
         return displayPart(
@@ -158766,55 +158766,55 @@ ${lanes.join("\n")}
           /* operator */
         );
       }
-      function parameterNamePart(text31) {
+      function parameterNamePart(text32) {
         return displayPart(
-          text31,
+          text32,
           13
           /* parameterName */
         );
       }
-      function propertyNamePart(text31) {
+      function propertyNamePart(text32) {
         return displayPart(
-          text31,
+          text32,
           14
           /* propertyName */
         );
       }
-      function textOrKeywordPart(text31) {
-        const kind4 = stringToToken(text31);
-        return kind4 === void 0 ? textPart(text31) : keywordPart(kind4);
+      function textOrKeywordPart(text32) {
+        const kind4 = stringToToken(text32);
+        return kind4 === void 0 ? textPart(text32) : keywordPart(kind4);
       }
-      function textPart(text31) {
+      function textPart(text32) {
         return displayPart(
-          text31,
+          text32,
           17
           /* text */
         );
       }
-      function typeAliasNamePart(text31) {
+      function typeAliasNamePart(text32) {
         return displayPart(
-          text31,
+          text32,
           0
           /* aliasName */
         );
       }
-      function typeParameterNamePart(text31) {
+      function typeParameterNamePart(text32) {
         return displayPart(
-          text31,
+          text32,
           18
           /* typeParameterName */
         );
       }
-      function linkTextPart(text31) {
+      function linkTextPart(text32) {
         return displayPart(
-          text31,
+          text32,
           24
           /* linkText */
         );
       }
-      function linkNamePart(text31, target) {
+      function linkNamePart(text32, target) {
         return {
-          text: text31,
+          text: text32,
           kind: SymbolDisplayPartKind[
             23
             /* linkName */
@@ -158825,9 +158825,9 @@ ${lanes.join("\n")}
           }
         };
       }
-      function linkPart(text31) {
+      function linkPart(text32) {
         return displayPart(
-          text31,
+          text32,
           22
           /* link */
         );
@@ -158845,40 +158845,40 @@ ${lanes.join("\n")}
           const targetSymbol = symbol && checker ? getSymbolTarget(symbol, checker) : void 0;
           const suffix = findLinkNameEnd(link.text);
           const name = getTextOfNode(link.name) + link.text.slice(0, suffix);
-          const text31 = skipSeparatorFromLinkText(link.text.slice(suffix));
+          const text32 = skipSeparatorFromLinkText(link.text.slice(suffix));
           const decl = (targetSymbol == null ? void 0 : targetSymbol.valueDeclaration) || ((_a = targetSymbol == null ? void 0 : targetSymbol.declarations) == null ? void 0 : _a[0]);
           if (decl) {
             parts.push(linkNamePart(name, decl));
-            if (text31) parts.push(linkTextPart(text31));
+            if (text32) parts.push(linkTextPart(text32));
           } else {
             const separator = suffix === 0 || link.text.charCodeAt(suffix) === 124 && name.charCodeAt(name.length - 1) !== 32 ? " " : "";
-            parts.push(linkTextPart(name + separator + text31));
+            parts.push(linkTextPart(name + separator + text32));
           }
         }
         parts.push(linkPart("}"));
         return parts;
       }
-      function skipSeparatorFromLinkText(text31) {
+      function skipSeparatorFromLinkText(text32) {
         let pos = 0;
-        if (text31.charCodeAt(pos++) === 124) {
-          while (pos < text31.length && text31.charCodeAt(pos) === 32) pos++;
-          return text31.slice(pos);
+        if (text32.charCodeAt(pos++) === 124) {
+          while (pos < text32.length && text32.charCodeAt(pos) === 32) pos++;
+          return text32.slice(pos);
         }
-        return text31;
+        return text32;
       }
-      function findLinkNameEnd(text31) {
-        let pos = text31.indexOf("://");
+      function findLinkNameEnd(text32) {
+        let pos = text32.indexOf("://");
         if (pos === 0) {
-          while (pos < text31.length && text31.charCodeAt(pos) !== 124) pos++;
+          while (pos < text32.length && text32.charCodeAt(pos) !== 124) pos++;
           return pos;
         }
-        if (text31.indexOf("()") === 0) return 2;
-        if (text31.charAt(0) === "<") {
+        if (text32.indexOf("()") === 0) return 2;
+        if (text32.charAt(0) === "<") {
           let brackets2 = 0;
           let i = 0;
-          while (i < text31.length) {
-            if (text31[i] === "<") brackets2++;
-            if (text31[i] === ">") brackets2--;
+          while (i < text32.length) {
+            if (text32[i] === "<") brackets2++;
+            if (text32[i] === ">") brackets2--;
             i++;
             if (!brackets2) return i;
           }
@@ -158955,33 +158955,33 @@ ${lanes.join("\n")}
       function getUniqueSymbolId(symbol, checker) {
         return getSymbolId(skipAlias(symbol, checker));
       }
-      function getFirstNonSpaceCharacterPosition(text31, position) {
-        while (isWhiteSpaceLike(text31.charCodeAt(position))) {
+      function getFirstNonSpaceCharacterPosition(text32, position) {
+        while (isWhiteSpaceLike(text32.charCodeAt(position))) {
           position += 1;
         }
         return position;
       }
-      function getPrecedingNonSpaceCharacterPosition(text31, position) {
-        while (position > -1 && isWhiteSpaceSingleLine(text31.charCodeAt(position))) {
+      function getPrecedingNonSpaceCharacterPosition(text32, position) {
+        while (position > -1 && isWhiteSpaceSingleLine(text32.charCodeAt(position))) {
           position -= 1;
         }
         return position + 1;
       }
       function copyComments(sourceNode, targetNode) {
         const sourceFile = sourceNode.getSourceFile();
-        const text31 = sourceFile.text;
-        if (hasLeadingLineBreak(sourceNode, text31)) {
+        const text32 = sourceFile.text;
+        if (hasLeadingLineBreak(sourceNode, text32)) {
           copyLeadingComments(sourceNode, targetNode, sourceFile);
         } else {
           copyTrailingAsLeadingComments(sourceNode, targetNode, sourceFile);
         }
         copyTrailingComments(sourceNode, targetNode, sourceFile);
       }
-      function hasLeadingLineBreak(node, text31) {
+      function hasLeadingLineBreak(node, text32) {
         const start2 = node.getFullStart();
         const end = node.getStart();
         for (let i = start2; i < end; i++) {
-          if (text31.charCodeAt(i) === 10) return true;
+          if (text32.charCodeAt(i) === 10) return true;
         }
         return false;
       }
@@ -159058,9 +159058,9 @@ ${lanes.join("\n")}
             return checker.getContextualType(node, contextFlags);
         }
       }
-      function quote2(sourceFile, preferences, text31) {
+      function quote2(sourceFile, preferences, text32) {
         const quotePreference = getQuotePreference(sourceFile, preferences);
-        const quoted = JSON.stringify(text31);
+        const quoted = JSON.stringify(text32);
         return quotePreference === 0 ? `'${stripQuotes(quoted).replace(/'/g, () => "\\'").replace(/\\"/g, '"')}'` : quoted;
       }
       function isEqualityOperatorKind(kind4) {
@@ -159443,7 +159443,7 @@ ${lanes.join("\n")}
         }
       }
       function consumesNodeCoreModules(sourceFile) {
-        return some(sourceFile.imports, ({ text: text31 }) => nodeCoreModules.has(text31));
+        return some(sourceFile.imports, ({ text: text32 }) => nodeCoreModules.has(text32));
       }
       function isInsideNodeModules(fileOrDirectory) {
         return contains(getPathComponents(fileOrDirectory), "node_modules");
@@ -160229,15 +160229,15 @@ ${lanes.join("\n")}
           /*skipTrivia*/
           false
         );
-        function getClassificationsForLine(text31, lexState, syntacticClassifierAbsent) {
-          return convertClassificationsToResult(getEncodedLexicalClassifications(text31, lexState, syntacticClassifierAbsent), text31);
+        function getClassificationsForLine(text32, lexState, syntacticClassifierAbsent) {
+          return convertClassificationsToResult(getEncodedLexicalClassifications(text32, lexState, syntacticClassifierAbsent), text32);
         }
-        function getEncodedLexicalClassifications(text31, lexState, syntacticClassifierAbsent) {
+        function getEncodedLexicalClassifications(text32, lexState, syntacticClassifierAbsent) {
           let token = 0;
           let lastNonTriviaToken = 0;
           const templateStack = [];
           const { prefix, pushTemplate } = getPrefixFromLexState(lexState);
-          text31 = prefix + text31;
+          text32 = prefix + text32;
           const offset = prefix.length;
           if (pushTemplate) {
             templateStack.push(
@@ -160245,7 +160245,7 @@ ${lanes.join("\n")}
               /* TemplateHead */
             );
           }
-          scanner2.setText(text31);
+          scanner2.setText(text32);
           let endOfLineState = 0;
           const spans = [];
           let angleBracketStack = 0;
@@ -160257,7 +160257,7 @@ ${lanes.join("\n")}
             }
             const end = scanner2.getTokenEnd();
             pushEncodedClassification(scanner2.getTokenStart(), end, offset, classFromKind(token), spans);
-            if (end >= text31.length) {
+            if (end >= text32.length) {
               const end2 = getNewEndOfLineState(scanner2, token, lastOrUndefined(templateStack));
               if (end2 !== void 0) {
                 endOfLineState = end2;
@@ -160397,7 +160397,7 @@ ${lanes.join("\n")}
           result.push(start2 - offset, length2, classification);
         }
       }
-      function convertClassificationsToResult(classifications, text31) {
+      function convertClassificationsToResult(classifications, text32) {
         const entries2 = [];
         const dense = classifications.spans;
         let lastEnd = 0;
@@ -160418,7 +160418,7 @@ ${lanes.join("\n")}
           entries2.push({ length: length2, classification: convertClassification(type) });
           lastEnd = start2 + length2;
         }
-        const whitespaceLength = text31.length - lastEnd;
+        const whitespaceLength = text32.length - lastEnd;
         if (whitespaceLength > 0) {
           entries2.push({
             length: whitespaceLength,
@@ -160782,8 +160782,8 @@ ${lanes.join("\n")}
                 triviaScanner.resetTokenState(end);
                 continue;
               case 7:
-                const text31 = sourceFile.text;
-                const ch = text31.charCodeAt(start2);
+                const text32 = sourceFile.text;
+                const ch = text32.charCodeAt(start2);
                 if (ch === 60 || ch === 62) {
                   pushClassification(
                     start2,
@@ -160797,7 +160797,7 @@ ${lanes.join("\n")}
                   ch === 124 || ch === 61
                   /* equals */
                 );
-                classifyDisabledMergeCode(text31, start2, end);
+                classifyDisabledMergeCode(text32, start2, end);
                 break;
               case 6:
                 break;
@@ -160942,8 +160942,8 @@ ${lanes.join("\n")}
         function tryClassifyTripleSlashComment(start2, width) {
           const tripleSlashXMLCommentRegEx = /^(\/\/\/\s*)(<)(?:(\S+)((?:[^/]|\/[^>])*)(\/>)?)?/m;
           const attributeRegex = /(\s)(\S+)(\s*)(=)(\s*)('[^']+'|"[^"]+")/g;
-          const text31 = sourceFile.text.substr(start2, width);
-          const match = tripleSlashXMLCommentRegEx.exec(text31);
+          const text32 = sourceFile.text.substr(start2, width);
+          const match = tripleSlashXMLCommentRegEx.exec(text32);
           if (!match) {
             return false;
           }
@@ -161033,10 +161033,10 @@ ${lanes.join("\n")}
             processElement(child);
           }
         }
-        function classifyDisabledMergeCode(text31, start2, end) {
+        function classifyDisabledMergeCode(text32, start2, end) {
           let i;
           for (i = start2; i < end; i++) {
-            if (isLineBreak(text31.charCodeAt(i))) {
+            if (isLineBreak(text32.charCodeAt(i))) {
               break;
             }
           }
@@ -162262,10 +162262,10 @@ ${lanes.join("\n")}
           currentCandidate++;
         }
       }
-      function createSegment(text31) {
+      function createSegment(text32) {
         return {
-          totalTextChunk: createTextChunk(text31),
-          subWordTextChunks: breakPatternIntoTextChunks(text31)
+          totalTextChunk: createTextChunk(text32),
+          subWordTextChunks: breakPatternIntoTextChunks(text32)
         };
       }
       function isUpperCaseLetter(ch) {
@@ -162343,13 +162343,13 @@ ${lanes.join("\n")}
         }
         return result;
       }
-      function createTextChunk(text31) {
-        const textLowerCase = text31.toLowerCase();
+      function createTextChunk(text32) {
+        const textLowerCase = text32.toLowerCase();
         return {
-          text: text31,
+          text: text32,
           textLowerCase,
-          isLowerCase: text31 === textLowerCase,
-          characterSpans: breakIntoCharacterSpans(text31)
+          isLowerCase: text32 === textLowerCase,
+          characterSpans: breakIntoCharacterSpans(text32)
         };
       }
       function breakIntoCharacterSpans(identifier21) {
@@ -162845,8 +162845,8 @@ ${lanes.join("\n")}
             sourceFileLike.set(path2, false);
             return void 0;
           }
-          const text31 = host.readFile(fileName);
-          const file = text31 ? createSourceFileLike(text31) : false;
+          const text32 = host.readFile(fileName);
+          const file = text32 ? createSourceFileLike(text32) : false;
           sourceFileLike.set(path2, file);
           return file ? file : void 0;
         }
@@ -162900,9 +162900,9 @@ ${lanes.join("\n")}
         if (map2.sourcesContent && map2.sourcesContent.some(isString)) return void 0;
         return createDocumentPositionMapper(host, map2, mapFileName);
       }
-      function createSourceFileLike(text31, lineMap) {
+      function createSourceFileLike(text32, lineMap) {
         return {
-          text: text31,
+          text: text32,
           lineMap,
           getLineAndCharacterOfPosition(pos) {
             return computeLineAndCharacterOfPosition(getLineStarts(this), pos);
@@ -163200,13 +163200,13 @@ interface Symbol {
         const newLine = getNewLineCharacter(options);
         const compilerHost = {
           getSourceFile: (fileName) => fileName === normalizePath(inputFileName) ? sourceFile : fileName === normalizePath(barebonesLibName) ? barebonesLibSourceFile : void 0,
-          writeFile: (name, text31) => {
+          writeFile: (name, text32) => {
             if (fileExtensionIs(name, ".map")) {
               Debug.assertEqual(sourceMapText, void 0, "Unexpected multiple source map outputs, file:", name);
-              sourceMapText = text31;
+              sourceMapText = text32;
             } else {
               Debug.assertEqual(outputText, void 0, "Unexpected multiple outputs, file:", name);
-              outputText = text31;
+              outputText = text32;
             }
           },
           getDefaultLibFileName: () => barebonesLibName,
@@ -163991,9 +163991,9 @@ interface Symbol {
           return cleanText(getModuleName(node));
         }
         if (name) {
-          const text31 = isIdentifier(name) ? name.text : isElementAccessExpression(name) ? `[${nodeText(name.argumentExpression)}]` : nodeText(name);
-          if (text31.length > 0) {
-            return cleanText(text31);
+          const text32 = isIdentifier(name) ? name.text : isElementAccessExpression(name) ? `[${nodeText(name.argumentExpression)}]` : nodeText(name);
+          if (text32.length > 0) {
+            return cleanText(text32);
           }
         }
         switch (node.kind) {
@@ -164195,9 +164195,9 @@ interface Symbol {
             return false;
         }
       }
-      function cleanText(text31) {
-        text31 = text31.length > maxLength ? text31.substring(0, maxLength) + "..." : text31;
-        return text31.replace(/\\?(?:\r?\n|[\r\u2028\u2029])/g, "");
+      function cleanText(text32) {
+        text32 = text32.length > maxLength ? text32.substring(0, maxLength) + "..." : text32;
+        return text32.replace(/\\?(?:\r?\n|[\r\u2028\u2029])/g, "");
       }
       var ts_refactor_exports = {};
       __export(ts_refactor_exports, {
@@ -167452,23 +167452,23 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
       }
       function concatConsecutiveString(index, nodes) {
         const indexes = [];
-        let text31 = "", rawText = "";
+        let text32 = "", rawText = "";
         while (index < nodes.length) {
           const node = nodes[index];
           if (isStringLiteralLike(node)) {
-            text31 += node.text;
+            text32 += node.text;
             rawText += escapeRawStringForTemplate(getTextOfNode(node).slice(1, -1));
             indexes.push(index);
             index++;
           } else if (isTemplateExpression(node)) {
-            text31 += node.head.text;
+            text32 += node.head.text;
             rawText += getRawTextOfTemplate(node.head);
             break;
           } else {
             break;
           }
         }
-        return [index, text31, rawText, indexes];
+        return [index, text32, rawText, indexes];
       }
       function nodesToTemplate({ nodes, operators }, file) {
         const copyOperatorComments = copyTrailingOperatorComments(operators, file);
@@ -167492,11 +167492,11 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
             const spans = map(currentNode.templateSpans, (span2, index) => {
               copyExpressionComments(span2);
               const isLastSpan = index === currentNode.templateSpans.length - 1;
-              const text31 = span2.literal.text + (isLastSpan ? subsequentText : "");
+              const text32 = span2.literal.text + (isLastSpan ? subsequentText : "");
               const rawText = getRawTextOfTemplate(span2.literal) + (isLastSpan ? rawSubsequentText : "");
               return factory.createTemplateSpan(
                 span2.expression,
-                isLast && isLastSpan ? factory.createTemplateTail(text31, rawText) : factory.createTemplateMiddle(text31, rawText)
+                isLast && isLastSpan ? factory.createTemplateTail(text32, rawText) : factory.createTemplateMiddle(text32, rawText)
               );
             });
             templateSpans.push(...spans);
@@ -170595,9 +170595,9 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         }
       };
       var SourceMapSourceObject = class {
-        constructor(fileName, text31, skipTrivia2) {
+        constructor(fileName, text32, skipTrivia2) {
           this.fileName = fileName;
-          this.text = text31;
+          this.text = text32;
           this.skipTrivia = skipTrivia2 || ((pos) => pos);
         }
         getLineAndCharacterOfPosition(pos) {
@@ -171816,7 +171816,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           var _a2;
           const sourceFile = syntaxTreeCache.getCurrentSourceFile(fileName);
           const textChanges2 = [];
-          const { text: text31 } = sourceFile;
+          const { text: text32 } = sourceFile;
           let hasComment = false;
           let isCommenting = insertComment || false;
           const positions = [];
@@ -171827,7 +171827,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           const openMultilineRegex = isJsx ? "\\{\\/\\*" : "\\/\\*";
           const closeMultilineRegex = isJsx ? "\\*\\/\\}" : "\\*\\/";
           while (pos <= textRange.end) {
-            const offset = text31.substr(pos, openMultiline.length) === openMultiline ? openMultiline.length : 0;
+            const offset = text32.substr(pos, openMultiline.length) === openMultiline ? openMultiline.length : 0;
             const commentRange = isInComment(sourceFile, pos + offset);
             if (commentRange) {
               if (isJsx) {
@@ -171841,8 +171841,8 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
               hasComment = true;
               pos = commentRange.end + 1;
             } else {
-              const newPos = text31.substring(pos, textRange.end).search(`(${openMultilineRegex})|(${closeMultilineRegex})`);
-              isCommenting = insertComment !== void 0 ? insertComment : isCommenting || !isTextWhiteSpaceLike(text31, pos, newPos === -1 ? textRange.end : pos + newPos);
+              const newPos = text32.substring(pos, textRange.end).search(`(${openMultilineRegex})|(${closeMultilineRegex})`);
+              isCommenting = insertComment !== void 0 ? insertComment : isCommenting || !isTextWhiteSpaceLike(text32, pos, newPos === -1 ? textRange.end : pos + newPos);
               pos = newPos === -1 ? textRange.end + 1 : pos + newPos + closeMultiline.length;
             }
           }
@@ -171852,7 +171852,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
             }
             insertSorted(positions, textRange.end, compareValues);
             const firstPos = positions[0];
-            if (text31.substr(firstPos, openMultiline.length) !== openMultiline) {
+            if (text32.substr(firstPos, openMultiline.length) !== openMultiline) {
               textChanges2.push({
                 newText: openMultiline,
                 span: {
@@ -171862,7 +171862,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
               });
             }
             for (let i = 1; i < positions.length - 1; i++) {
-              if (text31.substr(positions[i] - closeMultiline.length, closeMultiline.length) !== closeMultiline) {
+              if (text32.substr(positions[i] - closeMultiline.length, closeMultiline.length) !== closeMultiline) {
                 textChanges2.push({
                   newText: closeMultiline,
                   span: {
@@ -171871,7 +171871,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
                   }
                 });
               }
-              if (text31.substr(positions[i], openMultiline.length) !== openMultiline) {
+              if (text32.substr(positions[i], openMultiline.length) !== openMultiline) {
                 textChanges2.push({
                   newText: openMultiline,
                   span: {
@@ -171893,7 +171893,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           } else {
             for (const pos2 of positions) {
               const from = pos2 - closeMultiline.length > 0 ? pos2 - closeMultiline.length : 0;
-              const offset = text31.substr(from, closeMultiline.length) === closeMultiline ? closeMultiline.length : 0;
+              const offset = text32.substr(from, closeMultiline.length) === closeMultiline ? closeMultiline.length : 0;
               textChanges2.push({
                 newText: "",
                 span: {
@@ -172221,11 +172221,11 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         const nameTable = sourceFile.nameTable = /* @__PURE__ */ new Map();
         sourceFile.forEachChild(function walk3(node) {
           if (isIdentifier(node) && !isTagName(node) && node.escapedText || isStringOrNumericLiteralLike(node) && literalIsName(node)) {
-            const text31 = getEscapedTextOfIdentifierOrLiteral(node);
-            nameTable.set(text31, nameTable.get(text31) === void 0 ? node.pos : -1);
+            const text32 = getEscapedTextOfIdentifierOrLiteral(node);
+            nameTable.set(text32, nameTable.get(text32) === void 0 ? node.pos : -1);
           } else if (isPrivateIdentifier(node)) {
-            const text31 = node.escapedText;
-            nameTable.set(text31, nameTable.get(text31) === void 0 ? node.pos : -1);
+            const text32 = node.escapedText;
+            nameTable.set(text32, nameTable.get(text32) === void 0 ? node.pos : -1);
           }
           forEachChild(node, walk3);
           if (hasJSDocNodes(node)) {
@@ -172883,19 +172883,19 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           return { text: `${prefix}static {}`, pos, end };
         }
         const declName = isAssignedExpression(node) ? node.parent.name : Debug.checkDefined(getNameOfDeclaration(node), "Expected call hierarchy item to have a name");
-        let text31 = isIdentifier(declName) ? idText(declName) : isStringOrNumericLiteralLike(declName) ? declName.text : isComputedPropertyName(declName) ? isStringOrNumericLiteralLike(declName.expression) ? declName.expression.text : void 0 : void 0;
-        if (text31 === void 0) {
+        let text32 = isIdentifier(declName) ? idText(declName) : isStringOrNumericLiteralLike(declName) ? declName.text : isComputedPropertyName(declName) ? isStringOrNumericLiteralLike(declName.expression) ? declName.expression.text : void 0 : void 0;
+        if (text32 === void 0) {
           const typeChecker = program.getTypeChecker();
           const symbol = typeChecker.getSymbolAtLocation(declName);
           if (symbol) {
-            text31 = typeChecker.symbolToString(symbol, node);
+            text32 = typeChecker.symbolToString(symbol, node);
           }
         }
-        if (text31 === void 0) {
+        if (text32 === void 0) {
           const printer = createPrinterWithRemoveCommentsOmitTrailingSemicolon();
-          text31 = usingSingleLineStringWriter((writer) => printer.writeNode(4, node, node.getSourceFile(), writer));
+          text32 = usingSingleLineStringWriter((writer) => printer.writeNode(4, node, node.getSourceFile(), writer));
         }
-        return { text: text31, pos: declName.getStart(), end: declName.getEnd() };
+        return { text: text32, pos: declName.getStart(), end: declName.getEnd() };
       }
       function getCallHierarchItemContainerName(node) {
         var _a, _b, _c, _d;
@@ -174270,22 +174270,22 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           if (isJSDocIndexSignature(node)) {
             return transformJSDocIndexSignature(node);
           }
-          let text31 = node.typeName.text;
+          let text32 = node.typeName.text;
           switch (node.typeName.text) {
             case "String":
             case "Boolean":
             case "Object":
             case "Number":
-              text31 = text31.toLowerCase();
+              text32 = text32.toLowerCase();
               break;
             case "array":
             case "date":
             case "promise":
-              text31 = text31[0].toUpperCase() + text31.slice(1);
+              text32 = text32[0].toUpperCase() + text32.slice(1);
               break;
           }
-          name = factory.createIdentifier(text31);
-          if ((text31 === "Array" || text31 === "Promise") && !node.typeArguments) {
+          name = factory.createIdentifier(text32);
+          if ((text32 === "Array" || text32 === "Promise") && !node.typeArguments) {
             args = factory.createNodeArray([factory.createTypeReferenceNode("any", emptyArray)]);
           } else {
             args = visitNodes2(node.typeArguments, transformJSDocType, isTypeNode);
@@ -175415,15 +175415,15 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
       function collectExportRenames(sourceFile, checker, identifiers) {
         const res = /* @__PURE__ */ new Map();
         forEachExportReference(sourceFile, (node) => {
-          const { text: text31 } = node.name;
-          if (!res.has(text31) && (isIdentifierANonContextualKeyword(node.name) || checker.resolveName(
-            text31,
+          const { text: text32 } = node.name;
+          if (!res.has(text32) && (isIdentifierANonContextualKeyword(node.name) || checker.resolveName(
+            text32,
             node,
             111551,
             /*excludeGlobals*/
             true
           ))) {
-            res.set(text31, makeUniqueName(`_${text31}`, identifiers));
+            res.set(text32, makeUniqueName(`_${text32}`, identifiers));
           }
         });
         return res;
@@ -175433,8 +175433,8 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           if (isAssignmentLhs) {
             return;
           }
-          const { text: text31 } = node.name;
-          changes.replaceNode(sourceFile, node, factory.createIdentifier(exports22.get(text31) || text31));
+          const { text: text32 } = node.name;
+          changes.replaceNode(sourceFile, node, factory.createIdentifier(exports22.get(text32) || text32));
         });
       }
       function forEachExportReference(sourceFile, cb) {
@@ -175600,8 +175600,8 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         return statements && [statements, false];
       }
       function convertNamedExport(sourceFile, assignment, changes, exports22) {
-        const { text: text31 } = assignment.left.name;
-        const rename5 = exports22.get(text31);
+        const { text: text32 } = assignment.left.name;
+        const rename5 = exports22.get(text32);
         if (rename5 !== void 0) {
           const newNodes = [
             makeConst(
@@ -175614,7 +175614,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
               /*isTypeOnly*/
               false,
               rename5,
-              text31
+              text32
             )])
           ];
           changes.replaceNodeWithNodes(sourceFile, assignment.parent, newNodes);
@@ -180366,9 +180366,9 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
             28
             /* CommaToken */
           ));
-          const text31 = sourceFile.text;
+          const text32 = sourceFile.text;
           let end = implementsToken.end;
-          while (end < text31.length && isWhiteSpaceSingleLine(text31.charCodeAt(end))) {
+          while (end < text32.length && isWhiteSpaceSingleLine(text32.charCodeAt(end))) {
             end++;
           }
           changes.deleteRange(sourceFile, { pos: implementsToken.getStart(), end });
@@ -184070,7 +184070,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
       function createStubbedMethodBody(quotePreference) {
         return createStubbedBody(Diagnostics.Method_not_implemented.message, quotePreference);
       }
-      function createStubbedBody(text31, quotePreference) {
+      function createStubbedBody(text32, quotePreference) {
         return factory.createBlock(
           [factory.createThrowStatement(
             factory.createNewExpression(
@@ -184079,7 +184079,7 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
               void 0,
               // TODO Handle auto quote preference.
               [factory.createStringLiteral(
-                text31,
+                text32,
                 /*isSingleQuote*/
                 quotePreference === 0
                 /* Single */
@@ -186381,12 +186381,12 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           ...includeSymbol ? { symbol } : void 0
         };
       }
-      function generateIdentifierForArbitraryString(text31, languageVersion) {
+      function generateIdentifierForArbitraryString(text32, languageVersion) {
         let needsUnderscore = false;
         let identifier21 = "";
         let ch;
-        for (let i = 0; i < text31.length; i += ch !== void 0 && ch >= 65536 ? 2 : 1) {
-          ch = text31.codePointAt(i);
+        for (let i = 0; i < text32.length; i += ch !== void 0 && ch >= 65536 ? 2 : 1) {
+          ch = text32.codePointAt(i);
           if (ch !== void 0 && (i === 0 ? isIdentifierStart(ch, languageVersion) : isIdentifierPart(ch, languageVersion))) {
             if (needsUnderscore) identifier21 += "_";
             identifier21 += String.fromCodePoint(ch);
@@ -188728,8 +188728,8 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         }
         function isDotOfNumericLiteral(contextToken2) {
           if (contextToken2.kind === 9) {
-            const text31 = contextToken2.getFullText();
-            return text31.charAt(text31.length - 1) === ".";
+            const text32 = contextToken2.getFullText();
+            return text32.charAt(text32.length - 1) === ".";
           }
           return false;
         }
@@ -189896,9 +189896,9 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           void 0
         );
       }
-      function addReplacementSpans(text31, textStart, names3) {
-        const span2 = getDirectoryFragmentTextSpan(text31, textStart);
-        const wholeSpan = text31.length === 0 ? void 0 : createTextSpan(textStart, text31.length);
+      function addReplacementSpans(text32, textStart, names3) {
+        const span2 = getDirectoryFragmentTextSpan(text32, textStart);
+        const wholeSpan = text32.length === 0 ? void 0 : createTextSpan(textStart, text32.length);
         return names3.map(({ name, kind: kind4, extension: extension2 }) => name.includes(directorySeparator) || name.includes(altDirectorySeparator) ? { name, kind: kind4, extension: extension2, span: wholeSpan } : { name, kind: kind4, extension: extension2, span: span2 });
       }
       function getStringLiteralCompletionsFromModuleNames(sourceFile, node, program, host, preferences) {
@@ -190463,8 +190463,8 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         if (!range) {
           return void 0;
         }
-        const text31 = sourceFile.text.slice(range.pos, position);
-        const match = tripleSlashDirectiveFragmentRegex.exec(text31);
+        const text32 = sourceFile.text.slice(range.pos, position);
+        const match = tripleSlashDirectiveFragmentRegex.exec(text32);
         if (!match) {
           return void 0;
         }
@@ -190549,12 +190549,12 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         }
         return result;
       }
-      function getDirectoryFragmentTextSpan(text31, textStart) {
-        const index = Math.max(text31.lastIndexOf(directorySeparator), text31.lastIndexOf(altDirectorySeparator));
+      function getDirectoryFragmentTextSpan(text32, textStart) {
+        const index = Math.max(text32.lastIndexOf(directorySeparator), text32.lastIndexOf(altDirectorySeparator));
         const offset = index !== -1 ? index + 1 : 0;
-        const length2 = text31.length - offset;
+        const length2 = text32.length - offset;
         return length2 === 0 || isIdentifierText(
-          text31.substr(offset, length2),
+          text32.substr(offset, length2),
           99
           /* ESNext */
         ) ? void 0 : createTextSpan(textStart + offset, length2);
@@ -192087,12 +192087,12 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           /** @param allSearchSymbols set of additional symbols for use by `includes`. */
           createSearch(location, symbol, comingFrom, searchOptions = {}) {
             const {
-              text: text31 = stripQuotes(symbolName(getLocalSymbolForExportDefault(symbol) || getNonModuleSymbolOfMergedModuleSymbol(symbol) || symbol)),
+              text: text32 = stripQuotes(symbolName(getLocalSymbolForExportDefault(symbol) || getNonModuleSymbolOfMergedModuleSymbol(symbol) || symbol)),
               allSearchSymbols = [symbol]
             } = searchOptions;
-            const escapedText = escapeLeadingUnderscores(text31);
+            const escapedText = escapeLeadingUnderscores(text32);
             const parents = this.options.implementations && location ? getParentSymbolsOfPropertyAccess(location, symbol, this.checker) : void 0;
-            return { symbol, comingFrom, text: text31, escapedText, parents, allSearchSymbols, includes: (sym) => contains(allSearchSymbols, sym) };
+            return { symbol, comingFrom, text: text32, escapedText, parents, allSearchSymbols, includes: (sym) => contains(allSearchSymbols, sym) };
           }
           /**
            * Callback to add references for a particular searched symbol.
@@ -192337,25 +192337,25 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           if (!symbolName2 || !symbolName2.length) {
             return positions;
           }
-          const text31 = sourceFile.text;
-          const sourceLength = text31.length;
+          const text32 = sourceFile.text;
+          const sourceLength = text32.length;
           const symbolNameLength = symbolName2.length;
-          let position = text31.indexOf(symbolName2, container.pos);
+          let position = text32.indexOf(symbolName2, container.pos);
           while (position >= 0) {
             if (position > container.end) break;
             const endPosition = position + symbolNameLength;
             if ((position === 0 || !isIdentifierPart(
-              text31.charCodeAt(position - 1),
+              text32.charCodeAt(position - 1),
               99
               /* Latest */
             )) && (endPosition === sourceLength || !isIdentifierPart(
-              text31.charCodeAt(endPosition),
+              text32.charCodeAt(endPosition),
               99
               /* Latest */
             ))) {
               positions.push(position);
             }
-            position = text31.indexOf(symbolName2, position + symbolNameLength + 1);
+            position = text32.indexOf(symbolName2, position + symbolNameLength + 1);
           }
           return positions;
         }
@@ -193818,8 +193818,8 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         function isSignatureSupportingReturnAnnotation(node) {
           return isArrowFunction(node) || isFunctionExpression(node) || isFunctionDeclaration(node) || isMethodDeclaration(node) || isGetAccessorDeclaration(node);
         }
-        function addParameterHints(text31, parameter, position, isFirstVariadicArgument) {
-          let hintText = `${isFirstVariadicArgument ? "..." : ""}${text31}`;
+        function addParameterHints(text32, parameter, position, isFirstVariadicArgument) {
+          let hintText = `${isFirstVariadicArgument ? "..." : ""}${text32}`;
           let displayParts;
           if (shouldUseInteractiveInlayHints(preferences)) {
             displayParts = [getNodeDisplayPart(hintText, parameter), { text: ":" }];
@@ -193844,9 +193844,9 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
             whitespaceBefore: true
           });
         }
-        function addEnumMemberValueHints(text31, position) {
+        function addEnumMemberValueHints(text32, position) {
           result.push({
-            text: `= ${text31}`,
+            text: `= ${text32}`,
             position,
             kind: "Enum",
             whitespaceBefore: true
@@ -194545,10 +194545,10 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
           }
           return true;
         }
-        function getNodeDisplayPart(text31, node) {
+        function getNodeDisplayPart(text32, node) {
           const sourceFile = node.getSourceFile();
           return {
-            text: text31,
+            text: text32,
             span: createTextSpanFromNode(node, sourceFile),
             file: sourceFile.fileName
           };
@@ -194909,11 +194909,11 @@ ${newComment.split("\n").map((c) => ` * ${c}`).join("\n")}
         return { newText: openComment + closeComment, caretOffset: 3 };
       }
       function getIndentationStringAtPosition(sourceFile, position) {
-        const { text: text31 } = sourceFile;
+        const { text: text32 } = sourceFile;
         const lineStart = getLineStartPositionForPosition(position, sourceFile);
         let pos = lineStart;
-        for (; pos <= position && isWhiteSpaceSingleLine(text31.charCodeAt(pos)); pos++) ;
-        return text31.slice(lineStart, pos);
+        for (; pos <= position && isWhiteSpaceSingleLine(text32.charCodeAt(pos)); pos++) ;
+        return text32.slice(lineStart, pos);
       }
       function parameterDocComments(parameters, isJavaScriptFile, indentationStr, newLine) {
         return parameters.map(({ name, dotDotDotToken }, i) => {
@@ -198219,9 +198219,9 @@ ${content}
         TrailingTriviaOption2[TrailingTriviaOption2["Include"] = 2] = "Include";
         return TrailingTriviaOption2;
       })(TrailingTriviaOption || {});
-      function skipWhitespacesAndLineBreaks(text31, start2) {
+      function skipWhitespacesAndLineBreaks(text32, start2) {
         return skipTrivia(
-          text31,
+          text32,
           start2,
           /*stopAfterLineBreak*/
           false,
@@ -198229,10 +198229,10 @@ ${content}
           true
         );
       }
-      function hasCommentsBeforeLineBreak(text31, start2) {
+      function hasCommentsBeforeLineBreak(text32, start2) {
         let i = start2;
-        while (i < text31.length) {
-          const ch = text31.charCodeAt(i);
+        while (i < text32.length) {
+          const ch = text32.charCodeAt(i);
           if (isWhiteSpaceSingleLine(ch)) {
             i++;
             continue;
@@ -198445,8 +198445,8 @@ ${content}
         replaceNodeWithNodes(sourceFile, oldNode, newNodes, options = useNonAdjustedPositions) {
           this.replaceRangeWithNodes(sourceFile, getAdjustedRange(sourceFile, oldNode, oldNode, options), newNodes, options);
         }
-        replaceNodeWithText(sourceFile, oldNode, text31) {
-          this.replaceRangeWithText(sourceFile, getAdjustedRange(sourceFile, oldNode, oldNode, useNonAdjustedPositions), text31);
+        replaceNodeWithText(sourceFile, oldNode, text32) {
+          this.replaceRangeWithText(sourceFile, getAdjustedRange(sourceFile, oldNode, oldNode, useNonAdjustedPositions), text32);
         }
         replaceNodeRangeWithNodes(sourceFile, startNode2, endNode2, newNodes, options = useNonAdjustedPositions) {
           this.replaceRangeWithNodes(sourceFile, getAdjustedRange(sourceFile, startNode2, endNode2, options), newNodes, options);
@@ -198529,8 +198529,8 @@ ${content}
           const insertAtLineStart = isValidLocationToAddComment(sourceFile, startPosition);
           const token = getTouchingToken(sourceFile, insertAtLineStart ? startPosition : position);
           const indent3 = sourceFile.text.slice(lineStartPosition, startPosition);
-          const text31 = `${insertAtLineStart ? "" : this.newLineCharacter}//${commentText}${this.newLineCharacter}${indent3}`;
-          this.insertText(sourceFile, token.getStart(sourceFile), text31);
+          const text32 = `${insertAtLineStart ? "" : this.newLineCharacter}//${commentText}${this.newLineCharacter}${indent3}`;
+          this.insertText(sourceFile, token.getStart(sourceFile), text32);
         }
         insertJsdocCommentBefore(sourceFile, node, tag) {
           const fnStart = node.getStart(sourceFile);
@@ -198573,11 +198573,11 @@ ${content}
         filterJSDocTags(sourceFile, parent2, predicate) {
           this.replaceJSDocComment(sourceFile, parent2, filter(flatMapToMutable(parent2.jsDoc, (j) => j.tags), predicate));
         }
-        replaceRangeWithText(sourceFile, range, text31) {
-          this.changes.push({ kind: 3, sourceFile, range, text: text31 });
+        replaceRangeWithText(sourceFile, range, text32) {
+          this.changes.push({ kind: 3, sourceFile, range, text: text32 });
         }
-        insertText(sourceFile, pos, text31) {
-          this.replaceRangeWithText(sourceFile, createRange(pos), text31);
+        insertText(sourceFile, pos, text32) {
+          this.replaceRangeWithText(sourceFile, createRange(pos), text32);
         }
         /** Prefer this over replacing a node with another that has a type annotation, as it avoids reformatting the other parts of the node. */
         tryInsertTypeAnnotation(sourceFile, node, type) {
@@ -199049,8 +199049,8 @@ ${options.prefix}` : "\n" : options.prefix
         }
         changesToText2.getTextChangesFromChanges = getTextChangesFromChanges;
         function newFileChanges(fileName, insertions, newLineCharacter, formatContext) {
-          const text31 = newFileChangesWorker(getScriptKindFromFileName(fileName), insertions, newLineCharacter, formatContext);
-          return { fileName, textChanges: [createTextChange(createTextSpan(0, 0), text31)], isNewFile: true };
+          const text32 = newFileChangesWorker(getScriptKindFromFileName(fileName), insertions, newLineCharacter, formatContext);
+          return { fileName, textChanges: [createTextChange(createTextSpan(0, 0), text32)], isNewFile: true };
         }
         changesToText2.newFileChanges = newFileChanges;
         function newFileChangesWorker(scriptKind, insertions, newLineCharacter, formatContext) {
@@ -199081,26 +199081,26 @@ ${options.prefix}` : "\n" : options.prefix
           }
           const { options = {}, range: { pos } } = change;
           const format2 = (n) => getFormattedTextOfNode(n, targetSourceFile, sourceFile, pos, options, newLineCharacter, formatContext, validate);
-          const text31 = change.kind === 2 ? change.nodes.map((n) => removeSuffix(format2(n), newLineCharacter)).join(((_a = change.options) == null ? void 0 : _a.joiner) || newLineCharacter) : format2(change.node);
-          const noIndent = options.indentation !== void 0 || getLineStartPositionForPosition(pos, targetSourceFile) === pos ? text31 : text31.replace(/^\s+/, "");
+          const text32 = change.kind === 2 ? change.nodes.map((n) => removeSuffix(format2(n), newLineCharacter)).join(((_a = change.options) == null ? void 0 : _a.joiner) || newLineCharacter) : format2(change.node);
+          const noIndent = options.indentation !== void 0 || getLineStartPositionForPosition(pos, targetSourceFile) === pos ? text32 : text32.replace(/^\s+/, "");
           return (options.prefix || "") + noIndent + (!options.suffix || endsWith(noIndent, options.suffix) ? "" : options.suffix);
         }
         function getFormattedTextOfNode(nodeIn, targetSourceFile, sourceFile, pos, { indentation, prefix, delta }, newLineCharacter, formatContext, validate) {
-          const { node, text: text31 } = getNonformattedText(nodeIn, targetSourceFile, newLineCharacter);
-          if (validate) validate(node, text31);
+          const { node, text: text32 } = getNonformattedText(nodeIn, targetSourceFile, newLineCharacter);
+          if (validate) validate(node, text32);
           const formatOptions = getFormatCodeSettingsForWriting(formatContext, targetSourceFile);
           const initialIndentation = indentation !== void 0 ? indentation : ts_formatting_exports.SmartIndenter.getIndentation(pos, sourceFile, formatOptions, prefix === newLineCharacter || getLineStartPositionForPosition(pos, targetSourceFile) === pos);
           if (delta === void 0) {
             delta = ts_formatting_exports.SmartIndenter.shouldIndentChildNode(formatOptions, nodeIn) ? formatOptions.indentSize || 0 : 0;
           }
           const file = {
-            text: text31,
+            text: text32,
             getLineAndCharacterOfPosition(pos2) {
               return getLineAndCharacterOfPosition(this, pos2);
             }
           };
           const changes = ts_formatting_exports.formatNodeGivenIndentation(node, file, targetSourceFile.languageVariant, initialIndentation, delta, { ...formatContext, options: formatOptions });
-          return applyChanges(text31, changes);
+          return applyChanges(text32, changes);
         }
         function getNonformattedText(node, sourceFile, newLineCharacter) {
           const writer = createWriter(newLineCharacter);
@@ -199115,12 +199115,12 @@ ${options.prefix}` : "\n" : options.prefix
         }
         changesToText2.getNonformattedText = getNonformattedText;
       })(changesToText || (changesToText = {}));
-      function applyChanges(text31, changes) {
+      function applyChanges(text32, changes) {
         for (let i = changes.length - 1; i >= 0; i--) {
           const { span: span2, newText } = changes[i];
-          text31 = `${text31.substring(0, span2.start)}${newText}${text31.substring(textSpanEnd(span2))}`;
+          text32 = `${text32.substring(0, span2.start)}${newText}${text32.substring(textSpanEnd(span2))}`;
         }
-        return text31;
+        return text32;
       }
       function isTrivia2(s) {
         return skipTrivia(s, 0) === s.length;
@@ -199365,28 +199365,28 @@ ${options.prefix}` : "\n" : options.prefix
           }
         }
         let position = 0;
-        const text31 = sourceFile.text;
+        const text32 = sourceFile.text;
         if (lastPrologue) {
           position = lastPrologue.end;
           advancePastLineBreak();
           return position;
         }
-        const shebang = getShebang(text31);
+        const shebang = getShebang(text32);
         if (shebang !== void 0) {
           position = shebang.length;
           advancePastLineBreak();
         }
-        const ranges = getLeadingCommentRanges(text31, position);
+        const ranges = getLeadingCommentRanges(text32, position);
         if (!ranges) return position;
         let lastComment;
         let firstNodeLine;
         for (const range of ranges) {
           if (range.kind === 3) {
-            if (isPinnedComment(text31, range.pos)) {
+            if (isPinnedComment(text32, range.pos)) {
               lastComment = { range, pinnedOrTripleSlash: true };
               continue;
             }
-          } else if (isRecognizedTripleSlashComment(text31, range.pos, range.end)) {
+          } else if (isRecognizedTripleSlashComment(text32, range.pos, range.end)) {
             lastComment = { range, pinnedOrTripleSlash: true };
             continue;
           }
@@ -199409,11 +199409,11 @@ ${options.prefix}` : "\n" : options.prefix
         }
         return position;
         function advancePastLineBreak() {
-          if (position < text31.length) {
-            const charCode = text31.charCodeAt(position);
+          if (position < text32.length) {
+            const charCode = text32.charCodeAt(position);
             if (isLineBreak(charCode)) {
               position++;
-              if (position < text31.length && charCode === 13 && text31.charCodeAt(position) === 10) {
+              if (position < text32.length && charCode === 13 && text32.charCodeAt(position) === 10) {
                 position++;
               }
             }
@@ -199703,9 +199703,9 @@ ${options.prefix}` : "\n" : options.prefix
         1
         /* JSX */
       );
-      function getFormattingScanner(text31, languageVariant, startPos, endPos, cb) {
+      function getFormattingScanner(text32, languageVariant, startPos, endPos, cb) {
         const scanner2 = languageVariant === 1 ? jsxScanner : standardScanner;
-        scanner2.setText(text31);
+        scanner2.setText(text32);
         scanner2.resetTokenState(startPos);
         let wasNewLine = true;
         let leadingTrivia;
@@ -202793,9 +202793,9 @@ ${options.prefix}` : "\n" : options.prefix
             edits.push(createTextChangeFromStartLength(start2, len, newText));
           }
         }
-        function recordInsert(start2, text31) {
-          if (text31) {
-            edits.push(createTextChangeFromStartLength(start2, 0, text31));
+        function recordInsert(start2, text32) {
+          if (text32) {
+            edits.push(createTextChangeFromStartLength(start2, 0, text32));
           }
         }
         function applyRuleEdits(rule2, previousRange2, previousStartLine, currentRange, currentStartLine) {
@@ -207036,9 +207036,9 @@ ${options.prefix}` : "\n" : options.prefix
           return { line: line2 + 1, offset: character + 1 };
         }
         getFileTextAndSize(tempFileName) {
-          let text31;
+          let text32;
           const fileName = tempFileName || this.info.fileName;
-          const getText = () => text31 === void 0 ? text31 = this.host.readFile(fileName) || "" : text31;
+          const getText = () => text32 === void 0 ? text32 = this.host.readFile(fileName) || "" : text32;
           if (!hasTSFileExtension(this.info.fileName)) {
             const fileSize = this.host.getFileSize ? this.host.getFileSize(fileName) : getText().length;
             if (fileSize > maxFileSize) {
@@ -214006,13 +214006,13 @@ Dynamic files must always be opened with service's current directory or service 
       function formatDiagnosticToProtocol(diag2, includeFileName) {
         const start2 = diag2.file && convertToLocation(getLineAndCharacterOfPosition(diag2.file, diag2.start));
         const end = diag2.file && convertToLocation(getLineAndCharacterOfPosition(diag2.file, diag2.start + diag2.length));
-        const text31 = flattenDiagnosticMessageText(diag2.messageText, "\n");
+        const text32 = flattenDiagnosticMessageText(diag2.messageText, "\n");
         const { code, source } = diag2;
         const category = diagnosticCategoryName(diag2);
         const common = {
           start: start2,
           end,
-          text: text31,
+          text: text32,
           code,
           category,
           reportsUnnecessary: diag2.reportsUnnecessary,
@@ -215665,10 +215665,10 @@ ${json}${newLine}`;
                 const { file, project } = this.getFileAndProject(fileRequest);
                 const scriptInfo = project.getScriptInfoForNormalizedPath(file);
                 if (scriptInfo) {
-                  const text31 = getSnapshotText(scriptInfo.getSnapshot());
+                  const text32 = getSnapshotText(scriptInfo.getSnapshot());
                   msg += `
 
-File text of ${fileRequest.file}:${indent2(text31)}
+File text of ${fileRequest.file}:${indent2(text32)}
 `;
                 }
               } catch {
@@ -216398,12 +216398,12 @@ Project '${project.projectName}' (${ProjectKind[project.projectKind]}) ${counter
             return {
               ...hint,
               position: scriptInfo.positionToLineOffset(position),
-              displayParts: displayParts == null ? void 0 : displayParts.map(({ text: text31, span: span2, file: file2 }) => {
+              displayParts: displayParts == null ? void 0 : displayParts.map(({ text: text32, span: span2, file: file2 }) => {
                 if (span2) {
                   Debug.assertIsDefined(file2, "Target file should be defined together with its span.");
                   const scriptInfo2 = this.projectService.getScriptInfo(file2);
                   return {
-                    text: text31,
+                    text: text32,
                     span: {
                       start: scriptInfo2.positionToLineOffset(span2.start),
                       end: scriptInfo2.positionToLineOffset(span2.start + span2.length),
@@ -216411,7 +216411,7 @@ Project '${project.projectName}' (${ProjectKind[project.projectKind]}) ${counter
                     }
                   };
                 } else {
-                  return { text: text31 };
+                  return { text: text32 };
                 }
               })
             };
@@ -217813,17 +217813,17 @@ Additional information: BADCLIENT: Bad error code, ${badCode} not found in range
         const { line: line2, character } = computeLineAndCharacterOfPosition(computeLineStarts(newText), renameLocation);
         return { line: line2 + 1, offset: character + 1 };
       }
-      function applyEdits(text31, textFilename, edits) {
+      function applyEdits(text32, textFilename, edits) {
         for (const { fileName, textChanges: textChanges2 } of edits) {
           if (fileName !== textFilename) {
             continue;
           }
           for (let i = textChanges2.length - 1; i >= 0; i--) {
             const { newText, span: { start: start2, length: length2 } } = textChanges2[i];
-            text31 = text31.slice(0, start2) + newText + text31.slice(start2 + length2);
+            text32 = text32.slice(0, start2) + newText + text32.slice(start2 + length2);
           }
         }
-        return text31;
+        return text32;
       }
       function referenceEntryToReferencesResponseItem(projectService, { fileName, textSpan, contextSpan, isWriteAccess: isWriteAccess2, isDefinition }, { disableLineTextInReferences }) {
         const scriptInfo = Debug.checkDefined(projectService.getScriptInfo(fileName));
@@ -218279,17 +218279,17 @@ Additional information: BADCLIENT: Bad error code, ${badCode} not found in range
           }
           return this.buildTreeFromBottom(interiorNodes);
         }
-        static linesFromText(text31) {
-          const lineMap = computeLineStarts(text31);
+        static linesFromText(text32) {
+          const lineMap = computeLineStarts(text32);
           if (lineMap.length === 0) {
             return { lines: [], lineMap };
           }
           const lines = new Array(lineMap.length);
           const lc = lineMap.length - 1;
           for (let lmi = 0; lmi < lc; lmi++) {
-            lines[lmi] = text31.substring(lineMap[lmi], lineMap[lmi + 1]);
+            lines[lmi] = text32.substring(lineMap[lmi], lineMap[lmi + 1]);
           }
-          const endText = text31.substring(lineMap[lc]);
+          const endText = text32.substring(lineMap[lc]);
           if (endText.length > 0) {
             lines[lc] = endText;
           } else {
@@ -218561,8 +218561,8 @@ Additional information: BADCLIENT: Bad error code, ${badCode} not found in range
         }
       };
       var LineLeaf = class {
-        constructor(text31) {
-          this.text = text31;
+        constructor(text32) {
+          this.text = text32;
         }
         isLeaf() {
           return true;
@@ -220318,8 +220318,8 @@ var CraftStore = class {
     const bounded4 = Math.min(validLimit(limit3), 20);
     if (!terms3.length) return [];
     return this.list("capability", Number.MAX_SAFE_INTEGER).map((item) => {
-      const text31 = [item.name, item.description, item.search_text ?? item.body].join(" ").toLowerCase();
-      const score = terms3.reduce((total, term) => total + Number(text31.includes(term.toLowerCase())), 0);
+      const text32 = [item.name, item.description, item.search_text ?? item.body].join(" ").toLowerCase();
+      const score = terms3.reduce((total, term) => total + Number(text32.includes(term.toLowerCase())), 0);
       return { ...item, score };
     }).filter((item) => Number(item.score) > 0).sort((left, right) => Number(right.score) - Number(left.score)).slice(0, bounded4);
   }
@@ -221566,12 +221566,12 @@ function parseChatResponse(spec, payload10) {
   const body3 = payload10;
   if (spec.protocol === "anthropic") {
     const blocks = Array.isArray(body3.content) ? body3.content : [];
-    const text31 = blocks.filter((block) => block.type === "text").map((block) => String(block.text ?? "")).join("");
-    if (!text31) throw new Error("Anthropic response contained no text block");
+    const text32 = blocks.filter((block) => block.type === "text").map((block) => String(block.text ?? "")).join("");
+    if (!text32) throw new Error("Anthropic response contained no text block");
     const usage3 = body3.usage;
     const toolCalls2 = blocks.filter((block) => block.type === "tool_use").map((block, index) => ({ id: String(block.id ?? `tool_${index + 1}`), type: "function", function: { name: String(block.name), arguments: JSON.stringify(block.input ?? {}) } }));
     return {
-      text: text31,
+      text: text32,
       model: body3.model === void 0 ? null : String(body3.model),
       ...toolCalls2.length ? { tool_calls: toolCalls2 } : {},
       usage: usage3 ? { input_tokens: Number(usage3.input_tokens ?? 0), output_tokens: Number(usage3.output_tokens ?? 0) } : null
@@ -221758,15 +221758,15 @@ function observeStep(state4, limits2, step) {
 }
 function completeLoop(state4, verdict) {
   if (state4.status !== "running") throw new Error(`Loop is already ${state4.status}`);
-  const text31 = verdict.trim();
-  if (!text31) throw new Error("A loop verdict must not be empty");
-  return { ...state4, status: "completed", verdict: text31 };
+  const text32 = verdict.trim();
+  if (!text32) throw new Error("A loop verdict must not be empty");
+  return { ...state4, status: "completed", verdict: text32 };
 }
 function failLoop(state4, verdict) {
   if (state4.status !== "running") throw new Error(`Loop is already ${state4.status}`);
-  const text31 = verdict.trim();
-  if (!text31) throw new Error("A loop verdict must not be empty");
-  return { ...state4, status: "failed", verdict: text31 };
+  const text32 = verdict.trim();
+  if (!text32) throw new Error("A loop verdict must not be empty");
+  return { ...state4, status: "failed", verdict: text32 };
 }
 function loopSummary(state4, limits2) {
   return {
@@ -223561,7 +223561,7 @@ function verifyPinIntact(input) {
 }
 
 // core/version.ts
-var CRAFT_RELEASE_VERSION = "0.12.40";
+var CRAFT_RELEASE_VERSION = "0.12.42";
 
 // core/mcp-forward-compat.ts
 var MCP_REVISION_REQUIREMENTS = [
@@ -223639,6 +223639,2384 @@ function forwardCompatibility(input = {}) {
     compliant_with_target: false,
     requirements
   };
+}
+
+// core/mcp/tool-schema.ts
+var BOOLEAN_PARAMS = ["scan", "enabled", "allow_execution", "allow_external_write", "require_held_out", "require_outcome_passed", "retryable", "requires_external_effect", "supports_pause_resume", "supports_evidence_receipts", "generated_code", "requires_credential", "has_compensation", "approved", "start_trial", "untrusted_input", "confirmed_original_runner_stopped", "sanitized", "active", "acceptance_required", "trusted", "unattended", "reobserve_required", "compensation_or_handoff", "require_governance", "accepted", "stale", "crash_recovery", "reobserved", "delivered", "allowed", "allow_restricted", "privacy_reviewed", "complete", "content_stored", "candidate_change", "requires_real_host", "verified"];
+var INTEGER_PARAMS = [
+  "limit",
+  "max_days",
+  "version",
+  "capacity",
+  "max_concurrency",
+  "size_bytes",
+  "subject_version",
+  "expected_version",
+  "max_candidates",
+  "suite_version",
+  "configuration_version",
+  "harness_configuration_version",
+  "target_version",
+  "profile_version",
+  "grader_version",
+  "policy_version",
+  "signoff_policy_version",
+  "lease_ttl_seconds",
+  "ttl_seconds",
+  "trials_per_case",
+  "window_size",
+  "max_attempts",
+  "min_trials",
+  "harness_version",
+  "ir_version",
+  "runtime_adapter_version",
+  "agreed",
+  "total",
+  "expected_state_revision",
+  "expected_revision",
+  "observed_revision",
+  "max_chars",
+  "max_items",
+  "timeout_ms",
+  "output_limit",
+  "max_turns",
+  "after_sequence",
+  "context_profile_version",
+  "activation_profile_version",
+  "budget_account_version",
+  "contract_version",
+  "conformance_version",
+  "max_latency_ms",
+  "dormant_after_days"
+];
+var NUMBER_PARAMS = ["score", "value", "threshold", "confidence", "min_pass_rate_delta", "max_cost_regression_ratio", "max_duration_regression_ratio", "max_budget_ratio", "baseline", "candidate", "minimum_agreement", "max_budget_usd", "input_per_million", "output_per_million", "minimum_recall", "max_cost_usd"];
+var OBJECT_PARAMS = [
+  "input",
+  "inputs",
+  "metadata",
+  "policy",
+  "dimensions",
+  "environment",
+  "budget",
+  "data",
+  "scores",
+  "costs",
+  "metrics",
+  "configuration",
+  "receipt_requirements",
+  "execution",
+  "rules",
+  "authorization_requests",
+  "notification_refs",
+  "cost_hint",
+  "design_axes",
+  "report",
+  "limits",
+  "resources",
+  "actual",
+  "actual_resources",
+  "estimated_resources",
+  "observation",
+  "trial_budget",
+  "policy_fingerprints",
+  "structured_data",
+  "field_sources",
+  "observed_capabilities",
+  "requirements",
+  "output",
+  "transform",
+  "entity",
+  "values",
+  "budget_limits",
+  "sandbox_requirements",
+  "eval_suite_ref",
+  "checks",
+  "state",
+  "action_results",
+  "workbench",
+  "runtime",
+  "privacy",
+  "acceptance",
+  "budget",
+  "allocation",
+  "action_contract",
+  "result_schema",
+  "state_before",
+  "state_after",
+  "usage",
+  "model_fingerprint",
+  "environment_fingerprint",
+  "capability_fingerprint",
+  "policy_fingerprint",
+  "metadata",
+  "trace",
+  "scope",
+  // Action gate (plan 4.2–6.3.1): `checker` and `receipt` are objects, `guard_values` is
+  // the context guard clauses are evaluated against. `guard` is an array of clauses.
+  "checker",
+  "receipt",
+  "guard_values",
+  // Evidence receipt (plan 10–11.5): both observed states are objects carrying metrics
+  // plus a `provenance` block.
+  "pre_state",
+  "post_state",
+  // Subscription drift (plan 7.4): the authorized `structure` and the incoming `event` are
+  // deliberately separate shapes, and neither is accepted where the other belongs.
+  "structure",
+  "event",
+  // Prepared state (plan 13A.3.2–3.3): the submit payload and the re-stated assertions are
+  // both objects; `assertions` is an array of named observations.
+  "submit_payload",
+  // Authorization (plan 11.4): `effect` is the descriptor whose digest the authorization
+  // binds, so it is an object rather than a scalar.
+  "effect"
+];
+var ARRAY_PARAMS = [
+  "completed",
+  "pending",
+  "decisions",
+  "artifacts",
+  "steps",
+  "cases",
+  "capabilities",
+  "allowed_side_effects",
+  "approved_side_effects",
+  "nodes",
+  "artifact_ids",
+  "evidence_ids",
+  "trial_ids",
+  "grade_ids",
+  "pattern_ids",
+  "failure_modes",
+  "receipt_ids",
+  "criteria",
+  "acceptance_criteria",
+  "allowed_extensions",
+  "fields",
+  "capability_requirements",
+  "object_schemas",
+  "components",
+  "action_contracts",
+  "bindings",
+  "source_refs",
+  "changes",
+  "tags",
+  "claim_ids",
+  "evidence_ids",
+  "expected_claim_ids",
+  "case_ids",
+  "allowed_operations",
+  "allowed_effects",
+  "require_approval_for",
+  "operations",
+  "subjects",
+  "children",
+  "trusted_hosts",
+  "command_allowlist",
+  "path_allowlist",
+  "kinds",
+  "effects",
+  "allowed_kinds",
+  "dependencies",
+  "aliases",
+  "assets",
+  "asset_ids",
+  "connector_ticket_ids",
+  "artifact_ids",
+  "final_artifact_ids",
+  "evidence_ids",
+  "gold_case_ids",
+  "output_contract",
+  "trial_ids",
+  "include_paths",
+  "affected_paths",
+  "object_ids",
+  "depends_on",
+  "source_paths",
+  "applies_to",
+  "patches",
+  "snapshot_refs",
+  "triggers",
+  "allowed_hosts",
+  "allowed_actions",
+  "approval_required_actions",
+  "detected_instructions",
+  "citations",
+  "allowed_fields",
+  "argv",
+  "sources",
+  "providers",
+  "budget_ids",
+  "recovery_item_ids",
+  "memory_kinds",
+  "object_types",
+  "required_memory_ids",
+  "required_object_ids",
+  "benchmark_ids",
+  "memory_ids",
+  "source_ids",
+  "document_ids",
+  "paths",
+  "state_paths",
+  "turns",
+  "messages",
+  "events",
+  "decisions",
+  "constraints",
+  "open_questions",
+  "artifacts",
+  "roles",
+  "changed_paths",
+  "materials",
+  "non_goals",
+  "input_refs",
+  "output_refs",
+  "evidence_ids",
+  "gold_case_ids",
+  "contamination_flags",
+  "trace_ids",
+  "knowledge_refs",
+  "capability_refs",
+  "workflow_refs",
+  "excluded_refs",
+  "selection_rationale",
+  "change_kinds",
+  "platforms",
+  "permissions",
+  "required",
+  "candidates",
+  "required_artifacts",
+  "required_evidence",
+  "evidence_refs",
+  "criteria",
+  // Action gate: `guard` is an array of { field, op, value } clauses.
+  "guard",
+  // Evidence receipt: `proofs` is an array of observed proofs, `cross_checks` an array of
+  // independent machine confirmations.
+  "proofs",
+  "cross_checks",
+  // Prepared state: `assertions` and `observed` are arrays of named observations.
+  "assertions",
+  "observed",
+  // Adjudication queue: `item_ids` is the batch, `authorizations` one record per effect.
+  "item_ids",
+  "authorizations",
+  // Object hatching (plan 5.3): `fields` names what is missing, `values` supplies it.
+  "values"
+];
+var schemaFor = (name) => {
+  if (BOOLEAN_PARAMS.includes(name)) return { type: "boolean" };
+  if (INTEGER_PARAMS.includes(name)) return { type: "integer" };
+  if (NUMBER_PARAMS.includes(name)) return { type: "number" };
+  if (OBJECT_PARAMS.includes(name)) return { type: "object" };
+  if (ARRAY_PARAMS.includes(name)) return { type: "array" };
+  return { type: "string" };
+};
+var TYPES_BY_TOOL = {
+  craft_procedure_configuration_save: { scope: "string", definition: "object", scope_envelope: "object", principal_ids: "array" },
+  craft_knowledge_evaluation_run: { expected_relevant_refs: "array", retrieved_refs: "array", citation_judgements: "array" },
+  craft_experience_graph_inspect: { cases: "array", input_keys: "array", scope: "string", configuration: "object", principal_ids: "array" },
+  craft_experience_graph_edit: { scope: "string", configuration: "object", scope_envelope: "object", principal_ids: "array", before_version: "integer" },
+  craft_knowledge_asset_inspect: { before_version: "integer", principal_ids: "array" },
+  craft_knowledge_asset_restore: { principal_ids: "array" },
+  craft_memory_asset_inspect: { before_version: "integer", principal_ids: "array" },
+  craft_memory_asset_restore: { principal_ids: "array" },
+  craft_experience_asset_inspect: { before_version: "integer", principal_ids: "array" },
+  craft_experience_asset_restore: { principal_ids: "array" },
+  craft_codebase_asset_inspect: { before_version: "integer", principal_ids: "array" },
+  craft_codebase_asset_restore: { principal_ids: "array" },
+  craft_context_open: { max_tokens: "integer", required_refs: "array", history_refs: "array", state_refs: "array", members: "array", principal_ids: "array", include_codebase: "boolean", include_global: "boolean", include_working_notes: "boolean" },
+  craft_evidence_record: { confidence: "string" },
+  craft_component_diagnose: { observed_tool_names: "array" },
+  craft_context_resolution_feedback: { injected_tokens: "integer", schema_tokens: "integer", history_tokens: "integer", asset_refs: "array", members: "array" },
+  craft_retrieval_adapter_evaluate: { dataset: "object", metrics: "object" },
+  craft_context_working_set_resolve: { required_refs: "array", history_refs: "array", state_refs: "array", members: "array" },
+  craft_context_resolution_resolve: { required_refs: "array", members: "array", principal_ids: "array", include_global: "boolean", include_working_notes: "boolean", history_view: "boolean" },
+  craft_decision_context_gate_open: { members: "array", require_context: "boolean" },
+  craft_knowledge_search: { scope: "string", include_candidates: "boolean", include_global: "boolean", principal_ids: "array" },
+  craft_knowledge_claim_save: { scope: "string", scope_envelope: "object" },
+  craft_knowledge_source_register: { scope_envelope: "object" },
+  craft_knowledge_source_ingest: { max_files: "integer", max_chars_per_fragment: "integer" },
+  craft_knowledge_auto_review: { auto_promote: "boolean" },
+  craft_knowledge_memory_bundle: { allow_local_write: "boolean", include_candidates: "boolean", include_global: "boolean" },
+  craft_memory_governance: { principal_ids: "array", explicit_consent: "boolean" },
+  craft_memory_capture_user_statement: { explicit_consent: "boolean", auto_accept: "boolean", scope_envelope: "object" },
+  craft_memory_candidate_propose: { confidence: "string", scope_envelope: "object" },
+  craft_memory_ledger_get: { principal_ids: "array" },
+  craft_memory_ledger_list: { include_history: "boolean", principal_ids: "array" },
+  craft_memory_maintenance_run: { principal_ids: "array" },
+  craft_memory_maintenance_schedule: { budget_available: "boolean", idle: "boolean", model_available: "boolean" },
+  craft_experience_observe: { verification: "object", scope: "string", scenario_signature: "object", execution_shape: "array" },
+  craft_experience_procedure_draft: { design_axes: "array", observation_ids: "array" },
+  craft_experience_procedure_submit: { composition: "object", graph_control: "object", inputs: "array", steps: "array", nodes: "array", edges: "array", outputs: "object", checkpoint_policy: "object" },
+  craft_procedure_create: { scenario_signature: "object", preconditions: "array", scope_envelope: "object" },
+  craft_host_session_open: { environment_fingerprint: "string", policy_fingerprint: "string", capability_fingerprint: "string", model_fingerprint: "string", budget_fingerprint: "string" },
+  craft_outcome_observer_observe: { environment_fingerprint: "string" },
+  craft_procedure_host_control: { scope: "string", input: "object", principal_ids: "array" },
+  craft_procedure_decision_evaluate: { scope: "string", expected_version: "integer", principal_ids: "array" },
+  craft_procedure_invocation_transition: { scope: "string", expected_version: "integer", principal_ids: "array" },
+  craft_procedure_invocation_bind: { model_fingerprint: "string", budget_fingerprint: "string", scope: "string", expected_version: "integer", principal_ids: "array", procedure_version: "integer", input_refs: "object", allowed_effects: "array", max_dispatches: "integer", ttl_ms: "integer" },
+  craft_procedure_invocation_dispatch: { scope: "string", expected_version: "integer", principal_ids: "array", precondition_evidence: "object" },
+  craft_procedure_invocation_report: { scope: "string", expected_version: "integer", principal_ids: "array", output_refs: "object", acceptance_evidence_ids: "array" },
+  craft_procedure_invocation_resume: { scope: "string", expected_version: "integer", principal_ids: "array" },
+  craft_procedure_invocation_get: { scope: "string", expected_version: "integer", principal_ids: "array" },
+  craft_procedure_invocation_evaluate: { scope: "string", expected_version: "integer", principal_ids: "array", baseline_ids: "array", candidate_ids: "array" },
+  craft_procedure_plan: { procedure_version: "integer", scope: "string", input_refs: "object", precondition_evidence: "object", principal_ids: "array" },
+  craft_procedure_gate: { passed: "boolean" },
+  craft_procedure_list: { scope: "string" },
+  craft_experience_procedure_gate: { passed: "boolean" },
+  craft_experience_learning_evaluation_dispatch: {},
+  craft_experience_learning_evaluation_result: { evidence_ids: "array" },
+  craft_experience_learning_request_get: {},
+  craft_experience_procedure_projection_list: { scope: "string" },
+  craft_experience_procedure_projection_draft: { scenario_signature: "object", preconditions: "array" },
+  craft_codebase_analysis_import: { analysis: "object" },
+  craft_codebase_context_slice: { node_ids: "array" },
+  craft_codebase_impact_query: { max_depth: "integer" }
+};
+var objectSchema = (toolName, required5 = [], optional2 = []) => ({
+  type: "object",
+  properties: Object.fromEntries([...required5, ...optional2].map((name) => [name, TYPES_BY_TOOL[toolName]?.[name] ? { type: TYPES_BY_TOOL[toolName][name] } : schemaFor(name)])),
+  required: required5,
+  additionalProperties: false
+});
+var tool = (name, description, required5 = [], readOnly = false, optional2 = []) => ({
+  name,
+  description,
+  inputSchema: objectSchema(name, required5, optional2),
+  ...readOnly ? { annotations: { readOnlyHint: true } } : {}
+});
+
+// core/mcp/tool-catalog.ts
+var TOOL_DEFINITIONS = [
+  tool("craft_info", "Show the Craft version, data location, and record counts.", [], true),
+  tool("craft_component_readiness_get", "Read content-free readiness only. This never retrieves Knowledge, Memory, or Experience, never resolves context, and does not count as using the component; call the component's actual search, context, write, or observation tool when the task requires it. Standalone surfaces accept only their mounted component.", ["component"], true),
+  tool("craft_component_diagnose", "Diagnose the currently attached Knowledge, Memory, or Experience component. Optionally compare the Host-visible tools to the expected small surface.", ["component"], true, ["observed_tool_names", "expected_schema_digest", "session_id"]),
+  tool("craft_activation_proof_doctor", "Read content-free Codex/Claude Hook execution proof for this session. Configuration and an installed manifest are not treated as execution proof.", [], true, ["session_id"]),
+  tool("craft_context_tools_discover", "Discover a small task-specific Context tool subset and its exact input schemas. Existing registered tools remain compatible.", [], true, ["intent"]),
+  tool("craft_context_open", "Open the current repository context: automatically reuse/update its index and resolve bounded Knowledge, Memory and routeable Experience with receipts. Set include_codebase=false for context-only work. Existing source, required-memory, retrieval and access controls apply; inspect pack partial_reasons for unavailable or omitted material.", ["project_root", "query"], false, ["max_items", "max_chars", "members", "index_depth", "include_codebase", "source_ids", "memory_ids", "retrieval_adapter_id", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "user_scope_id", "team_scope_id", "organization_scope_id", "session_scope_id", "include_global", "include_working_notes", "now", "task_kind", "required_refs", "task_id", "session_id", "turn_id", "history_refs", "state_refs", "max_tokens"]),
+  tool("craft_learning_cycle_finalize", "Submit one terminal, verified Host task result to the shared Experience learning loop. Requires a stored Context receipt; pass scenario_key only when the Host has a stable scenario identifier. Unclassified observations are retained but never grouped into candidates. It never writes Memory or publishes a Graph.", ["host", "task_id", "turn_id", "context_receipt_id", "verified", "verification_outcome", "verification_ref"], false, ["scenario_key"]),
+  tool("craft_codebase_repository_ensure", "Automatically discover the current Git repository, respect ignores and project opt-out, and reuse or incrementally update a checkpoint-pinned index. No manual workspace activation is required. Semantic relations are built only when index_depth is semantic.", ["project_root"], false, ["index_depth"]),
+  tool("craft_codebase_workspace_open", "Declare an explicit read-only analysis workspace and checkpoint its allowed paths. Repeating the same declaration is idempotent.", ["workspace_id", "root_path", "include_paths"], false, ["name"]),
+  tool("craft_codebase_refresh", "Checkpoint changed workspace files and rebuild its structural index; requires explicit activation.", ["workspace_id"], false, ["activation_id"]),
+  tool("craft_codebase_activate", "Explicitly enable read-only structural analysis for one declared Workspace. It does not scan files or modify any Host configuration.", ["workspace_id"], false, ["activation_id", "actor"]),
+  tool("craft_codebase_deactivate", "Disable read-only structural analysis for one Workspace. Existing indexes remain stored but are not queryable until explicitly reactivated.", ["workspace_id"], false, ["activation_id", "actor"]),
+  tool("craft_codebase_status", "Report whether codebase analysis is explicitly enabled, its available snapshot indexes, and any stale state. It never reads source files.", ["workspace_id"], true, ["activation_id"]),
+  tool("craft_codebase_analysis_import", "Import bounded language analyzer facts pinned to an active workspace checkpoint. Adapter assertions remain static, partial evidence.", ["workspace_id", "checkpoint_id", "analysis"], false, ["activation_id", "index_id"]),
+  tool("craft_codebase_index_build", "Build a read-only structural index from one declared Workspace checkpoint. It stores paths, digests, spans and relations, never source bodies.", ["workspace_id"], false, ["activation_id", "checkpoint_id", "index_id", "analyzer"]),
+  tool("craft_codebase_symbol_find", "Find bounded symbols in one ready codebase index and return snapshot-pinned source spans.", ["index_id", "workspace_id", "query"], true, ["activation_id", "limit"]),
+  tool("craft_codebase_callers_find", "Find static caller candidates for one indexed symbol. Heuristic relations and unresolved coverage remain explicit.", ["index_id", "workspace_id"], true, ["activation_id", "symbol_id", "node_id", "limit"]),
+  tool("craft_codebase_impact_query", "Return a bounded static candidate impact subgraph. It is never a runtime-completeness or release-safety claim.", ["index_id", "workspace_id", "node_id"], true, ["activation_id", "max_depth", "limit"]),
+  tool("craft_codebase_context_slice", "Return only codebase references for selected nodes; it never injects source bodies into Host context.", ["index_id", "workspace_id", "node_ids"], true, ["activation_id", "limit"]),
+  tool("craft_component_history_knowledge_migrate", "Plan or explicitly apply reviewed Knowledge provenance repair. Missing Source Revision, Fragment, Evidence, or semantic review is downgraded to revalidation_required.", [], false, ["apply"]),
+  tool("craft_component_history_experience_migrate", "Plan or explicitly apply workflow_evolution_observation migration into Experience Observation records. Untrusted Evidence remains revalidation_required.", [], false, ["apply"]),
+  tool("craft_adapter_manifest_save", "Register a versioned Generic Adapter Manifest with declared capabilities, permissions, effects, and platform support.", ["adapter_id", "version", "kind"], false, ["platforms", "entry", "transport", "capabilities", "permissions", "effects", "dependencies", "integrity", "signature", "sandbox_profile", "metadata"]),
+  tool("craft_adapter_manifest_get", "Read one exact Generic Adapter Manifest.", ["adapter_id"], true),
+  tool("craft_adapter_manifest_list", "List registered Generic Adapter Manifests.", [], true, ["limit"]),
+  tool("craft_adapter_health", "Run a platform compatibility health check for one adapter.", ["adapter_id"], true),
+  tool("craft_adapter_conformance", "Run deterministic Generic Adapter conformance checks.", ["adapter_id"], true),
+  tool("craft_adapter_quarantine", "Quarantine an adapter without deleting its manifest.", ["adapter_id", "reason"]),
+  tool("craft_adapter_rollback", "Reactivate a quarantined adapter after review.", ["adapter_id"]),
+  tool("craft_command_plan", "Plan a cross-platform argv command without executing it.", ["argv"], false, ["cwd", "shell", "timeout_ms", "output_limit", "effect", "approval_ref", "adapter_id"]),
+  tool("craft_command_run", "Execute one governed cross-platform command and return a bounded receipt.", ["argv"], false, ["cwd", "shell", "timeout_ms", "output_limit", "effect", "approval_ref", "adapter_id", "run_id"]),
+  tool("craft_command_observe", "Read one command receipt.", ["run_id"], true),
+  tool("craft_command_cancel", "Cancel one running command or return an idempotent terminal receipt.", ["run_id"]),
+  tool("craft_capability_projection", "Project only required capabilities within a token budget and explain exclusions.", ["candidates"], true, ["required", "token_budget"]),
+  tool("craft_durable_run_start", "Create a leased, recoverable durable run.", [], false, ["run_id", "task_id", "goal"]),
+  tool("craft_durable_run_tick", "Claim one queued or expired durable run with a lease.", [], false, ["owner", "lease_seconds"]),
+  tool("craft_durable_run_complete", "Complete a durable run with an explicit terminal status.", ["run_id", "status"], false, ["result"]),
+  tool("craft_durable_run_recover", "Return running runs to the queue after owner failure.", [], false, ["owner"]),
+  tool("craft_trust_curve_record", "Record scoped evidence and calculate a bounded autonomy suggestion.", ["scope", "passed", "failed"], false, ["evidence_refs"]),
+  tool("craft_model_route", "Select a model candidate by quality, cost, or latency under an optional budget.", ["candidates"], true, ["objective", "budget"]),
+  tool("craft_delivery_gate", "Independently gate delivery on required artifacts and evidence.", ["artifacts", "evidence"], true, ["required_artifacts", "required_evidence"]),
+  tool("craft_task_handoff_manifest", "Create a host-neutral task handoff manifest.", ["context_manifest", "host", "task"], true, ["budget"]),
+  tool("craft_domain_evaluator_run", "Run a domain evaluator against structured observations.", ["evaluator_id", "observations"], true),
+  tool("craft_openapi_import", "Import an OpenAPI document into a governed read/write adapter contract.", ["document"], false),
+  tool("craft_trust_profile_record", "Record scoped evidence for a trust recommendation; it never grants execution authority.", ["scope", "evidence_ids"], false, ["profile_id", "passed", "failed", "interventions", "ttl_seconds", "reason"]),
+  tool("craft_trust_profile_recommend", "Recommend automatic, notify-only, human-approval, or blocked handling from scoped evidence.", ["profile_id"], true),
+  tool("craft_trust_profile_get", "Read one scoped trust profile.", ["profile_id"], true),
+  tool("craft_trust_profile_list", "List scoped trust profiles.", [], true, ["limit", "task_class"]),
+  tool("craft_trust_profile_revoke", "Revoke a trust profile immediately; existing policy still controls execution.", ["profile_id"], false, ["reason"]),
+  tool("craft_web_fetch", "Fetch a bounded public HTTP(S) resource as an untrusted, content-free observation; cookies and credentials are never sent.", ["url"], false, ["method", "allowed_hosts", "timeout_ms", "max_bytes", "accept", "operation_id"]),
+  tool("craft_web_action_prepare", "Prepare a browser navigation/click/fill/submit contract for an explicit host adapter; Craft does not drive a browser itself.", ["task_id", "workspace", "url", "input_digest"], false, ["operation", "approval_ref", "operation_id"]),
+  tool("craft_web_action_complete", "Record an adapter receipt for a prepared browser action.", ["operation_id", "adapter_id", "verdict", "result_digest"], false),
+  tool("craft_web_operation_get", "Read one web or browser operation receipt.", ["operation_id"], true),
+  tool("craft_source_add", "Add and optionally scan a local capability directory. Equivalent mounts are idempotent; mirrors remain provenance.", ["path"], false, ["label", "scan", "priority"]),
+  tool("craft_source_list", "List configured capability sources and resolved paths.", [], true),
+  tool("craft_source_update", "Enable, disable, relabel, or reprioritize a source mount.", ["source_id"], false, ["enabled", "label", "priority"]),
+  tool("craft_source_remove", "Remove a source index without deleting its files.", ["source_id"]),
+  tool("craft_source_scan", "Incrementally scan one or all enabled sources.", [], false, ["source_id"]),
+  tool("craft_capability_search", "Return a small hybrid-ranked set of matching capabilities; semantic retrieval is optional and safely falls back to keywords.", ["query"], true, ["limit"]),
+  tool("craft_logical_capability_list", "List logical capabilities, their source instances, selected mount, and explicit content conflicts.", [], true),
+  tool(
+    "craft_logical_activation_plan",
+    "Select matching logical capabilities for one task, pin their content digests, and optionally bind an exact Context Profile. This only activates read-only context.",
+    ["task_id", "query"],
+    false,
+    ["plan_id", "limit", "allowed_effects", "context_profile_id", "context_profile_version"]
+  ),
+  tool("craft_logical_activation_plan_get", "Read one digest-pinned logical capability activation plan.", ["plan_id"], true, ["version"]),
+  tool("craft_logical_activation_plan_list", "List digest-pinned logical capability activation plans.", [], true, ["limit", "query"]),
+  tool("craft_logical_activation_audit", "Audit one activation plan for missing content, content drift, or safe mirror reselection; it never executes a capability.", ["plan_id"], false, ["audit_id"]),
+  tool(
+    "craft_logical_activation_resolve",
+    "Revalidate and load digest-pinned local capability documents as bounded read-only context. It never executes their instructions.",
+    ["plan_id"],
+    false,
+    ["resolution_id", "audit_id", "max_chars"]
+  ),
+  tool("craft_logical_activation_resolution_get", "Read one content-free logical capability resolution receipt.", ["resolution_id"], true, ["version"]),
+  tool("craft_logical_activation_resolution_list", "List content-free logical capability resolution receipts.", [], true, ["limit", "query"]),
+  tool("craft_semantic_status", "Show whether optional semantic capability retrieval is disabled, configured, ready, or temporarily degraded.", [], true),
+  tool("craft_execution_policy_decide", "Classify an effect into normal host execution, isolation, approval, or a fail-closed block.", ["effect", "platform"], true, ["generated_code", "requires_credential", "has_compensation"]),
+  tool("craft_capability_get", "Read one indexed capability.", ["asset_id"], true),
+  // v0.12.33: the first-run and distribution surface. These answer "can an
+  // ordinary user actually run this", which no earlier tool did.
+  tool("craft_first_run_readiness", "Report which configured models are usable right now and, when none are, the exact environment variable or action that unblocks a first run.", [], true, ["models", "env", "credential_source"]),
+  tool("craft_credential_resolve", "Resolve credential names from the process environment plus an optional desktop-written credential file. Names are returned; values are never returned.", [], true, ["credential_file", "env"]),
+  tool("craft_mcp_protocol_negotiate", "Negotiate the MCP protocol version and report whether a downgrade occurred and why.", [], true, ["protocolVersion"]),
+  tool("craft_mcp_migration_assess", "Assess whether the MCP 2026-07-28 revision can be adopted, and name what blocks it.", [], true, ["host_supports_mrtr", "has_durable_tasks", "tasks_extension_adopted"]),
+  tool("craft_isolation_capability_get", "Report the real isolation boundary for a platform, distinguishing an enforced backend from a declared one.", [], true, ["platform"]),
+  tool("craft_distribution_plan_get", "Report where a user obtains the desktop build and what remains before a download exists.", [], true, ["release_assets_available"]),
+  tool("craft_context_project", "Project context into a token budget without destroying anything. With a session_id the projection is stored, so an omitted segment can be restored in a later call without re-supplying it.", ["max_tokens"], false, ["segments", "session_id"]),
+  tool("craft_context_restore", "Pull an omitted context segment back into the projection. With a session_id the segments come from the store, which is the case this exists for: the caller knows the id and nothing else. It reports failure if the segment genuinely cannot fit.", ["segment_id"], false, ["max_tokens", "segments", "session_id"]),
+  tool("craft_context_projection_get", "Read one session's stored projection and its segment count, without reading the transcript back.", ["session_id"], true),
+  tool("craft_state_view_get", "Read one unified, read-only view of a task's state: the workspace snapshot, the run, the manifest, a derived status and the single safe next action.", [], true, ["task_id"]),
+  tool("craft_bm25_search", "Rank records by BM25 with an exact-identifier boost, so a digest or ticket id outranks a semantic near-miss.", ["query"], false, ["documents"]),
+  tool("craft_retrieval_fuse", "Fuse several ranked lists by reciprocal rank into one ordering, with a source count per item.", ["rankings"], false, ["k"]),
+  tool("craft_experience_capture_decide", "Decide whether a finished turn is worth remembering, from observed signals rather than model discretion.", ["outcome"], false, ["retries", "corrections", "distinct_tools", "novel", "user_explicit", "threshold"]),
+  tool("craft_experience_capture_build", "Turn an accepted capture into a reviewable experience record carrying its provenance.", ["outcome", "summary"], false, ["task_id", "scope", "experience_id", "retries", "corrections", "distinct_tools", "novel", "user_explicit", "threshold"]),
+  tool("craft_memory_decay_get", "Weight a memory by age, successful use and source trust, so a stale preference stops competing with a recent correction.", ["confirmed_at", "now"], false, ["accesses", "trust"]),
+  tool("craft_memory_capture_propose", "Decide whether a turn should propose a memory candidate without being asked. Approval stays mandatory; only the proposal threshold moves.", ["signals", "succeeded"], false, ["corrections", "retries", "novel", "mode"]),
+  tool("craft_memory_promotion_preview", "Preview the promotion of a legacy memory into the governed ledger as an approvable candidate. Never migrates silently.", ["legacy_kind", "legacy_id", "content"], false, ["legacy_version", "scope", "kind"]),
+  tool("craft_memory_hybrid_scores", "Fuse keyword and vector rankings for memory retrieval, so an eligible adapter actually changes the result rather than the label.", ["candidates"], false, ["vector_eligible", "k"]),
+  tool("craft_memory_usage_record", "Record that a resolved memory was in context for a turn that succeeded, which is the access signal decay learns from.", ["memory_ids", "outcome", "turn_id"], false, ["receipt_id"]),
+  // v0.12.36: the deterministic verification sensor. It compares bytes the caller
+  // already observed and executes nothing, which is why all three are `read`.
+  tool("craft_verification_check", "Evaluate one deterministic check (exit code, expected output, file digest) as passed, failed, blocked or inconclusive. It executes nothing.", ["kind", "name"], false, ["expected_exit_code", "observed_exit_code", "expected_substring", "expected_pattern", "observed_output", "expected_digest", "observed_digest", "observed_present"]),
+  tool("craft_verification_evaluate", "Combine independent deterministic checks into one verdict: any failed check fails the plan, and an unevaluable check is blocked, never a pass.", ["checks"], false),
+  tool("craft_verification_capture_signals_get", "Turn deterministic check results into the outcome the experience-capture decision consumes, so a lesson comes from an observed failure rather than a reported one.", ["checks"], false, ["retries"]),
+  // v0.12.37: cross-trajectory abstraction. Reading across runs is `read`; the
+  // deliberate exception is `craft_abstraction_build`, which is `governed`
+  // because minting an abstraction asserts a claim about the future.
+  tool("craft_trajectory_signature_get", "Derive the deterministic failure signature for one trajectory. Order-independent, so the same failure reported differently still groups together.", ["failed_checks"], false),
+  tool("craft_abstraction_evaluate", "Find failure signatures recurring across independent trajectories and report which clear the evidence floor, including the near-misses.", ["trajectories"], false, ["scope"]),
+  tool("craft_abstraction_build", "Build a reviewable abstraction from a demonstrated recurring failure. It always requires review and grants no execution authority.", ["trajectories", "signature"], false, ["scope", "abstraction_id"]),
+  // v0.12.38: failure attribution. It names the cause the observations support,
+  // or reports `unattributed` — a guessed cause is worse than an admitted gap.
+  tool("craft_failure_attribution_get", "Attribute one failure to the layer that caused it (echo, coverage, grounding, revision, scope, temporal, retrieval, synthesis) from observed signals only.", [], false, ["evidence_already_in_input", "source_contained_answer", "relevant_retrieved", "answer_in_context", "fact_extracted", "superseded_by_newer", "wrong_scope_applied", "wrong_time_applied", "answer_wrong_with_full_context"]),
+  tool("craft_failure_attribution_summary_get", "Attribute many failures and rank where the system is weakest, reporting the unattributed count rather than hiding it.", ["failures"], false),
+  // v0.12.39: compare what this build declares against what it implements. An
+  // unchecked claim is reported as `unverifiable`, never as passing.
+  tool("craft_mcp_declarations_get", "Read this build's MCP declarations as data, each with the fact that would falsify it.", [], true),
+  tool("craft_consistency_check", "Check declarations against observed implementation facts, returning confirmed, contradicted, or unverifiable for each.", ["declarations", "observed"], true),
+  // v0.12.40: governance pinning. Constraints are removed from the eviction
+  // competition and integrity-checked by content, not by presence.
+  tool("craft_governance_pin_get", "Render the pinned governance block that must survive every compaction, with its integrity digest.", ["constraints"], true),
+  tool("craft_governance_pin_check", "Verify the pinned governance block is still intact in a rendered context, detecting both loss and rewording.", ["constraints", "rendered"], true),
+  tool("craft_governance_compaction_evaluate", "Plan a compaction that removes constraints from the eviction competition, and report what it would drop.", ["constraints", "max_tokens", "segments"], true),
+  tool("craft_governance_constraint_define", "Define one standing governance constraint as data, so it can be pinned and its survival checked.", ["id", "kind", "statement", "effect"], false, ["scope"]),
+  // v0.12.41: MCP 2026-07-28 forward compatibility, reported honestly rather
+  // than claimed.
+  tool("craft_mcp_discover_get", "Report the revisions this build speaks, its capabilities, and its assessment of the 2026-07-28 revision.", [], true, ["server_name", "version"]),
+  tool("craft_mcp_forward_compat_get", "Report which 2026-07-28 requirements are addressed and which remain, without claiming compliance.", [], true, ["protocol_version"]),
+  tool(
+    "craft_default_route",
+    "Create a durable route that prefers matching verified Workflows and otherwise returns the shortest safe host plan.",
+    ["goal"],
+    false,
+    ["title", "project_id", "mode"]
+  ),
+  tool(
+    "craft_default_route_execute",
+    "Run the exact verified Workflow selected by a route and capture its Trial lifecycle.",
+    ["route_id", "project_root"],
+    false,
+    [
+      "inputs",
+      "allow_execution",
+      "approved_side_effects",
+      "case_id",
+      "harness_configuration_id",
+      "harness_configuration_version",
+      "environment",
+      "budget"
+    ]
+  ),
+  tool("craft_default_route_resume", "Resume a durable default route and return only its next safe action.", ["task_id"], true),
+  tool(
+    "craft_default_route_find",
+    "Find one uniquely matching active default route for a natural-language continuation; never guess on a tie.",
+    ["query"],
+    true,
+    ["project_id"]
+  ),
+  tool(
+    "craft_project_policy_save",
+    "Save a versioned project policy that can require evidence-backed route receipts.",
+    ["project_id", "name"],
+    false,
+    ["policy_id", "enforcement", "receipt_requirements"]
+  ),
+  tool("craft_project_policy_get", "Read a project policy version.", ["policy_id"], true, ["version"]),
+  tool("craft_project_policy_list", "List project policies.", [], true, ["limit", "query"]),
+  tool(
+    "craft_route_receipt_record",
+    "Register a structured command receipt for the current safe route stage; secrets are rejected.",
+    ["route_id", "stage_id", "kind", "status", "command", "summary"],
+    false,
+    ["receipt_id", "uri", "host_adapter_id"]
+  ),
+  tool(
+    "craft_host_adapter_save",
+    "Save a versioned Host Adapter contract; it grants only listed route operations.",
+    ["name", "host", "allowed_operations"],
+    false,
+    ["host_adapter_id"]
+  ),
+  tool("craft_host_adapter_get", "Read a Host Adapter version.", ["host_adapter_id"], true, ["version"]),
+  tool("craft_host_adapter_list", "List Host Adapter contracts.", [], true, ["limit", "query"]),
+  tool(
+    "craft_host_adapter_dispatch",
+    "Lease only the next safe route action to a compatible Host Adapter.",
+    ["host_adapter_id", "route_id"],
+    false,
+    ["host_adapter_version", "dispatch_id"]
+  ),
+  tool(
+    "craft_host_adapter_report",
+    "Record a Host Adapter dispatch completion without fabricating route evidence.",
+    ["dispatch_id", "status", "summary"]
+  ),
+  tool(
+    "craft_runtime_policy_save",
+    "Save a versioned runtime effect, approval, concurrency, budget, and deterministic-driver policy.",
+    ["name", "allowed_effects"],
+    false,
+    ["runtime_policy_id", "require_approval_for", "max_concurrency", "budget", "max_attempts", "lease_ttl_seconds", "trusted_hosts", "command_allowlist", "path_allowlist"]
+  ),
+  tool("craft_runtime_policy_get", "Read an exact runtime policy version.", ["runtime_policy_id"], true, ["version"]),
+  tool("craft_runtime_policy_list", "List runtime policies.", [], true, ["limit", "query"]),
+  tool(
+    "craft_runtime_run_start",
+    "Create a durable controlled run with policy and environment fingerprints.",
+    ["task_id", "policy_id", "environment", "operations"],
+    false,
+    ["run_id", "policy_version", "trial_id"]
+  ),
+  tool("craft_runtime_run_get", "Read a durable runtime run, operations, and immutable trace.", ["run_id"], true),
+  tool(
+    "craft_runtime_dispatch",
+    "Lease only pending policy-approved runtime operations to a host.",
+    ["run_id", "claimed_by"],
+    false,
+    ["capacity", "kinds", "effects", "authorization_requests", "notification_refs", "now"]
+  ),
+  tool("craft_runtime_operation_get", "Read one runtime operation.", ["operation_id"], true),
+  tool(
+    "craft_runtime_operation_decision",
+    "Approve or reject an effect that is awaiting human approval.",
+    ["operation_id", "decision", "actor"]
+  ),
+  tool(
+    "craft_runtime_operation_submit",
+    "Submit an observed leased operation result and optional child operations.",
+    ["operation_id", "lease_id", "claimed_by", "verdict"],
+    false,
+    ["costs", "children", "idempotency_key", "artifact_ids", "evidence_ids", "retryable"]
+  ),
+  tool("craft_runtime_lease_recover", "Recover expired runtime leases or terminally fail exhausted attempts.", ["run_id"], false, ["now"]),
+  tool(
+    "craft_runtime_driver_tick",
+    "Execute only trusted, policy-approved deterministic Workflow operations; leave Agent work to a compatible Host.",
+    ["run_id", "driver_id"],
+    false,
+    ["capacity"]
+  ),
+  tool("craft_runtime_run_resume", "Return the next durable runtime action without guessing.", ["run_id"], true),
+  tool(
+    "craft_runtime_promotion_eligibility",
+    "Check exact policy and environment fingerprints before promotion.",
+    ["run_id", "policy_id", "environment"],
+    true,
+    ["policy_version"]
+  ),
+  tool(
+    "craft_runtime_adapter_save",
+    "Save a versioned Host execution contract that limits operation kinds, effects, concurrency, and receipt support.",
+    ["name", "host", "allowed_kinds", "allowed_effects"],
+    false,
+    ["runtime_adapter_id", "max_concurrency", "execution_environment", "supports_pause_resume", "supports_evidence_receipts"]
+  ),
+  tool("craft_runtime_adapter_get", "Read an exact Runtime Adapter contract.", ["runtime_adapter_id"], true, ["version"]),
+  tool("craft_runtime_adapter_list", "List registered Runtime Adapter contracts.", [], true, ["limit", "query"]),
+  tool(
+    "craft_runtime_adapter_dispatch",
+    "Lease only operations declared by one Runtime Adapter contract.",
+    ["runtime_adapter_id", "run_id"],
+    false,
+    ["runtime_adapter_version", "capacity", "authorization_requests", "notification_refs", "now"]
+  ),
+  tool(
+    "craft_runtime_adapter_report",
+    "Submit an adapter-attributed operation receipt with bounded Evidence.",
+    ["runtime_adapter_id", "operation_id", "lease_id", "verdict", "summary"],
+    false,
+    ["runtime_adapter_version", "costs", "artifact_ids", "evidence_ids", "retryable", "idempotency_key"]
+  ),
+  tool(
+    "craft_local_isolated_execute",
+    "Execute one leased local operation in a fail-closed network-denied platform sandbox.",
+    ["run_id", "operation_id", "lease_id", "claimed_by", "command"],
+    false,
+    ["args", "cwd", "requires_credential", "compensation", "costs", "idempotency_key"]
+  ),
+  tool(
+    "craft_route_workflow_proposal_create",
+    "Create only a draft Workflow from two or more passed evidence-backed safe routes; promotion still requires evaluation.",
+    ["route_id", "name", "steps"],
+    false,
+    ["workflow_id", "description", "inputs"]
+  ),
+  tool(
+    "craft_default_route_update",
+    "Record one required safe-plan stage with real evidence; the final stage records the route Outcome.",
+    ["route_id", "stage_id", "summary"],
+    false,
+    ["artifact_ids", "evidence_ids", "receipt_ids", "verdict"]
+  ),
+  tool("craft_task_open", "Create a durable task or resume one by ID.", [], false, ["task_id", "title", "goal", "project_id"]),
+  tool("craft_task_list", "List durable tasks.", [], true, ["limit", "status", "project_id"]),
+  tool("craft_intent_compile", "Compile one natural-language goal into a durable, host-neutral Task Contract. Ambiguous goals return explicit clarification questions.", ["goal"], false, ["intent_id", "workspace", "scope", "metric", "threshold", "baseline", "test_command", "changed_paths", "materials", "non_goals", "acceptance", "allowed_effects", "host", "model", "budget", "require_governance"]),
+  tool("craft_intent_get", "Read one compiled Task Contract.", ["intent_id"], true),
+  tool("craft_acceptance_compile", "Compile the exact Acceptance Contract for a previously compiled governed intent; it never treats a model claim as completion.", ["intent_id"], false, ["acceptance_id"]),
+  tool("craft_acceptance_contract_get", "Read one compiled Acceptance Contract.", ["acceptance_id"], true),
+  tool("craft_task_checkpoint", "Persist task progress, evidence references, and pending work.", ["task_id", "summary"], false, ["completed", "pending", "decisions", "artifacts", "status", "source"]),
+  tool("craft_task_control_save", "Pin one Task's workspace, allowed effects, optional capability/budget references, and acceptance requirement. It never starts a Host.", ["task_id", "workspace"], false, ["contract_id", "allowed_effects", "acceptance_required", "activation_profile_id", "activation_profile_version", "budget_account_id", "budget_account_version"]),
+  tool("craft_task_control_bind_launch", "Bind exactly one compatible Work Launch to a pinned Task Control contract.", ["contract_id", "launch_id"], false),
+  tool("craft_task_control_refresh", "Materialize the current Task Control status and its one safe next action from observed facts.", ["contract_id"], false),
+  tool("craft_task_control_get", "Read a Task Control contract, latest state, delivery loop, and content-free handoffs.", ["contract_id"], true),
+  tool("craft_task_control_handoff", "Create a content-free, resumable Task Control handoff without storing prompts or business data.", ["contract_id", "reason"], false, ["handoff_id"]),
+  tool("craft_task_run_prepare", "Bind one exact Work Launch to its Task Control contract and create a durable Task Run manifest. Read-only launches may start through the existing Host path; writes still await approval.", ["contract_id", "host", "workspace", "prompt"], false, ["task_run_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "environment", "budget"]),
+  tool("craft_task_run_refresh", "Re-observe one Task Run and return its only safe next action; environment or budget drift enters needs_replan.", ["task_run_id"], false, ["environment", "budget"]),
+  tool("craft_task_run_get", "Read a Task Run, its latest state, and content-free handoffs.", ["task_run_id"], true),
+  tool("craft_task_run_pause", "Pause one Task Run without dispatching or changing its Host permissions.", ["task_run_id", "reason"]),
+  tool("craft_task_run_resume", "Resume a paused Task Run only after re-observing optional environment and budget inputs.", ["task_run_id"], false, ["environment", "budget"]),
+  tool("craft_task_run_cancel", "Cancel a locally owned live Host Run when possible, then mark the Task Run cancelled.", ["task_run_id", "reason"]),
+  tool("craft_task_run_handoff", "Create a content-free Task Run handoff with its current resume action.", ["task_run_id", "reason"], false, ["handoff_id"]),
+  tool("craft_verified_work_loop_prepare", "Prepare Craft's single verified work loop: Task Contract, initial State Snapshot, Work Launch, Task Run and durable loop manifest.", ["workspace_id", "goal", "host", "prompt"], false, ["work_loop_id", "task_id", "title", "project_id", "contract_id", "allowed_effects", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "environment", "budget", "state_adapter", "state_paths", "artifact_ids", "activation_profile_id", "activation_profile_version", "budget_account_id", "budget_account_version"]),
+  tool("craft_verified_work_loop_advance", "Re-observe a verified work loop after Host progress; workspace or input drift becomes needs_replan rather than a model claim.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths", "artifact_ids", "snapshot_id", "receipt_id"]),
+  tool("craft_verified_work_loop_decide", "Record one human decision and apply only the corresponding approved launch, acceptance, or human-change action.", ["work_loop_id", "decision", "actor", "summary"], false, ["approved", "prompt", "criterion_id", "affected_paths", "change_id", "state_adapter", "state_paths"]),
+  tool("craft_verified_work_loop_resume", "Resume a non-drifted verified work loop only after re-observing its environment, budget and workspace.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths"]),
+  tool("craft_verified_work_loop_get", "Read one verified work loop with content-free receipts and human decisions.", ["work_loop_id"], true),
+  tool("craft_work_control_prepare", "Prepare the single WorkControl protocol. A turn returns a non-durable context-only result; goal, plan, execute, verify and learn use the verified task ledger.", [], false, ["interaction_mode", "workspace_id", "goal", "target", "plan", "acceptance_criteria", "host", "prompt"]),
+  tool("craft_work_control_advance", "Advance one WorkControl loop from observed State. Repeated no-progress observations create a checkpoint/handoff rather than unbounded retries.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths", "artifact_ids", "receipt_id"]),
+  tool("craft_work_control_decide", "Record an approved WorkControl decision without bypassing Policy, Receipt or Acceptance.", ["work_loop_id", "decision", "actor", "summary"], false, ["approved", "criterion_id"]),
+  tool("craft_work_control_resume", "Revalidate then resume WorkControl; drift returns needs_replan instead of replaying an unknown effect.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths"]),
+  tool("craft_work_control_get", "Read one WorkControl loop, receipts and decisions.", ["work_loop_id"], true),
+  tool("craft_evaluation_contract_define", "Define the staged evaluation contract for one capability without making it routable.", ["capability_id", "capability_version", "input_contract", "output_contract"], false, ["contract_id", "scope", "effect", "fixture_id", "host_compatibility", "budget"]),
+  tool("craft_evaluation_contract_record", "Advance one capability evaluation contract monotonically with evidence and metrics.", ["contract_id", "stage"], false, ["evidence", "metrics"]),
+  tool("craft_evaluation_contract_get", "Read one capability evaluation contract and its stage history.", ["contract_id"], true),
+  tool("craft_durable_action_loop_create", "Attach explicit dependency-aware work items to one Verified Work Loop; Craft never executes these actions itself.", ["work_loop_id", "work_items"], false, ["action_loop_id"]),
+  tool("craft_durable_action_loop_next", "Return the next bounded action or blocker for one durable action loop.", ["action_loop_id"], true),
+  tool("craft_durable_action_loop_propose", "Propose a digest-only action for a ready work item without dispatching a Host.", ["action_loop_id", "item_key", "kind", "action_digest"], false, ["action_id", "effect"]),
+  tool("craft_durable_action_loop_dispatch", "Record handoff of an exact durable action to a Host without executing it in Craft.", ["action_id", "dispatch_ref"], false),
+  tool("craft_durable_action_loop_report", "Bind a Host receipt and re-observed Snapshot. Only a passed verification and Acceptance Gate prove work-item progress.", ["action_id", "outcome", "snapshot_id"], false, ["receipt_ref", "acceptance_ref", "input_drift", "replan_reason"]),
+  tool("craft_durable_action_loop_resume", "Revalidate an observed Snapshot before resuming; workspace drift becomes needs_replan.", ["action_loop_id", "snapshot_id"], false),
+  tool("craft_durable_action_loop_get", "Read one durable action loop with its work items and action receipts.", ["action_loop_id"], true),
+  tool("craft_host_activation_manifest_prepare", "Create a content-free, profile-pinned Host capability manifest. It never modifies Codex, Claude, MCP configuration, or starts a Host.", ["task_id", "profile_id", "host"], false, ["manifest_id", "profile_version", "asset_ids", "connector_ticket_ids"]),
+  tool("craft_host_activation_manifest_validate", "Revalidate one Host activation manifest against exact asset, profile, connector-ticket, and expiry facts.", ["manifest_id"], true),
+  tool("craft_host_activation_manifest_consume", "Record that the declared Host accepted one exact capability manifest; it does not start or configure that Host.", ["manifest_id", "call_id", "host"], false),
+  tool("craft_host_activation_manifest_get", "Read one Host activation manifest and its content-free Host receipts.", ["manifest_id"], true),
+  tool("craft_execution_fabric_prepare", "Prepare the single verified execution path: Profile, Host manifest, Work Loop, Task Run, state baseline, and Fabric join. It does not start the Host before a later exact Fabric execution.", ["workspace_id", "goal", "host", "prompt"], false, ["fabric_id", "manifest_id", "profile_id", "task_id", "title", "project_id", "allowed_effects", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "environment", "budget", "state_adapter", "state_paths", "artifact_ids", "activation_profile_id", "activation_profile_version", "budget_account_id", "budget_account_version", "asset_ids", "connector_ticket_ids"]),
+  tool("craft_execution_fabric_execute", "Revalidate the exact Host manifest, consume its one receipt, then start the prepared Host. Workspace writes additionally require an explicit approval and actor.", ["fabric_id", "prompt"], false, ["invocation_id", "call_id", "approved", "actor"]),
+  tool("craft_execution_fabric_advance", "Revalidate the Host manifest, re-observe the Work Loop, and append one immutable Fabric receipt.", ["fabric_id"], false, ["advance_id", "activation_receipt_id", "environment", "budget", "state_adapter", "state_paths", "artifact_ids", "snapshot_id", "work_loop_receipt_id"]),
+  tool("craft_execution_fabric_consume", "Bind an observed Work Loop receipt to the Host's acceptance receipt without bypassing profile or expiry checks.", ["fabric_id", "work_loop_receipt_id", "call_id", "host"], false, ["advance_id"]),
+  tool("craft_execution_fabric_get", "Read the joined Fabric, Work Loop, Host Manifest, Host Bridge invocations, and immutable advances.", ["fabric_id"], true),
+  tool("craft_host_bridge_get", "Read one exact Host Bridge invocation without exposing its Prompt.", ["invocation_id"], true),
+  tool("craft_state_workspace_observe", "Create a content-free file-tree or file-artifact State Snapshot for one declared Workspace.", ["workspace_id"], false, ["adapter", "paths", "artifact_ids", "snapshot_id"]),
+  tool("craft_state_workspace_compare", "Compare two State Snapshots by digest and paths without reading raw business content into Craft records.", ["before_snapshot_id", "after_snapshot_id"], true),
+  tool("craft_workspace_observer_observe", "Poll a declared Workspace and record only a snapshot/diff classification. Unattributed changes are never guessed to be human or Host edits.", ["workspace_id"], false, ["adapter", "paths", "artifact_ids", "snapshot_id", "previous_snapshot_id", "source", "observation_id"]),
+  tool("craft_workspace_observer_get", "Read one content-free Workspace observation and timeline.", ["observation_id"], true),
+  tool("craft_autonomy_ladder_decide", "Classify portable reads, human-approved guarded local writes, verified unattended writes, and external effects without overstating isolation.", ["effect"], false, ["decision_id", "task_id", "workspace_id", "action_digest", "unattended", "approved", "platform_profile_id", "authorization_ref", "reobserve_required", "compensation_or_handoff"]),
+  tool("craft_autonomy_ladder_get", "Read one immutable autonomy classification decision.", ["decision_id"], true),
+  tool("craft_work_coordinator_prepare", "Join one Execution Fabric to its durable Managed Run. It does not start a Host.", ["fabric_id"], false, ["coordinator_id", "managed_run_id"]),
+  tool("craft_work_coordinator_attach_host_run", "Attach the exact matching Host Run to a prepared Work Coordinator.", ["coordinator_id", "host_run_id"]),
+  tool("craft_work_coordinator_observe", "Record the exact receipt, re-observed state and snapshot after a coordinated Host action.", ["coordinator_id", "task_run_state_id", "snapshot_id", "work_loop_receipt_id"], false, ["observation_id"]),
+  tool("craft_work_coordinator_handoff", "Pause a coordinated run with a structured, reference-only handoff.", ["coordinator_id", "observation_id", "reason"], false, ["handoff_id", "artifact_ids", "evidence_ids", "resume_action"]),
+  tool("craft_work_coordinator_get", "Read a Work Coordinator, Managed Run facts and timeline.", ["coordinator_id"], true),
+  tool("craft_eval_campaign_create", "Plan comparable held-out Case \xD7 Harness \xD7 Trial slots; it never starts a hidden model or Host.", ["case_ids", "baseline_harness", "candidate_harness", "trials_per_case", "acceptance_ref"], false, ["campaign_id", "environment", "budget"]),
+  tool("craft_eval_campaign_bind", "Bind one observed Task Run to exactly one planned Eval Campaign slot.", ["slot_id", "task_run_id"]),
+  tool("craft_eval_campaign_advance", "Evaluate only fully observed Eval Campaign pairs and return eligible, rejected, or inconclusive.", ["campaign_id"]),
+  tool("craft_eval_campaign_get", "Read an Eval Campaign and all planned slots.", ["campaign_id"], true),
+  tool("craft_eval_campaign_report", "Report observed Campaign delivery rates and pair verdicts without retaining raw task content or claiming business quality.", ["campaign_id"], true, ["report_id"]),
+  tool("craft_runtime_acceptance_plan", "Plan a real two-Case paired runtime acceptance campaign on one pinned Host, or two Hosts for replication. It starts no model or Host.", ["case_ids", "host_ids", "baseline_harness", "candidate_harness", "environment_fingerprint", "budget_fingerprint", "trials_per_pair", "observer_kind"], false, ["plan_id"]),
+  tool("craft_runtime_acceptance_record", "Bind a real Host Session and independent Outcome Observation to one pinned acceptance slot.", ["plan_id", "host_id", "case_id", "arm", "harness", "trial_index", "environment_fingerprint", "budget_fingerprint", "host_session_id", "observation_id"], false, ["record_id"]),
+  tool("craft_runtime_acceptance_evaluate", "Evaluate the acceptance campaign. Only five repeated strictly positive pairs are eligible for default activation.", ["plan_id"], false, ["evaluation_id"]),
+  tool("craft_runtime_acceptance_get", "Read a runtime acceptance plan, observed slots, and its conservative conclusion.", ["plan_id"], true),
+  tool("craft_evaluation_program_save", "Register one reviewed cadence for sanitized development and independently approved held-out Cases.", ["program_id", "name", "owner_ref", "reviewer_ref", "development_case_ids", "held_out_case_ids"], false, ["domain_terms", "cadence_hours", "lifecycle"]),
+  tool("craft_evaluation_program_due", "Read whether a reviewed Evaluation Program is due; it never starts a Host.", ["program_id"], true, ["now"]),
+  tool("craft_evaluation_program_plan", "Create one pinned Campaign only when a reviewed Evaluation Program is due. Host slots remain explicit.", ["program_id", "baseline_harness", "candidate_harness", "acceptance_ref", "environment", "budget", "planned_by"], false, ["program_run_id", "campaign_id", "partition", "trials_per_case", "independent_approval_ref", "now"]),
+  tool("craft_evaluation_program_report", "Read a Program's content-free Campaign history and next due state.", ["program_id"], true),
+  tool("craft_adaptive_harness_recommend", "Choose the declared minimal Harness unless a Signoff-approved, evidence-backed Canary candidate matches the task.", ["task_id", "goal", "baseline_harness"], true, ["recommendation_id"]),
+  tool("craft_managed_write_get", "Read the scoped local-write transaction and settlement state for one Execution Fabric.", ["fabric_id"], true),
+  tool("craft_managed_write_rollback", "Restore only the declared local workspace baseline after explicit human approval; external effects are excluded.", ["fabric_id", "actor", "approved"]),
+  tool("craft_managed_run_create", "Create the durable, host-neutral continuation spine for one existing Verified Work Loop. It stores references and digests, never prompts or raw session text.", ["work_loop_id"], false, ["managed_run_id"]),
+  tool("craft_managed_run_observe", "Attach an exact Task Run State, Workspace Snapshot and Verified Work Loop receipt to a Managed Run. Drift becomes needs_replan.", ["managed_run_id", "task_run_state_id", "snapshot_id", "work_loop_receipt_id"], false, ["observation_id"]),
+  tool("craft_managed_run_handoff", "Create a content-free structured handoff from an observed Managed Run; Artifact and Evidence references are pinned.", ["managed_run_id", "observation_id", "reason"], false, ["handoff_id", "artifact_ids", "evidence_ids", "resume_action"]),
+  tool("craft_managed_run_resume", "Resume only from a fresh observed state; drift fails closed into fresh planning.", ["managed_run_id", "handoff_id", "observation_id"]),
+  tool("craft_managed_run_fork_shadow", "Fork only a read-only shadow continuation from a structured handoff; it cannot repeat external effects.", ["managed_run_id", "handoff_id"], false, ["fork_id"]),
+  tool("craft_managed_run_get", "Read a Managed Run's content-free observation, handoff, shadow and timeline facts.", ["managed_run_id"], true),
+  tool("craft_campaign_runner_create", "Create a controlled Host-bound runner over an immutable Eval Campaign; it does not start hidden model work.", ["campaign_id", "evaluator_ref"], false, ["runner_id"]),
+  tool("craft_campaign_runner_claim", "Issue the next deterministic Case \xD7 Harness \xD7 Trial slot for explicit Host preparation.", ["runner_id"], false, ["dispatch_id"]),
+  tool("craft_campaign_runner_bind", "Bind a Host-observed Task Run to its issued Campaign slot after environment and budget verification.", ["dispatch_id", "task_run_id"]),
+  tool("craft_campaign_runner_advance", "Aggregate only bound observed Campaign slots through the existing held-out comparison gate.", ["runner_id"]),
+  tool("craft_campaign_runner_get", "Read a Campaign Runner, slot dispatches, Campaign state and immutable timeline.", ["runner_id"], true),
+  tool("craft_evaluation_model_profile_save", "Save a secret-free exact model configuration for evaluation; it never stores an API key or starts a network call.", ["provider"], false, ["profile_id", "model", "tier", "temperature", "max_output_tokens", "max_attempts", "purposes", "network_execution_enabled"]),
+  tool("craft_evaluation_model_profile_get", "Read a versioned Evaluation Model Profile and its non-secret readiness.", ["profile_id"], true, ["version"]),
+  tool("craft_evaluation_model_profile_list", "List secret-free Evaluation Model Profiles and readiness.", [], true, ["limit"]),
+  tool("craft_evaluation_model_ticket_issue", "Issue one content-free evaluation or Workflow-evolution model call contract; only a later compatible Adapter may perform the network call.", ["profile_id", "purpose", "input_ref", "output_contract_ref"], false, ["ticket_id", "campaign_dispatch_id", "workflow_evolution_request_id"]),
+  // The Experience product speaks in its own domain language.  The older
+  // workflow_evolution MCP family has been retired; its storage and kernels
+  // remain behind this seam so existing evidence stays usable.
+  tool("craft_experience_observe", "Record one sanitized, evidence-backed Experience Observation. It is not a Workflow and cannot publish anything.", ["scenario_key", "source_kind", "source_id", "source_digest", "outcome", "evidence_ids", "sanitized"], false, ["observation_id", "failure_type", "content_stored", "scope", "scenario_signature", "execution_shape", "verification"]),
+  tool("craft_experience_patterns_list", "List bounded Experience Observations for one scenario so repeated evidence can be inspected before proposing a procedure.", [], true, ["scenario_key", "limit"]),
+  tool("craft_experience_procedure_draft", "Create a proposal-only Procedure draft request from at least two independent Experience Observations. Linear Workflow is the default; Graph is allowed only when the observations prove branching, join, approval, recovery, or compensation.", ["scenario_key", "hypothesis", "design_axes", "output_contract_ref"], false, ["request_id", "observation_ids", "procedure_kind"]),
+  tool("craft_experience_procedure_submit", "Submit the bounded linear Workflow or evidence-required Graph draft for an exact Experience request. This never routes, publishes, or executes it.", ["request_id", "workflow_id", "name", "description", "inputs"], false, ["steps", "nodes", "edges", "outputs", "checkpoint_policy", "proposal_id", "model_ticket_id", "replaces_workflow_id", "composition", "graph_control"]),
+  tool("craft_experience_procedure_get", "Read one proposal-only Experience Procedure draft and its pinned request.", ["proposal_id"], true, ["request_id"]),
+  tool("craft_experience_learning_request_get", "Read a pinned, content-free Experience request and its exact sanitized Observation versions for an external distillation Adapter.", ["request_id"], true),
+  tool("craft_experience_learning_evaluation_dispatch", "Create the next content-free Shadow, Held-out, Signoff, or Canary evaluation job for an unpublished Experience candidate. An external adapter must execute it.", ["procedure_id"], false, ["dispatch_id"]),
+  tool("craft_experience_learning_evaluation_result", "Bind confirmed external evaluation Evidence to its exact Experience dispatch, record the ordered Gate, and automatically queue the next stage. Only a passing Canary updates current.", ["dispatch_id", "evidence_ids"], false),
+  tool("craft_runtime_assurance_attest", "Attest one terminal Host attempt only after environment, budget, re-observation and required platform boundary checks match the Task Run.", ["task_run_id"], false, ["attestation_id", "host_run_id", "effect", "environment", "budget", "workspace_observation_id", "work_loop_receipt_id", "preflight_id", "evidence_ids"]),
+  tool("craft_runtime_assurance_intervene", "Append a content-free approval, pause, retry, cancellation or handoff intervention to one Task Run ledger.", ["task_run_id", "kind", "actor", "reason"], false, ["intervention_id", "evidence_ids"]),
+  tool("craft_runtime_assurance_campaign_advance", "Advance a Campaign only when every bound Task Run has a matching verified runtime attestation.", ["runner_id"], false, ["assurance_campaign_id"]),
+  tool("craft_runtime_assurance_get", "Read immutable runtime attestations, interventions and timeline for one Task Run.", ["task_run_id"], true),
+  tool("craft_trace_review", "Review one immutable Trace for a content-free verdict, first error and bounded root-cause classification.", ["trace_id"], false, ["review_id", "summary", "evidence_ids"]),
+  tool("craft_trace_review_get", "Read one Trace Review and its referenced Trace.", ["review_id"], true),
+  tool("craft_trace_review_list", "List Trace Reviews by bounded status.", [], true, ["status", "limit"]),
+  tool("craft_assured_pilot_seal_case", "Seal an independently approved held-out Case by content-free digest; Craft never stores its raw input.", ["case_id", "custodian", "opaque_locator_digest", "approval_ref"], false, ["sealed_case_id"]),
+  tool("craft_assured_pilot_access_issue", "Issue one bounded evaluation-only reference to a sealed Case for an exact Task Run.", ["sealed_case_id", "task_run_id", "recipient", "expires_at"], false, ["access_id"]),
+  tool("craft_assured_pilot_access_consume", "Consume one unexpired sealed Case reference before the external evaluator accesses it.", ["access_id", "task_run_id"], false, ["now"]),
+  tool("craft_assured_pilot_recovery_record", "Record a confirmed rehydration and re-observation drill for one verified Task Run; it never claims a deployed sandbox.", ["task_run_id", "attestation_id", "readiness_id", "environment_digest", "checks", "evidence_ids"], false, ["drill_id"]),
+  tool("craft_assured_pilot_prepare", "Bind verified Host facts, runtime readiness, a recovery drill, exact trusted capabilities and consumed sealed evaluation access into one evidence-only Pilot.", ["task_id", "task_run_id", "attestation_id", "readiness_id", "recovery_drill_id", "activation_profile_id", "sealed_access_id"], false, ["pilot_id"]),
+  tool("craft_assured_pilot_reassess", "Recheck an Assured Pilot after environment, capability, Case or human workspace changes; drift fails closed to needs_replan.", ["pilot_id", "environment_digest"]),
+  tool("craft_assured_pilot_get", "Read one content-free Assured Pilot evidence chain and its current attention items.", ["pilot_id"], true),
+  tool("craft_agent_eval_lab_create", "Create a Host-backed Agent evaluation lab over one immutable Campaign Runner.", ["runner_id"], false, ["lab_id"]),
+  tool("craft_agent_eval_lab_start", "Explicitly claim one Campaign slot, bind a comparable prepared Fabric, start its exact Host, and attach an Agent Eval attempt.", ["lab_id", "fabric_id", "prompt"], false, ["dispatch_id", "harness", "invocation_id", "call_id", "approved", "actor", "attempt_id"]),
+  tool("craft_agent_eval_lab_observe", "Record the re-observed terminal result of an Agent Eval attempt; Host completion alone is insufficient.", ["attempt_id", "observation_id"]),
+  tool("craft_agent_eval_lab_get", "Read one Agent evaluation lab and its immutable attempts.", ["lab_id"], true),
+  tool("craft_project_knowledge_discover", "Discover only trusted project-local Serena memory descriptors; global memory is never imported.", ["project_root", "trusted"], false, ["discovery_id"]),
+  tool("craft_project_knowledge_resolve", "Resolve one to three digest-pinned Serena memories as bounded read-only task context; Craft stores only the receipt.", ["discovery_id", "memory_ids"], false, ["resolution_id", "max_chars"]),
+  tool("craft_project_knowledge_propose_update", "Create an evidence-backed draft suggestion for Serena memory maintenance without writing external files.", ["discovery_id", "memory_id", "evidence_ids", "summary"], false, ["proposal_id"]),
+  tool("craft_task_benchmark_create", "Pair two observed Task Runs for one sanitized evaluation Case; it does not start hidden Hosts.", ["case_id", "baseline_task_run_id", "candidate_task_run_id"], false, ["benchmark_id"]),
+  tool("craft_task_benchmark_evaluate", "Materialize a pair comparison only after both Task Runs have immutable deliveries.", ["benchmark_id"]),
+  tool("craft_task_benchmark_aggregate", "Aggregate comparable Task Benchmark pairs into an existing held-out delivery evaluation recommendation.", ["benchmark_ids"], false, ["run_id", "min_trials"]),
+  tool("craft_task_benchmark_candidate_propose", "Create a digest-only candidate from an eligible held-out benchmark; it cannot publish or route by itself.", ["evaluation_run_id", "summary", "candidate_axes"], false, ["candidate_id", "candidate_harness", "applicability_terms"]),
+  tool("craft_task_benchmark_candidate_authorize_canary", "Allow an eligible Task Benchmark candidate into Canary only after an existing passed Signoff.", ["candidate_id", "signoff_id"]),
+  tool("craft_task_benchmark_candidate_canary_start", "Start an observation-only Canary at the exact evaluated environment and budget; it cannot publish.", ["candidate_id", "baseline_id"], false, ["canary_id", "environment", "budget"]),
+  tool("craft_task_benchmark_candidate_canary_observe", "Record an aggregate Canary observation and return an exact baseline rollback reference on quality regression.", ["canary_id", "baseline_quality", "candidate_quality"], false, ["regression_threshold", "sample_id", "evidence_id"]),
+  tool("craft_task_benchmark_candidate_canary_conclude", "Allow routing only after sufficient evidence-backed, non-regressed Canary samples; it never publishes or executes a candidate.", ["candidate_id", "canary_id", "reviewer"], false, ["min_samples"]),
+  tool("craft_codex_dispatch_prepare", "Prepare an exact, digest-bound Codex CLI dispatch. The prompt is not persisted and workspace writes still require Craft authorization.", ["task_id", "workspace", "prompt"], false, ["dispatch_id", "sandbox", "model", "timeout_ms", "output_limit"]),
+  tool("craft_codex_dispatch_execute", "Execute a prepared Codex CLI dispatch with shell disabled, bounded JSONL capture, and a durable receipt.", ["dispatch_id", "prompt"], false, ["authorization_request_id", "notification_ref", "now"]),
+  tool("craft_claude_dispatch_prepare", "Prepare an exact Claude Code dispatch with bounded turns, optional cost cap, and a restricted tool set.", ["task_id", "workspace", "prompt"], false, ["dispatch_id", "sandbox", "model", "max_turns", "max_budget_usd", "timeout_ms", "output_limit"]),
+  tool("craft_claude_dispatch_execute", "Execute a prepared Claude Code dispatch with shell disabled, restricted tools, bounded stream JSON, and a durable receipt.", ["dispatch_id", "prompt"], false, ["authorization_request_id", "notification_ref", "now"]),
+  tool(
+    "craft_capability_context_dispatch_prepare",
+    "Prepare a Codex or Claude dispatch with a digest-pinned logical capability plan as bounded read-only prompt context.",
+    ["host", "task_id", "workspace", "prompt", "plan_id"],
+    false,
+    ["dispatch_id", "sandbox", "model", "max_turns", "max_budget_usd", "timeout_ms", "output_limit", "max_chars"]
+  ),
+  tool(
+    "craft_capability_context_dispatch_execute",
+    "Revalidate a capability-bound dispatch immediately before execution; it fails closed if its local capability context drifted.",
+    ["host", "dispatch_id", "prompt"],
+    false,
+    ["authorization_request_id", "notification_ref", "now"]
+  ),
+  tool("craft_host_run_start", "Start a prepared Codex or Claude dispatch in the background and expose content-free progress events.", ["host", "dispatch_id", "prompt"], false, ["run_id", "authorization_request_id", "notification_ref", "now"]),
+  tool("craft_host_run_get", "Read one background Host run and its content-free progress timeline.", ["run_id"], true),
+  tool("craft_host_run_cancel", "Request explicit cancellation of a live Host process.", ["run_id", "reason"]),
+  tool("craft_host_run_recover", "Mark one exact stopped Runner owner's orphaned Host records as interrupted.", ["owner_id", "confirmed_original_runner_stopped"]),
+  tool("craft_work_launch_prepare", "Create a task and exact Host dispatch; read-only work starts immediately while workspace writes wait for approval.", ["title", "goal", "host", "workspace", "prompt"], false, ["launch_id", "task_id", "project_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria"]),
+  tool("craft_work_launch_decide", "Approve or deny one exact prepared workspace-write launch.", ["launch_id", "actor", "approved"], false, ["prompt"]),
+  tool("craft_work_launch_get", "Read a launch, effective Host status, and incremental sanitized events.", ["launch_id"], true, ["after_sequence", "limit"]),
+  tool("craft_work_launch_retry", "Create a new traceable attempt for a failed, cancelled, or interrupted launch without replaying a stored prompt.", ["launch_id", "prompt"], false, ["new_launch_id", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd"]),
+  tool("craft_work_delivery_observe", "Create an immutable delivery observation from an exact terminal Host receipt and independent acceptance state.", ["launch_id"], false, ["delivery_id"]),
+  tool("craft_work_delivery_get", "Read one immutable delivery observation.", ["delivery_id"], true),
+  tool("craft_delivery_loop_refresh", "Materialize the durable next delivery action from current Host and acceptance facts.", ["launch_id"], false, ["loop_id"]),
+  tool("craft_delivery_loop_get", "Read one content-free delivery-loop projection.", ["loop_id"], true),
+  tool("craft_delivery_evaluation_case_save", "Register a sanitized development or independently approved held-out delivery Case.", ["case_id", "name", "domain", "partition", "acceptance_contract_ref", "sanitized"], false, ["approved_by"]),
+  tool("craft_delivery_evaluation_compare", "Compare two observed deliveries under one explicit environment and budget fingerprint. It never promotes a candidate.", ["case_id", "baseline_delivery_id", "candidate_delivery_id", "environment_fingerprint", "budget_fingerprint"], false, ["comparison_id"]),
+  tool("craft_delivery_evaluation_run", "Aggregate explicit delivery comparisons under one environment and budget. It can recommend Signoff but never promotes.", ["environment_fingerprint", "budget_fingerprint", "items"], false, ["run_id", "min_trials"]),
+  tool("craft_platform_execution_profile_save", "Register one platform execution boundary; only verified network-denied boundaries may authorize writes.", ["profile_id", "platform", "isolation", "network"], false, ["verified_by", "active"]),
+  tool("craft_platform_execution_conformance_record", "Record a verifier-attributed platform boundary conformance result. It does not execute probes or create a sandbox.", ["platform", "verifier", "checks"], false, ["conformance_id"]),
+  tool("craft_platform_execution_preflight", "Check whether a requested effect is portable read-only or bound to an exact verified platform boundary.", ["platform", "effect"], false, ["profile_id", "preflight_id"]),
+  tool("craft_platform_execution_probe", "Record actual local platform health only; it never certifies a security boundary.", [], false, ["platform", "probe_id"]),
+  tool("craft_platform_execution_probe_get", "Read one local platform health probe receipt.", ["probe_id"], true),
+  tool("craft_capability_context_work_launch_prepare", "Prepare a Work Launch with an exact digest-pinned read-only capability context; it never grants extra write authority.", ["task_id", "host", "workspace", "prompt", "plan_id"], false, ["launch_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "max_chars", "acceptance_name", "acceptance_criteria"]),
+  tool("craft_capability_context_work_launch_decide", "Approve or deny one capability-bound workspace-write launch after revalidating the exact local context.", ["launch_id", "actor", "approved", "prompt"], false),
+  tool("craft_knowledge_context_work_launch_prepare", "Prepare a Work Launch with one exact Wiki Context Bundle. Every Claim, Evidence reference, scope, expiry, and digest is revalidated before any Host run; the rendered knowledge is bounded read-only context.", ["task_id", "host", "workspace", "prompt", "bundle_id"], false, ["bundle_version", "launch_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "now"]),
+  tool("craft_knowledge_context_work_launch_decide", "Approve or deny one knowledge-bound workspace-write launch after fail-closed revalidation of its exact Wiki Context Bundle.", ["launch_id", "actor", "approved", "prompt"], false, ["now"]),
+  tool("craft_knowledge_context_work_launch_retry", "Create a new traceable attempt from a failed knowledge-bound Work Launch, after revalidating the original exact Wiki Context Bundle.", ["launch_id", "prompt"], false, ["new_launch_id", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "now"]),
+  tool("craft_acceptance_plan_save", "Attach explicit program, model, human, or business-signal acceptance criteria to one Work Launch.", ["task_id", "launch_id", "name", "criteria"], false, ["plan_id"]),
+  tool("craft_acceptance_plan_get", "Read one acceptance plan, its evidence-backed checks, assessment, and business outcome.", ["plan_id"], true),
+  tool("craft_acceptance_check_record", "Record one criterion result from the evaluator type declared by the plan.", ["plan_id", "criterion_id", "evaluator_type", "evaluator_id", "result", "summary", "evidence_ids"], false, ["check_id"]),
+  tool("craft_acceptance_human_review", "Record an explicit human acceptance decision with its own evidence and immediately reassess the plan.", ["plan_id", "criterion_id", "reviewer", "result", "summary"], false, ["review_id"]),
+  tool("craft_acceptance_evaluator_save", "Register an exact-version program, model, or business-signal evaluator behind a domain adapter.", ["name", "method", "adapter_id"], false, ["evaluator_id", "configuration", "max_attempts", "enabled"]),
+  tool("craft_acceptance_evaluation_prepare", "Bind one non-human acceptance criterion to an exact evaluator version and create a durable job.", ["plan_id", "criterion_id", "evaluator_id"], false, ["evaluator_version", "job_id", "input"]),
+  tool("craft_acceptance_file_prepare", "Prepare the built-in deterministic file-artifact evaluator for one program acceptance criterion.", ["plan_id", "criterion_id", "workspace", "relative_path"], false, ["job_id", "allowed_extensions", "max_bytes", "expected_sha256"]),
+  tool("craft_acceptance_coverage_prepare", "Prepare a deterministic Istanbul/nyc coverage-summary gate; coverage is read from evidence, never estimated by a model.", ["plan_id", "criterion_id", "workspace", "relative_path"], false, ["job_id", "lines_threshold", "branches_threshold", "functions_threshold", "statements_threshold"]),
+  tool("craft_acceptance_media_probe_prepare", "Prepare a deterministic ffprobe JSON gate for duration, dimensions, streams, and codecs.", ["plan_id", "criterion_id", "workspace", "relative_path"], false, ["job_id", "min_duration_seconds", "min_width", "min_height"]),
+  tool("craft_acceptance_evaluation_claim", "Lease ready acceptance jobs to the matching domain adapter.", ["adapter_id"], false, ["plan_id", "limit", "lease_seconds"]),
+  tool("craft_acceptance_evaluation_recover", "Return expired evaluation leases to ready state or mark retry-exhausted jobs for operator attention.", [], false, ["now", "limit"]),
+  tool("craft_acceptance_evaluation_report", "Submit an evidence-backed adapter receipt for one exact leased acceptance job.", ["job_id", "lease_id", "adapter_id", "result", "summary"], false, ["receipt"]),
+  tool("craft_acceptance_assess", "Aggregate required acceptance checks without treating Host success as business success.", ["plan_id"]),
+  tool("craft_verified_iteration_create", "Bind a bounded verification-driven iteration to one exact Work Launch and independent acceptance plan; it grants no additional write authority.", ["task_id", "launch_id", "acceptance_plan_id"], false, ["iteration_id", "max_attempts", "allowed_paths"]),
+  tool("craft_verified_iteration_get", "Read a verification-driven iteration and its content-free attempt history.", ["iteration_id"], true),
+  tool("craft_verified_iteration_assess", "Classify one independent acceptance assessment as pass, retry, block, or human handoff; only task failures can retry within budget.", ["iteration_id", "assessment_id", "classification"], false, ["attempt_id", "feedback"]),
+  tool("craft_strategy_recommend", "Recommend a candidate strategy only from a comparable held-out evaluation; it never changes routing or executes work.", ["task_id", "comparison_id"], false, ["recommendation_id", "cost_metric"]),
+  tool("craft_knowledge_claim_save", "Save a candidate fact, rule, decision, term, or failure mode only with existing evidence; it is not automatically trusted or executable.", ["kind", "content", "evidence_ids"], false, ["claim_id", "title", "scope", "tags", "valid_until", "scope_envelope", "source_id"]),
+  tool("craft_knowledge_semantic_review_packet", "Build the exact Claim, source fragment and rubric packet a Codex, Claude, or Provider reviewer must inspect.", ["claim_id"], true),
+  tool("craft_knowledge_semantic_provider_review", "Run an explicitly configured OpenAI-compatible semantic review. Keys are only read from the named environment variable.", ["claim_id", "endpoint", "model", "credential_env"], false, ["timeout_ms"]),
+  tool("craft_knowledge_claim_get", "Read one exact evidence-backed knowledge claim after current and historical audience checks.", ["claim_id"], true, ["version", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "allow_restricted"]),
+  tool("craft_knowledge_claim_list", "List locally stored evidence-backed knowledge claims visible to the current audience.", [], true, ["limit", "query", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "allow_restricted"]),
+  tool("craft_knowledge_claim_review", "Explicitly review, dispute, supersede, or expire a candidate knowledge claim without deleting history.", ["claim_id", "status", "reviewer", "reason"], false),
+  tool("craft_knowledge_promotion_policy_get", "Read this local Knowledge component's automatic promotion threshold. It is local configuration and never imported from another machine.", [], true),
+  tool("craft_knowledge_promotion_policy_save", "Adjust the local automatic Knowledge promotion threshold. This is an optional operator override, not a required human review queue.", [], false, ["minimum_independent_support", "minimum_confidence", "automatic", "actor"]),
+  tool("craft_knowledge_support_record", "Attach one independently observed bounded or confirmed Evidence record to a candidate Claim. Duplicate Evidence or observation keys cannot inflate trust.", ["claim_id", "evidence_id", "observation_key"], false, ["support_id", "scope"]),
+  tool("craft_knowledge_host_review", "Record a Codex/Claude/independent Host model review bound to the exact Claim Source digest. A supported current Claim is automatically promoted without an extra API key; reviewed Knowledge still never grants effects or routes Workflows.", ["claim_id", "host_run_key", "source_digest", "decision"], false, ["host_kind", "model_ref", "rubric_id", "packet_digest", "reason_code", "now"]),
+  tool("craft_knowledge_auto_review", "Evaluate candidate knowledge against the local evidence promotion policy. By default eligible current Claims are automatically promoted; pass auto_promote:false for a dry-run. Legacy, expired, conflicted, or under-supported claims remain outside Context.", [], false, ["claim_ids", "now", "auto_promote"]),
+  tool("craft_knowledge_candidate_model_review", "Submit a model review bound to immutable source digests. Supported pages become bounded reviewed knowledge with restored full bodies; uncertain or rejected pages remain outside Context.", ["migration_id", "reviewer", "model_ref", "assessments"], false),
+  tool("craft_content_status", "Read Markdown content storage status for knowledge and memory bodies; SQLite remains the lifecycle index.", [], true),
+  tool("craft_content_verify", "Verify Markdown body references and detect missing or drifted content without changing records.", [], true, ["kind"]),
+  tool("craft_content_migrate", "Explicitly migrate legacy inline knowledge, memory, and Wiki bodies into versioned Markdown with a database backup.", [], false, ["dry_run"]),
+  tool("craft_wiki_page_save", "Save or revise an editable Wiki page whose referenced claims retain their evidence identity.", ["title", "body"], false, ["page_id", "scope", "claim_ids", "author"]),
+  tool("craft_wiki_page_get", "Read one exact Wiki page revision.", ["page_id"], true, ["version"]),
+  tool("craft_wiki_page_list", "List locally stored Wiki pages.", [], true, ["limit", "query"]),
+  tool("craft_wiki_page_refresh", "Record a human Markdown edit as a new Wiki page revision; it never infers trust from the edit.", ["page_id"], false),
+  tool("craft_knowledge_workbench_view", "Read the bounded Workbench projection of Claims, Wiki pages, Context Bundles, conflicts, evaluations, candidates, and knowledge-bound launches.", [], true, ["limit"]),
+  tool("craft_knowledge_context_bundle_preview", "Revalidate one exact Context Bundle and render its bounded read-only knowledge preview without preparing or starting a Work Launch.", ["bundle_id"], true, ["bundle_version", "now"]),
+  tool("craft_knowledge_relation_save", "Create a typed support, contradiction, supersession, applicability, or dependency relation between two evidence-backed claims.", ["from_claim_id", "to_claim_id", "relation"], false, ["relation_id"]),
+  tool("craft_relation_relate", "Create one typed, evidence-backed relation between two addressable knowledge objects (claim, memory, knowledge document, evidence, capability, or page). Confirmed relations require Evidence. It grants no execution authority.", ["source", "target", "relation"], false, ["relation_id", "confidence", "evidence_ids", "valid_from", "rationale"]),
+  tool("craft_relation_neighbors", "Read the live one-hop neighbours of one addressable knowledge object, spanning both directions and labelled forward or inverse.", ["kind", "id"], true, ["version", "direction", "relation", "as_of", "limit"]),
+  tool("craft_relation_traverse", "Walk relations from one knowledge object to a bounded depth (max 3) with cycle detection; it never expands without limit.", ["kind", "id"], true, ["version", "max_depth", "direction", "relation", "as_of", "limit"]),
+  tool("craft_relation_retract", "Soft-invalidate one relation by setting its valid_to instant; the record and its history are preserved rather than deleted.", ["relation_id", "reason"], false, ["valid_to", "now"]),
+  tool("craft_relation_get", "Read one exact knowledge relation revision.", ["relation_id"], true, ["version"]),
+  tool("craft_wiki_context_compile", "Compile only reviewed, current, scope-matching evidence-backed claims into a bounded Agent context using deterministic keyword matching by default.", ["query"], true, ["bundle_id", "scope", "max_items", "max_chars", "now"]),
+  tool("craft_wiki_context_bundle_get", "Read a content-free Wiki context compilation receipt.", ["bundle_id"], true, ["version"]),
+  tool("craft_wiki_context_bundle_list", "List local Wiki context compilation receipts.", [], true, ["limit", "query"]),
+  tool("craft_wiki_skill_candidate_create", "Create a proposal-only Skill or Workflow candidate from at least two reviewed knowledge claims; it cannot publish or execute.", ["title", "kind", "claim_ids", "instructions", "applicability", "fallback_condition"], false, ["candidate_id"]),
+  tool("craft_wiki_skill_candidate_get", "Read one exact Wiki-derived capability candidate.", ["candidate_id"], true, ["version"]),
+  tool("craft_wiki_skill_candidate_list", "List local Wiki-derived capability candidates.", [], true, ["limit", "query"]),
+  tool("craft_wiki_skill_candidate_review", "Mark a Wiki-derived candidate ready for independent evaluation or reject it; neither choice publishes it.", ["candidate_id", "status", "reviewer", "reason"], false),
+  tool("craft_wiki_skill_candidate_evaluation_attest", "Bind one ready Wiki candidate to an eligible leak-free knowledge evaluation, a passed held-out Evaluation Run, and an exact passed Signoff. It does not publish or execute the candidate.", ["candidate_id", "knowledge_evaluation_run_id", "evaluation_run_id", "signoff_id"], false, ["attestation_id"]),
+  tool("craft_wiki_skill_candidate_publication_authorize", "Record an explicit human authorization to publish an already-attested Wiki candidate. It preserves non-execution and does not write a Skill or Workflow to any host.", ["candidate_id", "attestation_id", "reviewer", "reason"], false, ["authorization_id"]),
+  tool("craft_wiki_skill_candidate_publication_package_prepare", "Prepare a deterministic, evidence-linked portable Skill or Workflow package for one compatible Host after human publication authorization. It never writes to a Host or grants execution authority.", ["candidate_id", "authorization_id", "target_host"], false, ["package_id"]),
+  tool("craft_wiki_skill_candidate_publication_package_get", "Read one exact prepared portable candidate package for human review and manual import.", ["package_id"], true, ["version"]),
+  tool("craft_wiki_skill_candidate_publication_package_list", "List prepared portable candidate packages without importing or executing them.", [], true, ["limit", "query"]),
+  tool("craft_guided_work_create", "Create a user-readable goal, material references, and explicit decisions; it does not start a Host.", ["title", "goal"], false, ["brief_id", "project_id", "materials", "decisions"]),
+  tool("craft_guided_work_decide", "Record one explicit answer for a pending guided-work decision without storing its raw value in the decision receipt.", ["brief_id", "decision_id", "answer", "actor"]),
+  tool("craft_guided_work_get", "Read a guided-work brief, its task, material references, decision states, and any bound Work Launch.", ["brief_id"], true, ["version"]),
+  tool("craft_guided_work_launch_prepare", "Prepare a normal Work Launch only after all required guided-work decisions are answered; normal Host approval rules still apply.", ["brief_id", "host", "workspace", "prompt"], false, ["launch_id", "sandbox", "model", "acceptance_name", "acceptance_criteria"]),
+  tool("craft_execution_safety_preflight", "Prove a verified Sandbox Profile can meet a bounded Host resource contract. It records no OS-sandbox claim and does not execute a Host.", ["task_id", "host", "workspace", "sandbox", "profile_id", "profile_version", "timeout_ms", "output_limit"], false, ["preflight_id", "max_turns", "max_budget_usd"]),
+  tool("craft_execution_safety_get", "Read and revalidate a safety preflight and its exact Host resource contract.", ["preflight_id"], true, ["version"]),
+  tool("craft_safety_work_launch_prepare", "Prepare and bind a normal Work Launch to a verified safety preflight and enforced Host timeout/output contract; it does not claim OS isolation.", ["task_id", "host", "workspace", "prompt", "sandbox", "profile_id", "profile_version", "timeout_ms", "output_limit"], false, ["preflight_id", "launch_id", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria"]),
+  tool("craft_safety_work_launch_decide", "Revalidate the exact safety preflight and resource contract before approving its workspace-write Work Launch.", ["launch_id", "actor", "approved"], false, ["prompt"]),
+  tool("craft_wiki_candidate_local_import", "Explicitly write one reviewed portable package to a user-selected descendant Markdown path. It never overwrites, enables, or executes the import.", ["package_id", "target_root", "relative_path", "reviewer", "confirmed"], false, ["import_id"]),
+  tool("craft_wiki_candidate_local_import_get", "Read an auditable local package-import receipt; imported files remain disabled and non-executable.", ["import_id"], true),
+  tool("craft_a2a_agent_card_discover", "Fetch one HTTPS A2A Agent Card as untrusted read-only metadata. It never dispatches work, sends credentials, or grants execution authority.", ["url"], false, ["card_id"]),
+  tool("craft_a2a_agent_card_get", "Read one discovered untrusted A2A Agent Card receipt.", ["card_id"], true),
+  tool("craft_a2a_agent_card_list", "List untrusted read-only A2A Agent Card receipts.", [], true, ["limit"]),
+  tool("craft_a2a_agent_trust_approve", "Approve a discovered Agent Card only with enterprise identity and confirmed evidence; trust remains read-only.", ["trust_id", "card_id", "provider_id", "allowed_effects", "evidence_ids", "approval_ref"], false),
+  tool("craft_a2a_collaboration_session_create", "Create bounded remote collaboration only after an eligible single-Agent baseline and confirmed justification evidence.", ["session_id", "task_id", "trust_id", "evaluation_run_id", "justification_evidence_id", "budget"], false, ["max_delegations"]),
+  tool("craft_a2a_delegation_prepare", "Prepare a content-free, read-only remote delegation with Artifact/Evidence references.", ["delegation_id", "session_id", "objective", "evidence_ids"], false, ["artifact_ids", "ttl_seconds", "now"]),
+  tool("craft_a2a_delegation_dispatch", "Issue a sealed A2A envelope after a trusted transport records confirmed dispatch Evidence; Craft does not perform network transport.", ["delegation_id", "transport_evidence_id", "dispatched_by"], false, ["now"]),
+  tool("craft_a2a_delegation_report", "Record an observed remote read-only result by digest and Evidence, never raw result content.", ["delegation_id", "receipt_id", "verdict", "result", "evidence_ids"], false),
+  tool("craft_a2a_delegation_get", "Read one governed A2A delegation and its digest-only receipt.", ["delegation_id"], true),
+  tool("craft_federated_agent_health_record", "Record an evidence-backed health receipt for one exact remote Agent Card; stale cards fail closed.", ["card_id", "card_digest", "status", "evidence_ids", "observed_by"], false, ["health_id"]),
+  tool("craft_federated_delegation_grant_issue", "Issue one expiring, reference-only Delegation Grant for a prepared governed A2A delegation.", ["grant_id", "delegation_id", "parent_task_run_id", "parent_operation_ref", "audience", "issued_by"], false, ["capability_ids", "artifact_ids"]),
+  tool("craft_federated_delegation_grant_consume", "Consume a Federated Delegation Grant exactly once for its bound remote audience.", ["grant_id", "audience", "consumer_ref"], false, ["now"]),
+  tool("craft_federated_remote_receipt_record", "Record a content-free remote state only when grant, Artifact scope, environment and Evidence all match.", ["receipt_id", "grant_id", "state", "environment_digest", "effect", "result_digest", "evidence_ids"], false, ["artifact_grant_ids"]),
+  tool("craft_federated_delegation_revoke", "Revoke an active Federated Delegation Grant and every derived Artifact Grant.", ["grant_id", "reason", "evidence_ids"], false),
+  tool("craft_federated_delegation_reconcile", "Fail closed to indeterminate after a remote Grant expires without a terminal receipt.", ["grant_id"], false, ["now"]),
+  tool("craft_federated_delegation_get", "Read a Federated Delegation Grant, scoped Artifact grants, remote receipts and indeterminate incident.", ["grant_id"], true),
+  tool("craft_harness_topology_define", "Define a bounded Harness topology. The only baseline is single primary Agent; extra roles remain shadow candidates.", ["topology_id", "task_id", "roles", "mode"], false, ["max_agents"]),
+  tool("craft_harness_topology_promote", "Make a multi-Agent topology routing eligible only after an eligible paired evaluation and confirmed Evidence.", ["topology_id", "evaluation_run_id", "evidence_ids"], false),
+  tool("craft_harness_topology_select", "Select the evaluated candidate topology for a Task, otherwise return its single-Agent baseline.", ["task_id", "baseline_topology_id"], false, ["selection_id"]),
+  tool("craft_harness_topology_suspend", "Suspend a routing-eligible multi-Agent topology on regression evidence; the single-Agent baseline remains intact.", ["topology_id", "reason", "evidence_ids"], false),
+  tool("craft_harness_topology_get", "Read one topology and its exact lifecycle.", ["topology_id"], true),
+  tool("craft_runtime_readiness_assess", "Assess deployment readiness from real evidence, platform preflight, recovery and enterprise binding facts; it never claims deployment is live.", ["task_id", "host", "platform", "effect", "environment_digest", "evidence_ids"], false, ["workspace_recovery", "preflight_id", "enterprise_binding_id", "compensation_ref", "assessment_id"]),
+  tool("craft_runtime_readiness_get", "Read one content-free deployment readiness assessment.", ["assessment_id"], true),
+  tool("craft_runtime_model_status", "List configured model providers and whether their credential environment variable is available; never returns a secret.", [], true),
+  tool("craft_runtime_model_probe", "Probe one configured model with a bounded request and persist only an availability receipt; missing or failed providers return unavailable.", [], false, ["provider", "probe_id", "refresh"]),
+  tool("craft_mcp_task_create", "Create a durable owner-scoped MCP Task before any asynchronous work; request and result bodies are represented only by digests.", ["request_id", "operation"], false, ["task_id", "input_digest", "input", "owner", "ttl_seconds", "poll_interval_ms"]),
+  tool("craft_mcp_task_get", "Read one owner-scoped MCP Task and expire it when its TTL has elapsed; tasks cannot be enumerated across owners.", ["task_id"], true, ["owner"]),
+  tool("craft_mcp_task_update", "Update a durable MCP Task status or digest-only result; terminal state is immutable and owner scoped.", ["task_id"], false, ["status", "input_digest", "result_digest", "error_code", "owner"]),
+  tool("craft_mcp_task_cancel", "Cancel one owner-scoped MCP Task idempotently.", ["task_id"], false, ["owner", "reason"]),
+  tool("craft_mcp_task_expire", "Expire overdue MCP Tasks without exposing their payloads.", [], false, ["now"]),
+  tool("craft_runtime_proof_manifest", "Declare a content-free execution manifest for workspace, network, credentials, process and resources.", ["runtime_id", "platform", "adapter_id", "workspace_digest"], false, ["manifest_id", "network", "credential_mode", "process_mode", "resources"]),
+  tool("craft_runtime_proof_probe", "Record a bounded runtime capability probe for one manifest.", ["manifest_id", "environment_digest"], false, ["probe_id", "checks"]),
+  tool("craft_runtime_proof_conformance", "Verify runtime boundary checks and fail closed for unsupported high-risk Windows execution.", ["manifest_id", "verifier", "checks"], false, ["conformance_id"]),
+  tool("craft_runtime_proof_attest", "Bind a verified runtime conformance to a run, profile and expiry.", ["conformance_id", "run_id", "environment_digest", "profile_version", "expires_at"], false, ["attestation_id", "evidence_ids"]),
+  tool("craft_runtime_proof_rehydrate", "Revalidate a checkpoint environment before recovery; drift returns needs_replan.", ["checkpoint_id", "expected_environment_digest", "current_environment_digest"], true),
+  tool("craft_knowledge_evaluation_case_save", "Save a fixed query-to-expected-claim knowledge evaluation case.", ["query", "expected_claim_ids"], false, ["case_id", "scope"]),
+  tool("craft_knowledge_evaluation_case_list", "List fixed knowledge evaluation cases.", [], true, ["limit", "query"]),
+  tool("craft_knowledge_evaluation_run", "Run deterministic recall, evidence-coverage, and candidate-leak checks, or mode=citation_support to separately assess emitted retrieval relevance and bound citation support; never changes routing or publication.", [], false, ["run_id", "case_ids", "top_k", "now", "min_recall", "min_evidence_coverage", "mode", "emission_id", "expected_relevant_refs", "retrieved_refs", "citation_judgements"]),
+  tool("craft_knowledge_evaluation_run_get", "Read one exact knowledge evaluation result.", ["run_id"], true, ["version"]),
+  tool("craft_knowledge_evaluation_run_list", "List knowledge evaluation results.", [], true, ["limit", "query"]),
+  tool("craft_domain_kit_save", "Save a versioned domain form, object, capability, sandbox, budget, evaluation, action, and acceptance contract without binding it to one Host.", ["name", "domain", "description", "fields", "criteria"], false, ["kit_id", "capability_requirements", "object_schemas", "components", "action_contracts", "budget_limits", "sandbox_requirements", "eval_suite_ref"]),
+  tool("craft_domain_kit_get", "Read one exact Domain Kit version.", ["kit_id"], true, ["kit_version"]),
+  tool("craft_domain_kit_list", "List locally installed Domain Kits.", [], true, ["limit"]),
+  tool("craft_domain_kit_install_builtins", "Install the reviewed built-in software and video delivery Kits."),
+  tool("craft_domain_kit_apply", "Validate form values, recursively lock exact dependencies, reserve budget, and bind one Domain Kit to an existing Work Launch.", ["kit_id", "launch_id", "values"], false, ["kit_version", "application_id", "sandbox_profile_id", "sandbox_profile_version", "budget_id"]),
+  tool("craft_domain_kit_settle", "Settle actual resource use within a Domain Kit reservation and release unused capacity.", ["application_id"], false, ["actual", "trial_id"]),
+  tool("craft_domain_kit_action_lock_get", "Read immutable verified Contract and Capability bindings for one Domain Kit application.", ["application_id"], true),
+  tool("craft_domain_kit_action_prepare", "Validate ephemeral input against the locked Schema and derive an exact Autonomy request without granting execution authority.", ["application_id", "action_id", "input", "target", "policy_id", "policy_version"], false, ["request_id", "requested_by"]),
+  tool("craft_domain_kit_action_report", "Close one authorized and consumed Domain Kit action with output-Schema validation and real evidence.", ["request_id", "outcome", "evidence_ids"], false, ["output"]),
+  tool("craft_workspace_open", "Register an explicit local Agent-Native Workspace; no files are copied until a checkpoint.", ["name", "root_path", "include_paths"], false, ["workspace_id", "git_baseline_ref"]),
+  tool("craft_workspace_get", "Read one workspace state, checkpoints, and human changes.", ["workspace_id"], true),
+  tool("craft_workspace_checkpoint", "Create a content-addressed file snapshot for the workspace's declared paths.", ["workspace_id", "label"], false, ["checkpoint_id", "artifact_ids", "evidence_ids"]),
+  tool("craft_workspace_diff", "Compare two immutable workspace checkpoints.", ["workspace_id", "from_checkpoint_id", "to_checkpoint_id"], true),
+  tool("craft_workspace_human_change", "Record a human state intervention without importing its raw content.", ["workspace_id", "summary"], false, ["change_id", "affected_paths", "source"]),
+  tool("craft_workspace_restore", "Restore declared workspace paths only after explicit approval.", ["workspace_id", "checkpoint_id", "approved"]),
+  tool(
+    "craft_work_object_put",
+    "Create or revise a typed workspace object with explicit dependencies and optimistic concurrency.",
+    ["workspace_id", "object_type", "name"],
+    false,
+    ["object_id", "data", "depends_on", "source_paths", "artifact_ids", "status", "evidence_ids", "expected_state_revision"]
+  ),
+  tool("craft_work_object_list", "List the human/Agent shared objects in one workspace.", ["workspace_id"], true, ["status", "limit"]),
+  tool(
+    "craft_workspace_impact",
+    "Preview the transitive object impact of changed objects or source paths without mutating state.",
+    ["workspace_id"],
+    true,
+    ["object_ids", "affected_paths"]
+  ),
+  tool(
+    "craft_workspace_change_apply",
+    "Record an intervention and mark its transitive dependents for review with revision conflict protection.",
+    ["workspace_id", "summary"],
+    false,
+    ["change_id", "object_ids", "affected_paths", "source", "expected_state_revision"]
+  ),
+  tool(
+    "craft_memory_remember",
+    "Store a scoped, attributable fact, preference, decision, or experience.",
+    ["kind", "scope", "content", "source"],
+    false,
+    ["memory_id", "task_id", "workspace_id", "applies_to", "valid_until", "evidence_ids", "supersedes_id"]
+  ),
+  tool("craft_memory_transition", "Supersede, expire, or reject a memory item without deleting its history.", ["memory_id", "status"], false, ["replacement_id", "reason"]),
+  tool(
+    "craft_context_assemble",
+    "Build a bounded context capsule from current workspace objects and valid scoped memories.",
+    ["query"],
+    true,
+    ["task_id", "workspace_id", "limit", "max_chars"]
+  ),
+  tool(
+    "craft_context_profile_save",
+    "Save a versioned, scoped context selection policy; it does not grant execution authority.",
+    ["name"],
+    false,
+    ["profile_id", "task_id", "workspace_id", "memory_kinds", "object_types", "required_memory_ids", "required_object_ids", "max_items", "max_chars"]
+  ),
+  tool("craft_context_profile_get", "Read one exact context profile version.", ["profile_id"], true, ["version"]),
+  tool("craft_context_profile_list", "List stored context profiles.", [], true, ["limit", "query"]),
+  tool(
+    "craft_context_profile_assemble",
+    "Assemble a bounded, attributable context using one exact Context Profile.",
+    ["profile_id", "query"],
+    true,
+    ["profile_version", "task_id", "workspace_id"]
+  ),
+  tool("craft_knowledge_memory_install_builtins", "Register the built-in Evidence Wiki and Serena knowledge source descriptors; it never scans or writes external files."),
+  tool("craft_knowledge_bootstrap_install", "Idempotently register Craft's built-in Evidence Wiki and Serena descriptors for the complete primary plugin. It never scans external files or stores conversation content."),
+  tool("craft_knowledge_source_register", "Register a digest-pinned Wiki, Serena, kefu, README, or custom Knowledge Source with explicit trust and read/write boundary.", ["kind", "label", "scope_kind", "scope_id", "locator", "content_digest"], false, ["source_id", "trust", "access", "scope_envelope"]),
+  tool("craft_knowledge_source_ingest", "Read a bounded trusted Markdown, README, Obsidian, or Serena source into immutable revisions, fragments, Evidence, and candidate review packets. It never silently promotes claims.", ["source_id"], false, ["root", "revision_id", "max_files", "max_chars_per_fragment", "cursor"]),
+  tool("craft_knowledge_expiry_sweep", "Revalidate reviewed Claims for expiry, changed Sources/Documents and contradictions; optionally narrow dependencies.", [], false, ["now", "source_ids", "document_ids"]),
+  tool("craft_knowledge_conflict_resolve", "Resolve a Claim conflict with Evidence-backed reviewer decision.", ["claim_id", "decision", "reviewer", "reason"]),
+  tool("craft_knowledge_source_list", "List active Knowledge Sources by exact optional scope.", [], true, ["scope_kind", "scope_id", "limit"]),
+  tool("craft_knowledge_source_transition", "Disable or revoke one Knowledge Source without deleting history.", ["source_id", "status", "reason"]),
+  tool("craft_memory_ledger_remember", "Store one scoped working, episodic, preference, or procedural Memory with source, sensitivity, validity, Evidence and revocation metadata.", ["source_id", "kind", "scope_kind", "scope_id", "content"], false, ["memory_id", "sensitivity", "confidence", "evidence_ids", "valid_until", "scope_envelope", "topic", "observed_at", "effective_from"]),
+  tool("craft_memory_ledger_get", "Read one canonical Memory Ledger entry under its current and historical access restrictions, including current source permissions.", ["memory_id"], true, ["version", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
+  tool("craft_memory_ledger_list", "List accessible active Memories in one explicit scope. Historical entries require include_history=true; current source permissions still apply.", ["scope_kind", "scope_id"], true, ["limit", "include_history", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
+  tool("craft_memory_capture_user_statement", "Capture one explicitly consented user statement as bounded Evidence, then create a governed Memory candidate. It never archives a whole conversation; optional auto_accept is blocked by conflicts.", ["content", "explicit_consent"], false, ["candidate_id", "memory_id", "evidence_id", "kind", "scope_kind", "scope_id", "topic", "sensitivity", "valid_until", "auto_accept", "scope_envelope"]),
+  tool("craft_memory_ledger_transition", "Supersede, revoke, or expire a Memory Ledger entry without deleting history.", ["memory_id", "status", "reason"], false, ["replacement_id", "expected_version"]),
+  tool("craft_memory_ledger_compat_bind", "Reference one legacy Craft memory record through the Ledger without migrating or rewriting its content.", ["legacy_kind", "legacy_id", "source_id"], false, ["binding_id"]),
+  tool("craft_memory_candidate_propose", "Propose a sanitized scoped memory; it remains candidate until Evidence-backed review.", ["source_id", "kind", "scope_kind", "scope_id", "content"], false, ["candidate_id", "topic", "confidence", "evidence_ids", "valid_until", "scope_envelope"]),
+  tool("craft_memory_policy_save", "Save the scoped memory capture mode: off, propose, or governed. Governed mode still requires Evidence and conflict-free candidates.", ["mode"], false, ["policy_id", "min_confidence", "updated_by"]),
+  tool("craft_memory_policy_get", "Read the scoped memory capture mode and its Evidence threshold.", [], true, ["policy_id"]),
+  tool("craft_memory_candidate_review", "Approve or reject a memory candidate; approval requires bounded or confirmed Evidence.", ["candidate_id", "decision", "reviewer", "reason"]),
+  tool("craft_memory_ledger_remember_approved", "Write an approved candidate into the canonical Memory Ledger.", ["candidate_id"], false, ["memory_id"]),
+  tool("craft_memory_governance", "Suggest existing topics for confirmation, inspect scoped governance tasks, or confirm an unchanged entry with explicit user Evidence.", ["action"], false, ["content", "scope_kind", "scope_id", "memory_id", "expected_version", "explicit_consent", "evidence_ids", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
+  tool("craft_memory_conflict_list", "List unresolved Memory Ledger candidate conflicts.", [], true, ["limit"]),
+  tool("craft_memory_conflict_resolve", "Resolve a memory conflict while retaining both historical candidates.", ["candidate_id", "resolution", "actor", "reason"]),
+  tool("craft_memory_expiry_sweep", "Expire candidates and Ledger entries whose valid_until has elapsed.", [], false, ["now"]),
+  tool("craft_memory_session_finalize", "Finalize a session using only a redacted summary and candidate references.", ["session_id", "summary"], false, ["candidate_ids"]),
+  tool("craft_context_resolution_feedback", "Record bounded feedback on an exact Context receipt. Feedback never changes source status or grants execution authority.", ["receipt_id", "outcome"], false, ["feedback_id", "evidence_ids", "members", "asset_refs", "usage_stage", "injected_tokens", "schema_tokens", "history_tokens"]),
+  tool("craft_context_resolution_resolve", "Resolve a bounded, scoped host context and write a content-free reproducible Context Resolution Receipt. If no scope is available, return an empty skipped result without reading global memory.", ["query"], false, ["scope_kind", "scope_id", "receipt_id", "source_ids", "memory_ids", "retrieval_adapter_id", "max_items", "max_chars", "now", "allow_restricted", "user_scope_id", "team_scope_id", "organization_scope_id", "session_scope_id", "include_global", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "members", "required_refs", "task_id", "session_id", "turn_id", "include_working_notes", "history_view", "as_of", "known_at", "project_scope_id", "project_root"]),
+  tool("craft_scope_identity_resolve_project", "Resolve a portable Git-first project identity and bind the current filesystem path only as a local alias.", ["project_root"], false, ["project_id"]),
+  tool("craft_scope_alias_migrate", "Bind a known legacy project scope to a canonical project identity without changing historical records.", ["project_root", "legacy_scope_id"], false, ["project_id"]),
+  tool("craft_context_resolution_get", "Read one content-free Context Resolution Receipt.", ["receipt_id"], true, ["version"]),
+  tool("craft_context_working_set_resolve", "Resolve the fixed Context Working Set and explain selected or host-owned members without storing content in the receipt.", ["query"], false, ["working_set_id", "members", "scope_kind", "scope_id", "required_refs", "retrieval_adapter_id", "max_items", "max_chars", "history_refs", "state_refs", "task_id", "session_id", "turn_id"]),
+  tool("craft_context_working_set_get", "Read one content-free Context Working Set receipt.", ["working_set_id"], true, ["version"]),
+  tool("craft_decision_context_gate_open", "Resolve bounded Context before a named decision point. Missing scope is skipped; a required but empty Context blocks execution and requests clarification or replanning.", ["decision_kind", "query"], false, ["gate_id", "task_id", "scope_kind", "scope_id", "memory_ids", "source_ids", "retrieval_adapter_id", "max_items", "max_chars", "allow_restricted", "require_context", "context_receipt_id", "members"]),
+  tool("craft_decision_context_gate_get", "Read one decision-point Context Gate and its exact receipt reference.", ["gate_id"], true),
+  tool("craft_retrieval_adapter_configure", "Configure keyword or vector retrieval metadata. A vector adapter remains inactive until an explicit leakage, recall, cost, and latency evaluation passes.", ["strategy"], false, ["adapter_id", "provider_fingerprint", "configuration"]),
+  tool("craft_retrieval_adapter_evaluate", "Evaluate one retrieval adapter; vector use requires recall, zero cross-project leakage, latency, and cost thresholds.", ["adapter_id"], false, ["dataset", "metrics", "evaluation_id", "minimum_recall", "max_latency_ms", "max_cost_usd"]),
+  tool("craft_memory_maintenance_schedule", "Run lease-bound Memory maintenance. Light is local and idempotent; review/deep require explicit idle budget and model availability and cannot publish.", [], false, ["lease_id", "stage", "idle", "budget_available", "model_available"]),
+  tool("craft_turn_policy_save", "Save a scoped Turn Policy that deterministically decides whether a turn needs context, capability discovery, governed work, candidate memory, or observation.", ["scope_kind", "scope_id"], false, ["policy_id", "mode", "context_on", "capability_on", "workflow_on", "memory_capture", "evaluation_capture"]),
+  tool("craft_turn_policy_get", "Read one exact Turn Policy version.", ["policy_id"], true, ["version"]),
+  tool("craft_turn_proposal_submit", "Submit a content-free semantic Turn Proposal from a Host or configured Craft Agent mode; it never executes a model or Host.", ["scope_kind", "scope_id", "semantic_owner", "input_digest", "intents"], false, ["proposal_id", "host_adapter_id", "work_runtime_mode_id", "signals", "memory_candidate"]),
+  tool("craft_turn_host_adapter_save", "Declare a Host Turn Proposal contract and manual or event-hook delivery capability. Craft never installs Host hooks itself.", ["host"], false, ["adapter_id", "delivery", "supports_turn_hook", "proposal_contract"]),
+  tool("craft_turn_hook_plan", "Describe how a declared Host may submit Turn Proposals without changing Host configuration.", ["adapter_id"], true),
+  tool("craft_turn_intake_assess", "Assess one Turn Proposal under one scoped Policy and issue a content-free Turn Receipt plus at most one candidate memory.", ["proposal_id", "policy_id"], false, ["receipt_id"]),
+  tool("craft_turn_receipt_get", "Read one content-free Turn Receipt.", ["receipt_id"], true, ["version"]),
+  tool("craft_turn_memory_candidate_list", "List user-governed candidate memories; candidates are not durable memory until explicitly accepted.", [], true, ["scope_kind", "scope_id", "status", "limit"]),
+  tool("craft_turn_memory_candidate_decide", "Accept, reject, or revoke a candidate memory. Acceptance writes through the Memory Ledger with its original scope and Evidence.", ["candidate_id", "status", "reason"], false, ["memory_id", "confidence"]),
+  tool("craft_turn_evaluation_case_save", "Save one content-free deterministic Turn Policy evaluation Case.", ["policy_id", "proposal", "expected_actions"], false, ["case_id"]),
+  tool("craft_turn_evaluation_run", "Run deterministic Turn Policy Cases and report decision accuracy, false positives, and scope rejections.", [], false, ["evaluation_id", "case_ids"]),
+  tool("craft_work_runtime_mode_configure", "Configure Console or model-agnostic Agent mode over existing Hosts; it grants no execution authority.", ["mode", "allowed_hosts"], false, ["profile_id", "default_host", "default_model"]),
+  tool("craft_work_runtime_mode_prepare", "Prepare a digest-pinned Console or Agent mode plan that references existing activation and context receipts, then hands off to the Verified Work Loop.", ["task_id", "profile_id"], false, ["plan_id", "host", "model", "activation_profile_id", "context_receipt_id"]),
+  tool("craft_work_runtime_mode_get", "Read one mode-neutral runtime plan.", ["plan_id"], true, ["version"]),
+  tool("craft_continual_harness_view_create", "Create a content-free, version-pinned projection of the Harness actually bound to one task.", ["task_id", "bindings"], false, ["view_id"]),
+  tool("craft_continual_harness_refine", "Propose a small evidence-backed Harness diff from completed work; this never edits an active global asset.", ["task_id", "view_id", "source_refs", "evidence_ids", "hypothesis", "changes"], false, ["refinement_id"]),
+  tool("craft_continual_harness_submit", "Activate a low-risk Session refinement with TTL or send a governed refinement to shadow evaluation.", ["refinement_id"], false, ["privacy_reviewed", "ttl_seconds"]),
+  tool("craft_continual_harness_shadow", "Bind an eligible shadow reliability assessment to a governed Harness refinement.", ["refinement_id", "assessment_id"]),
+  tool("craft_continual_harness_authorize_canary", "Start Canary only after exact-version Signoff for a shadow-evaluated Harness refinement.", ["refinement_id", "signoff_id"], false, ["canary_id"]),
+  tool("craft_continual_harness_observe_canary", "Record a Canary metric and either continue, activate, or restore the exact baseline snapshot.", ["canary_id", "metric", "baseline", "candidate"], false, ["threshold", "complete"]),
+  tool("craft_continual_harness_rollback", "Rollback an active Harness refinement to its exact before snapshot with Evidence.", ["refinement_id", "reason", "evidence_ids"]),
+  tool("craft_continual_harness_signals", "List content-free successful Outcome and failed Acceptance signals that may justify a human-reviewed refinement.", ["task_id"], true),
+  tool("craft_continual_harness_resolve", "Resolve the exact unexpired Session and governed Refinements that apply to the next Host turn.", ["view_id", "session_id"], false, ["receipt_id", "now"]),
+  tool("craft_continual_harness_get", "Read one Harness refinement and its lifecycle.", ["refinement_id"], true),
+  tool("craft_experience_ledger_observe", "Record one content-free Evidence-backed success, failure, or correction for later maintenance. Scope it to make it eligible for Context resolution.", ["source_ref", "kind", "scenario_key", "finding", "evidence_ids"], false, ["observation_id", "scope_kind", "scope_id"]),
+  tool("craft_experience_ledger_compile", "Compile independent observations into a diagnostic-only strategy or failure pattern; execution Hosts never receive it directly.", ["scenario_key", "observation_ids", "kind", "hypothesis", "applicability", "counterexample"], false, ["pattern_id"]),
+  tool("craft_experience_ledger_propose", "Propose a bounded intervention from diagnostic patterns. It cannot activate or edit a Skill, Workflow, or Profile.", ["pattern_ids", "subject_ref", "design_axes", "diff_summary", "hypothesis"], false, ["intervention_id"]),
+  tool("craft_experience_ledger_evaluate", "Attach a shadow reliability assessment to a draft Experience intervention.", ["intervention_id", "assessment_id"], false, ["retry_condition"]),
+  tool("craft_experience_ledger_decide", "Accept only after exact Signoff, or retain a rejected intervention with a retry condition. This never changes an active asset.", ["intervention_id", "decision", "reason"], false, ["signoff_id", "retry_condition"]),
+  tool("craft_experience_ledger_get", "Read one intervention and its version-pinned diagnostic patterns.", ["intervention_id"], true),
+  tool("craft_stateful_compute_host_register", "Register a generic stateful compute Host contract; registration grants no execution authority.", ["kind", "label"], false, ["host_id", "trust", "generated_code", "conformance_id", "capabilities"]),
+  tool("craft_stateful_compute_session_prepare", "Prepare a version-pinned persistent compute Session over a bounded context, root budget and workspace snapshot.", ["task_id", "host_id", "context_receipt_id", "environment_fingerprint", "workspace_snapshot_ref", "budget_ref"], false, ["session_id", "allowed_effect"]),
+  tool("craft_stateful_compute_dispatch", "Issue a digest-bound Host action for a persistent Session without executing it inside Craft.", ["session_id", "expected_revision", "operation"], false, ["dispatch_id", "input_refs"]),
+  tool("craft_stateful_compute_observe", "Consume a Host Receipt only after environment and monotonic state revision checks.", ["dispatch_id", "observed_revision", "environment_fingerprint", "state_digest", "status"], false, ["output_refs", "usage"]),
+  tool("craft_stateful_compute_delegate", "Issue one asynchronous read-only Sub-agent function call under the parent Session budget and context references.", ["session_id", "objective", "result_schema"], false, ["call_id", "role", "context_refs", "allocation"]),
+  tool("craft_stateful_compute_report", "Accept a structured Sub-agent result with hypotheses, counterexamples, Evidence and confidence.", ["call_id", "hypotheses", "counterexamples", "evidence_ids", "confidence", "next_action"], false, ["output_refs"]),
+  tool("craft_stateful_compute_cancel", "Cancel one non-terminal persistent Session and propagate cancellation to all outstanding Sub-agent calls.", ["session_id", "reason"]),
+  tool("craft_stateful_compute_session_get", "Read one persistent compute Session and its latest Receipt reference.", ["session_id"], true),
+  tool("craft_uncertainty_policy_save", "Save a layered, versioned uncertainty policy; specific scopes cannot grant execution authority.", ["scope"], false, ["policy_id", "scope_id", "mode", "on_uncertain", "fallback", "confidence_threshold", "consistency_threshold", "max_attempts", "escalations", "human_fallback"]),
+  tool("craft_uncertainty_resolve", "Resolve insufficient or conflicting evidence into collecting, human-required, abstained, unchanged, rejected, or blocked.", ["policy_ids", "subject_ref"], false, ["resolution_id", "confidence", "consistency", "evidence_confidences", "conflict", "safety_floor_violation", "attempt"]),
+  tool("craft_uncertainty_adjudicate", "Append a scoped human quality adjudication without deleting evidence or overriding the Core Safety Floor.", ["resolution_id", "decision", "actor", "reason", "scope", "valid_until", "evidence_ids"], false, ["adjudication_id"]),
+  tool("craft_action_gate_decide", "Decide the interaction level for one action. L1 (silent) requires an independent deterministic checker, R0, a recomputable receipt and auto-discoverable failure; a learned rule is bounded by its guard clauses.", ["action", "scope_kind", "scope_id", "risk_level", "checker", "receipt", "failure_auto_discoverable"], false, ["core_safety_floor", "learned_rule_id", "invariant_digest", "guard_values"]),
+  tool("craft_action_gate_record_approval", "Record one human approval of an action in a scope and report whether a learn-not-to-ask proposal is now due.", ["action", "scope_kind", "scope_id", "actor"], false, ["learn_threshold"]),
+  tool("craft_action_gate_accept_proposal", "Bind a learned approval rule to the guard clauses and invariant it was learned under; it never grants execution authority on its own.", ["action", "scope_kind", "scope_id", "actor", "invariant_digest"], false, ["guard", "learn_threshold"]),
+  tool("craft_action_gate_rule_get", "Read one learned approval rule.", ["rule_id"], true),
+  tool("craft_action_gate_rule_list", "List learned approval rules for one action and scope.", ["action", "scope_kind", "scope_id"], true),
+  tool("craft_authorization_acknowledge", "Record that a person saw a card. This authorizes no effect and is stored separately from an authorization.", ["card_id", "actor", "acknowledged_at"], false, ["acknowledgement_id"]),
+  tool("craft_authorization_authorize", "Authorize one specific effect, binding the approver, the time, the effect id and the receipt digest. R2 and above require this before the effect may proceed.", ["effect_id", "effect_kind", "actor", "authorized_at", "decision_reason", "risk_level"], false, ["effect", "receipt_digest", "authorization_id"]),
+  tool("craft_authorization_check", "Ask whether an effect may proceed. Below R2 no record is required; at R2 and above a missing, mismatched or consumed authorization refuses.", ["effect_id", "risk_level"], true, ["effect"]),
+  tool("craft_authorization_consume", "Mark an authorization used by one execution. A different execution reusing it is refused.", ["authorization_id", "execution_id", "consumed_at"], false),
+  tool("craft_authorization_revoke", "Revoke an unconsumed authorization.", ["authorization_id", "revoked_by", "revoked_at", "revocation_reason"], false),
+  tool("craft_authorization_get", "Read one effect authorization.", ["authorization_id"], true),
+  tool("craft_authorization_list", "List the authorization records for one effect, newest first.", ["effect_id"], true),
+  tool("craft_authorization_trail", "Report the authorization and acknowledgement trails for one effect separately, so seeing a card is never read as granting it.", ["effect_id"], true, ["card_id"]),
+  tool("craft_receipt_issue", "Record an evidence receipt. Both observed states must carry provenance; L1 eligibility is computed from whether any reading rests on an unconfirmed human transcription.", ["object_id", "action_executed", "risk_level", "pre_state", "post_state"], false, ["receipt_id", "check", "proofs", "cross_checks", "prev_receipt_digest"]),
+  tool("craft_receipt_get", "Read one evidence receipt.", ["receipt_id"], true),
+  tool("craft_receipt_list", "List evidence receipts for one object.", ["object_id"], true, ["limit"]),
+  tool("craft_receipt_assess", "Re-derive a receipt's conclusion from its stored raw values, reporting which metrics could not be compared.", ["receipt_id"], true),
+  tool("craft_receipt_trend", "Derive settled/catching_up/stuck for one metric from the receipt's two observations, with the remediation it calls for.", ["receipt_id", "metric"], true),
+  tool("craft_receipt_remediation", "List the remediation actions a verdict calls for.", ["verdict"], true),
+  tool("craft_subscription_drift_register", "Authorize a subscription against an upstream structure. The structural fingerprint and the event dedup key are stored separately and never derived from one another.", ["subscription_id", "structure", "now"], false, ["dormant_after_days"]),
+  tool("craft_subscription_drift_check", "Compare the current upstream structure against the authorized one; a difference suspends the subscription and never revokes it.", ["subscription_id", "structure"], true),
+  tool("craft_subscription_drift_ingest", "Decide whether one event dispatches: drift is checked before deduplication, and a duplicate is dropped without resetting the decay clock.", ["subscription_id", "event", "now"], false),
+  tool("craft_subscription_drift_reactivate", "Re-authorize a suspended or dormant subscription against a new structure; this is the human step.", ["subscription_id", "structure", "now"], false),
+  tool("craft_subscription_drift_sweep", "Move subscriptions with no activity inside their window into dormancy.", ["now"], false),
+  tool("craft_subscription_drift_get", "Read one subscription's drift state.", ["subscription_id"], true),
+  tool("craft_subscription_drift_list", "List subscriptions, optionally by state.", [], true, ["subscription_state"]),
+  tool("craft_prepared_state_prepare", "Record a prepared state and its digest over the submit payload, page identity and assertions. At least one liveness assertion is required so an expired session is detectable.", ["prepared_id", "page_identity", "submit_payload", "assertions"], false),
+  tool("craft_prepared_state_get", "Read one prepared state.", ["prepared_id"], true),
+  tool("craft_prepared_state_release", "Re-verify a prepared state and release it. A mismatch is refused with the reason and the recovery it needs; a failed liveness assertion needs re-authentication, not re-preparation.", ["prepared_id", "release_id", "approved_by", "released_at", "page_identity", "submit_payload", "observed"], false),
+  tool("craft_adjudication_enqueue", "Offer one item for adjudication. Re-offering an open item updates it rather than creating a second card.", ["item_id", "item_kind", "decision_kind", "priority", "summary"], false),
+  tool("craft_adjudication_view", "The current adjudication view: at most one focused card, the rest marked and waiting, plus any mergeable same-kind groups.", [], true, ["limit"]),
+  tool("craft_adjudication_resolve", "Resolve one adjudication. A batch is one action but not one signature: each effect needs its own authorization naming the approver, time and receipt digest.", ["item_ids", "decision", "decided_at", "authorizations"], false),
+  tool("craft_adjudication_authorizations", "Read the authorization records for one adjudication item.", ["item_id"], true),
+  tool("craft_hatch_session_open", "Open a free-expression session. It permits exactly one hatch and zero conversation turns.", ["session_id", "opened_at"], false),
+  tool("craft_hatch_session_get", "Read one hatch session.", ["session_id"], true),
+  tool("craft_hatch_object", "Hatch one work object from an expressed intention and close the session. The object records origin=human.", ["session_id", "intention", "object_kind", "hatched_at"], false, ["object_id"]),
+  tool("craft_hatch_object_get", "Read one hatched object.", ["object_id"], true),
+  tool("craft_hatch_object_list", "List hatched objects, optionally by kind or origin.", [], true, ["object_kind", "origin"]),
+  tool("craft_hatch_fields_request", "Request specific missing fields for a hatched object. This is the structured exit; it does not reopen free expression.", ["object_id", "fields"], false),
+  tool("craft_hatch_fields_complete", "Supply requested fields. A field that was not requested is refused rather than stored.", ["object_id", "values"], false),
+  tool("craft_reference_pilot_save", "Register a sanitized, content-free development or file-delivery Reference Pilot.", ["kind", "name", "case_ref", "primary_metric"], false, ["pilot_id", "host", "direction", "effect_threshold", "guardrail_names", "sanitized", "content_stored"]),
+  tool("craft_release_qualification_plan", "Create exactly five paired baseline and candidate slots under one environment and budget fingerprint.", ["pilot_id", "baseline_ref", "candidate_ref", "environment_fingerprint", "budget_fingerprint"], false, ["qualification_id", "input_fingerprint", "model_fingerprint", "acceptance_fingerprint"]),
+  tool("craft_release_qualification_record", "Record one content-free, evidence-backed Reference Pilot result.", ["slot_id", "primary_value", "guardrails", "evidence_ids", "environment_fingerprint", "budget_fingerprint"], false, ["mechanism_passed"]),
+  tool("craft_release_qualification_evaluate", "Evaluate completed paired Pilot slots as eligible, rejected, or inconclusive.", ["qualification_id"]),
+  tool("craft_platform_ideal_state_assess", "Assess Platform Ideal State v1 from one development and one file-delivery qualification.", ["development_qualification_id", "file_qualification_id"], true),
+  tool("craft_verification_plan", "Derive a content-free, risk-matched development verification plan. It plans checks only and never executes a Host or command.", ["change_ref", "change_kinds", "effects", "environment_fingerprint"], false, ["verification_id", "candidate_change", "requires_real_host", "requested_risk_level", "content_stored", "budget_fingerprint", "input_fingerprint", "model_fingerprint", "acceptance_fingerprint", "host"]),
+  tool("craft_verification_receipt_record", "Record one planned same-environment verification check with bounded Evidence; unplanned checks and raw content are rejected.", ["verification_id", "check_id", "status", "summary", "environment_fingerprint"], false, ["receipt_id", "evidence_ids"]),
+  tool("craft_verification_assess", "Assess a Verification Plan as eligible, rejected, or inconclusive. Candidate changes also require an eligible Release Qualification.", ["verification_id"], false, ["assessment_id", "release_qualification_id"]),
+  tool("craft_verification_get", "Read a Verification Plan, its planned checks, Evidence Receipts, and assessments.", ["verification_id"], true),
+  tool(
+    "craft_task_graph_create",
+    "Create a domain-neutral task dependency graph with optional exact Context Profile bindings; it does not dispatch Agents.",
+    ["name", "nodes"],
+    false,
+    ["graph_id", "task_id", "workspace_id"]
+  ),
+  tool("craft_task_graph_get", "Read one collaborative task graph.", ["graph_id"], true, ["version"]),
+  tool("craft_task_graph_list", "List task graphs.", [], true, ["limit", "query"]),
+  tool("craft_task_graph_advance", "Advance one task graph node after its dependencies are complete; blocked nodes propagate to pending descendants.", ["graph_id", "node_id", "status"]),
+  tool(
+    "craft_change_set_create",
+    "Create a durable field-level ActionPatch set against exact work-object versions.",
+    ["workspace_id", "summary", "author", "patches"],
+    false,
+    ["change_set_id", "intent"]
+  ),
+  tool("craft_change_set_preview", "Classify ChangeSet patches as auto-applicable or conflicting and preview transitive impact.", ["change_set_id"], true),
+  tool(
+    "craft_change_set_apply",
+    "Atomically apply a conflict-free ChangeSet and invalidate only dependent work objects.",
+    ["change_set_id"],
+    false,
+    ["expected_state_revision"]
+  ),
+  tool("craft_budget_open", "Create a first-class root or parent-funded resource budget for a task, subagent, plan, run, or background job.", ["owner_type", "owner_id", "limits"], false, ["budget_id", "parent_budget_id"]),
+  tool(
+    "craft_budget_reserve",
+    "Reserve resource capacity before exploration or parallel execution with an idempotent reservation ID.",
+    ["budget_id", "resources"],
+    false,
+    ["reservation_id", "purpose", "trial_id"]
+  ),
+  tool("craft_budget_settle", "Settle actual usage within a reservation and release its unused capacity.", ["reservation_id"], false, ["actual", "trial_id"]),
+  tool("craft_budget_close", "Close a budget after its reservations and child budgets finish; child actual usage is settled into its parent allocation.", ["budget_id"], false),
+  tool(
+    "craft_durable_wait_create",
+    "Persist an approval, event, or time wait so the execution environment can be released.",
+    ["task_id", "condition"],
+    false,
+    ["wait_id", "workspace_id", "event_key", "resume_after", "snapshot_refs", "policy_fingerprint", "trial_id"]
+  ),
+  tool(
+    "craft_durable_wait_resume",
+    "Resume a durable wait only after its signal, workspace revision, and policy are revalidated.",
+    ["wait_id", "signal"],
+    false,
+    ["now", "signal_key", "policy_fingerprint"]
+  ),
+  tool(
+    "craft_external_event_ingest",
+    "Idempotently store an untrusted external signal and resume only exact matching durable waits; it never grants execution authority.",
+    ["event_id", "event_key"],
+    false,
+    ["task_id", "source", "observed_at", "payload", "policy_fingerprint"]
+  ),
+  tool(
+    "craft_durable_wait_sweep",
+    "Resume due time waits in a bounded batch and revalidate each supplied current policy fingerprint.",
+    [],
+    false,
+    ["now", "limit", "policy_fingerprints"]
+  ),
+  tool(
+    "craft_fallback_contract_save",
+    "Attach explicit drift triggers and a bounded fallback strategy to an exact subject version.",
+    ["subject_type", "subject_id", "subject_version", "triggers", "strategy"],
+    false,
+    ["contract_id", "max_attempts", "budget_id", "estimated_resources"]
+  ),
+  tool(
+    "craft_fallback_evaluate",
+    "Evaluate a runtime drift signal, reserve fallback budget, or stop at the configured boundary.",
+    ["contract_id", "trigger"],
+    false,
+    ["event_id", "task_id", "trial_id", "start_trial", "case_id", "environment", "trial_budget", "observation"]
+  ),
+  tool(
+    "craft_fallback_complete",
+    "Close a running fallback with an immutable Trial Outcome, evidence references, and actual budget settlement.",
+    ["event_id", "verdict", "summary"],
+    false,
+    ["trial_id", "failure_type", "scores", "costs", "actual_resources", "evidence_ids", "source"]
+  ),
+  tool(
+    "craft_credential_handle_register",
+    "Register only a reference to a host-managed environment secret; Craft never reads or returns its value.",
+    ["provider", "secret_ref"],
+    false,
+    ["handle_id", "description", "header_name", "prefix"]
+  ),
+  tool("craft_enterprise_identity_provider_register", "Register an HTTPS OIDC or short-lived broker boundary without credentials.", ["provider_id", "kind", "issuer", "audience", "broker_ref", "organization_ref"], false),
+  tool("craft_enterprise_identity_provider_verify", "Verify short-lived token, audit-subject and revocation claims with confirmed Evidence.", ["provider_id", "evidence_ids", "observed_claims", "verified_by"], false, ["max_ttl_seconds"]),
+  tool("craft_enterprise_principal_bind", "Bind a task-scoped principal by SHA-256 subject digest; raw identity is not stored.", ["principal_id", "provider_id", "task_id", "subject_digest", "roles"], false, ["ttl_seconds", "now"]),
+  tool("craft_enterprise_adapter_bind", "Bind a verified published external Adapter to a verified identity provider without widening its effect.", ["binding_id", "provider_id", "contract_publication_id", "allowed_effects", "target_host"], false),
+  tool("craft_enterprise_access_ticket_issue", "Issue a short-lived enterprise access ticket from an exact principal, broker lease and Adapter binding.", ["ticket_id", "binding_id", "principal_id", "task_id", "credential_lease_id", "effect", "request_digest"], false, ["approval_ref", "autonomy_consumption_id", "now"]),
+  tool("craft_enterprise_access_ticket_consume", "Consume one exact enterprise access ticket; a deployment broker performs the real call.", ["ticket_id", "request_digest", "consumer_ref"], false, ["now"]),
+  tool("craft_enterprise_access_ticket_get", "Read a redacted enterprise access ticket.", ["ticket_id"], true),
+  tool(
+    "craft_credential_lease_issue",
+    "Issue a short-lived task-bound credential lease for exact HTTPS hosts and actions.",
+    ["task_id", "handle_id", "allowed_hosts", "allowed_actions"],
+    false,
+    ["lease_id", "approval_required_actions", "ttl_seconds", "now"]
+  ),
+  tool("craft_credential_lease_revoke", "Revoke a credential lease idempotently.", ["lease_id", "reason"], false),
+  tool(
+    "craft_egress_authorize",
+    "Authorize one exact outbound request without exposing its secret; the trusted broker performs injection.",
+    ["lease_id", "url", "action", "request_digest"],
+    false,
+    ["receipt_id", "approval_ref", "now", "untrusted_input"]
+  ),
+  tool(
+    "craft_egress_request_digest",
+    "Compute the canonical method, URL, caller-header, and body digest for an outbound request.",
+    ["method", "url"],
+    true,
+    ["headers", "body"]
+  ),
+  tool(
+    "craft_egress_execute",
+    "Execute one exact authorization through the trusted HTTPS broker; secrets are injected only at the pinned connection boundary.",
+    ["authorization_id", "method"],
+    false,
+    ["headers", "body", "timeout_ms", "output_limit"]
+  ),
+  tool(
+    "craft_sandbox_egress_deliver",
+    "Keep a Sandbox offline while the trusted broker delivers one sanitized, untrusted response into its private inbox.",
+    ["binding_id", "ticket_id", "authorization_id", "method"],
+    false,
+    ["headers", "body", "output_name", "timeout_ms", "output_limit"]
+  ),
+  tool(
+    "craft_external_effect_prepare",
+    "Prepare an approved external write with exact request, idempotency, and optional compensation contracts.",
+    ["task_id", "provider", "action", "target", "effect", "request_digest", "idempotency_key", "approval_ref"],
+    false,
+    ["effect_id", "trial_id", "compensation"]
+  ),
+  tool("craft_external_effect_start", "Start only a prepared external effect and return its exact host dispatch envelope; tasks with an active autonomy policy must consume an exact authorization.", ["effect_id", "approval_ref"], false, ["authorization_request_id", "notification_ref", "now"]),
+  tool(
+    "craft_external_effect_report",
+    "Record a succeeded, failed, or indeterminate remote effect result with Evidence.",
+    ["effect_id", "receipt_id", "status", "evidence_ids"],
+    false,
+    ["remote_operation_id", "response_digest"]
+  ),
+  tool(
+    "craft_external_effect_resolve",
+    "Resolve an indeterminate remote effect only through an evidence-backed human decision.",
+    ["effect_id", "resolution", "resolver_type", "approval_ref", "evidence_ids"],
+    false,
+    ["remote_operation_id"]
+  ),
+  tool(
+    "craft_effect_reconciliation_execute",
+    "Run one pre-authorized read-only GET and reconcile an ambiguous effect from an explicit HTTP-status contract.",
+    ["effect_id", "authorization_id", "succeeded_http_statuses", "failed_http_statuses"],
+    false,
+    ["reconciliation_id", "headers", "timeout_ms", "output_limit"]
+  ),
+  tool(
+    "craft_effect_compensation_issue",
+    "Issue the declared compensation for a succeeded external effect after explicit approval.",
+    ["effect_id", "approval_ref"],
+    false,
+    ["compensation_id"]
+  ),
+  tool(
+    "craft_effect_compensation_report",
+    "Record compensation success, failure, or ambiguity with Evidence.",
+    ["compensation_id", "status", "evidence_ids"],
+    false,
+    ["response_digest"]
+  ),
+  tool(
+    "craft_effect_compensation_execute",
+    "Execute an exact pre-authorized compensation and preserve definitive, failed, or ambiguous outcomes.",
+    ["effect_id", "compensation_id", "authorization_id", "approval_ref", "method", "succeeded_http_statuses", "failed_http_statuses"],
+    false,
+    ["headers", "body", "timeout_ms", "output_limit"]
+  ),
+  tool(
+    "craft_effect_saga_create",
+    "Bind ordered same-task external effects and derive forward or reverse compensation work.",
+    ["task_id", "effect_ids"],
+    false,
+    ["saga_id", "trial_id"]
+  ),
+  tool("craft_effect_saga_get", "Read a Saga's current effects, derived state, and next safe action.", ["saga_id"], true),
+  tool(
+    "craft_recovery_queue_refresh",
+    "Project durable waits and uncertain external effects into a bounded persistent recovery queue.",
+    [],
+    false,
+    ["now", "limit"]
+  ),
+  tool("craft_attention_refresh", "Project approvals, recovery work, degraded maintenance, and ready speculative results into one non-authoritative attention inbox.", [], false, ["now", "limit"]),
+  tool("craft_attention_list", "List prioritized actionable attention cards for a human, agent, or operator.", [], true, ["now", "limit", "audience"]),
+  tool("craft_attention_decide", "Acknowledge or defer an attention card without mutating its authoritative source.", ["item_id", "decision", "decided_by"], false, ["now", "deferred_until", "reason"]),
+  tool("craft_home_view", "Read a UI-safe Workbench Home projection across tasks, workspaces, active runs, budgets, outputs, health, and attention.", [], true, ["now", "limit"]),
+  tool("craft_home_task", "Read a UI-safe task detail with checkpoints, runs, trials, outcomes, evidence, artifacts, lineage, waits, and attention.", ["task_id"], true, ["limit"]),
+  tool(
+    "craft_recovery_work_claim",
+    "Lease the highest-priority compatible recovery item without executing it.",
+    ["worker_id", "actions"],
+    false,
+    ["now", "lease_seconds"]
+  ),
+  tool(
+    "craft_recovery_work_report",
+    "Close a leased recovery item with Evidence, rejecting stale source state.",
+    ["item_id", "lease_token", "outcome", "summary"],
+    false,
+    ["evidence_ids", "now"]
+  ),
+  tool("craft_recovery_lease_recover", "Return expired recovery leases to the open queue in a bounded sweep.", [], false, ["now", "limit"]),
+  tool(
+    "craft_trigger_subscription_save",
+    "Create or update a versioned signed-webhook subscription with exact filters, projection, throttle, and optional budget.",
+    ["subscription_id", "task_id", "name", "event_key", "handle_id"],
+    false,
+    ["filters", "allowed_fields", "max_age_seconds", "throttle_seconds", "budget_id", "per_event_resources", "status", "expected_version"]
+  ),
+  tool(
+    "craft_webhook_trigger_ingest",
+    "Verify and deduplicate one signed webhook without persisting its raw body, then deliver a zero-authority projected event.",
+    ["subscription_id", "event_id", "timestamp", "signature", "raw_body"],
+    false,
+    ["now"]
+  ),
+  tool(
+    "craft_speculative_policy_save",
+    "Version a read-only proactive preparation policy with a hard budget, TTL, and candidate cap.",
+    ["policy_id", "task_id", "name", "event_key", "operation", "budget_id", "estimated_resources"],
+    false,
+    ["ttl_seconds", "max_candidates", "status", "expected_version"]
+  ),
+  tool(
+    "craft_speculative_enqueue",
+    "Create an input-pinned, budget-reserved, disposable candidate from one delivered signed event.",
+    ["policy_id", "policy_version", "trigger_event_id"],
+    false,
+    ["now"]
+  ),
+  tool(
+    "craft_speculative_claim",
+    "Lease one compatible read-only speculative job; the dispatch has no external-write authority.",
+    ["worker_id", "operations"],
+    false,
+    ["lease_ttl_seconds", "now"]
+  ),
+  tool(
+    "craft_speculative_submit",
+    "Submit an evidence-backed candidate or failure and settle its reserved resources.",
+    ["candidate_id", "lease_id", "worker_id", "verdict", "summary"],
+    false,
+    ["artifact_ids", "evidence_ids", "actual_resources", "now"]
+  ),
+  tool(
+    "craft_speculative_decide",
+    "Accept or reject a ready candidate and capture human edits as an implicit preference signal.",
+    ["candidate_id", "decision", "reviewer"],
+    false,
+    ["final_artifact_ids", "correction", "now"]
+  ),
+  tool("craft_speculative_expire", "Expire stale disposable candidates in a bounded sweep.", [], false, ["now", "limit"]),
+  tool(
+    "craft_lineage_record",
+    "Record one immutable evidence-backed derivation between exact object, artifact, trial, memory, capability, or effect versions.",
+    ["workspace_id", "output", "sources", "actor_type", "evidence_ids", "summary"],
+    false,
+    ["lineage_id", "task_id", "transform"]
+  ),
+  tool(
+    "craft_lineage_trace",
+    "Traverse bounded upstream sources or downstream consumers from one exact entity version.",
+    ["workspace_id", "entity"],
+    true,
+    ["direction", "max_depth"]
+  ),
+  tool("craft_lineage_verify", "Verify that an immutable lineage statement still resolves and report newer referenced versions.", ["lineage_id"], true),
+  tool(
+    "craft_dehydration_capture",
+    "Freeze the minimal versioned task, workspace, wait, runtime, budget, and recovery references needed for a long-task handoff.",
+    ["task_id"],
+    false,
+    ["snapshot_id", "workspace_id", "wait_id", "runtime_run_id", "budget_ids", "recovery_item_ids", "ttl_seconds", "now"]
+  ),
+  tool("craft_hydration_inspect", "Revalidate a frozen long-task snapshot and classify it as still waiting, ready, or requiring replanning.", ["snapshot_id"], true),
+  tool(
+    "craft_hydration_claim",
+    "Lease one revalidated snapshot to a Host without exposing raw conversation context or credentials.",
+    ["snapshot_id", "state_fingerprint", "host_id", "claim_key"],
+    false,
+    ["lease_ttl_seconds", "now"]
+  ),
+  tool(
+    "craft_hydration_report",
+    "Complete or abandon an exact hydration lease; completion requires Evidence.",
+    ["snapshot_id", "lease_id", "host_id", "outcome", "summary"],
+    false,
+    ["evidence_ids", "now"]
+  ),
+  tool("craft_hydration_lease_recover", "Return expired hydration leases to the frozen pool in a bounded sweep.", [], false, ["now", "limit"]),
+  tool(
+    "craft_autonomy_policy_save",
+    "Version an exact-task autonomy policy for automatic, notify-only, human approval, or multi-signature execution.",
+    ["policy_id", "task_id", "name", "rules"],
+    false,
+    ["default_ttl_seconds", "status", "expected_version"]
+  ),
+  tool(
+    "craft_autonomy_request",
+    "Request a short-lived authorization bound to one policy version, task, action, target, and request digest.",
+    ["policy_id", "policy_version", "task_id", "action", "target", "request_digest", "requested_by"],
+    false,
+    ["request_id", "ttl_seconds", "now"]
+  ),
+  tool(
+    "craft_autonomy_decide",
+    "Record one unique human approval or denial against a pending authorization request.",
+    ["request_id", "actor", "decision", "approval_ref"],
+    false,
+    ["now"]
+  ),
+  tool(
+    "craft_autonomy_consume",
+    "Atomically consume an authorized request exactly once after matching its task, action, target, and digest.",
+    ["request_id", "task_id", "action", "target", "request_digest", "idempotency_key"],
+    false,
+    ["notification_ref", "now"]
+  ),
+  tool(
+    "craft_contract_observation_record",
+    "Record a schema-only, evidence-backed API, MCP, or Computer Use observation without raw payloads.",
+    ["task_id", "adapter_kind", "endpoint", "operation", "input_schema", "output_schema", "observed_effect", "outcome", "evidence_ids"],
+    false,
+    ["observation_id", "idempotency_observed", "compensation_observed", "credential_handles_required"]
+  ),
+  tool("craft_contract_candidate_infer", "Infer a non-executable contract candidate from at least two consistent successful observations.", ["observation_ids"], false, ["candidate_id"]),
+  tool(
+    "craft_contract_candidate_review",
+    "Accept, correct, or reject an exact inferred contract without granting execution authority.",
+    ["candidate_id", "decision", "reviewer", "review_ref"],
+    false,
+    ["corrected_contract"]
+  ),
+  tool(
+    "craft_contract_candidate_verify",
+    "Verify a reviewed contract against a verified Sandbox Profile and passed evidence-backed Trial; keep activation separate.",
+    ["candidate_id", "sandbox_profile_id", "sandbox_profile_version", "trial_id"]
+  ),
+  tool(
+    "craft_contract_diff",
+    "Compare exact reviewed Contract versions and classify equivalent, compatible, or breaking changes.",
+    ["baseline_id", "baseline_version", "candidate_id", "candidate_version"],
+    true
+  ),
+  tool(
+    "craft_contract_publish",
+    "Publish one exact verified Contract as a versioned Capability Adapter after independent human approval.",
+    ["candidate_id", "candidate_version", "asset_id", "name", "publisher", "approval_ref"],
+    false,
+    ["publication_id"]
+  ),
+  tool(
+    "craft_contract_publication_rollback",
+    "Retire only the capability version still owned by an active Contract publication.",
+    ["publication_id", "reason", "actor", "rollback_ref"]
+  ),
+  tool(
+    "craft_capability_canary_start",
+    "Start a bounded sticky baseline/candidate rollout for one active Contract publication.",
+    ["publication_id", "baseline_asset_id", "baseline_asset_version", "allocation_percent", "min_samples_per_arm", "thresholds"],
+    false,
+    ["canary_id"]
+  ),
+  tool("craft_capability_canary_route", "Deterministically route one stable key while a Capability Canary accepts candidate traffic.", ["canary_id", "routing_key"], true),
+  tool(
+    "craft_capability_canary_observe",
+    "Record one evidence-backed quality, cost, latency, and correction sample.",
+    ["canary_id", "sample_id", "arm", "outcome", "cost", "latency_ms", "evidence_ids"],
+    false,
+    ["corrected"]
+  ),
+  tool("craft_capability_canary_evaluate", "Evaluate only after both arms reach the minimum sample count; halt regressions and recommend rollback without executing it.", ["canary_id"]),
+  tool(
+    "craft_capability_bundle_propose",
+    "Propose an evidence-backed, secret-free bundle for personal, team, or organization sharing without copying raw trajectories.",
+    ["asset_id", "asset_version", "audience", "manifest", "evidence_ids"],
+    false,
+    ["bundle_id"]
+  ),
+  tool(
+    "craft_capability_bundle_review",
+    "Approve, redact, or reject an exact Capability bundle without granting execution authority.",
+    ["bundle_id", "decision", "reviewer", "review_ref"],
+    false,
+    ["reviewed_manifest"]
+  ),
+  tool(
+    "craft_capability_bundle_publish",
+    "Publish a reviewed bundle only after independent approval and pin its exact Capability Asset version.",
+    ["bundle_id", "bundle_version", "publisher", "approval_ref"],
+    false,
+    ["release_id"]
+  ),
+  tool(
+    "craft_capability_release_subscribe",
+    "Pin a consumer to one exact active Capability release; activation remains governed by normal policy.",
+    ["release_id", "release_version", "consumer"],
+    false,
+    ["subscription_id"]
+  ),
+  tool("craft_capability_subscription_resolve", "Resolve a pinned subscription only while its exact release remains active and unchanged.", ["subscription_id"], true),
+  tool(
+    "craft_capability_release_revoke",
+    "Revoke a shared Capability release and fail closed for every pinned consumer.",
+    ["release_id", "actor", "revocation_ref", "reason"]
+  ),
+  tool(
+    "craft_hub_source_register",
+    "Trust one HTTPS Capability Hub catalog source by an exact Ed25519 public key; no network request is performed.",
+    ["endpoint", "publisher", "public_key_pem"],
+    false,
+    ["source_id"]
+  ),
+  tool(
+    "craft_hub_catalog_ingest",
+    "Verify and atomically ingest one signed, monotonic catalog page of at most 1000 metadata-only entries.",
+    ["source_id", "revision", "previous_digest", "issued_at", "entries", "signature"],
+    false,
+    ["receipt_id"]
+  ),
+  tool("craft_hub_catalog_search", "Search the local signed Hub catalog without scanning or contacting remote Hubs.", ["query"], true, ["limit"]),
+  tool("craft_hub_source_disable", "Disable a trusted Hub source without deleting its audit history.", ["source_id", "reason"]),
+  tool(
+    "craft_capability_materialize_stage",
+    "Verify a selected Hub package digest and write bounded files into the local quarantine cache; never execute them.",
+    ["source_id", "entry_id", "files"],
+    false,
+    ["materialization_id"]
+  ),
+  tool(
+    "craft_capability_materialize_review",
+    "Approve or reject a quarantined package after findings review; high-risk packages require a security approval reference.",
+    ["materialization_id", "decision", "reviewer", "review_ref"],
+    false,
+    ["evidence_ids", "security_approval_ref"]
+  ),
+  tool(
+    "craft_capability_materialize_activate",
+    "Register an approved exact package only as a non-executable candidate Capability for later evaluation and promotion.",
+    ["materialization_id", "asset_id", "asset_type", "effect"],
+    false,
+    ["name"]
+  ),
+  tool(
+    "craft_capability_certification_assess",
+    "Certify one exact materialized candidate only after held-out Evaluation, per-Trial Sandbox receipts, evidence-backed program Grades, and Signoff.",
+    ["materialization_id", "materialization_version", "sandbox_profile_id", "sandbox_profile_version", "evaluation_run_id", "sandbox_receipts", "signoff_id", "certifier", "certification_ref"],
+    false,
+    ["certification_id"]
+  ),
+  tool(
+    "craft_capability_certification_promote",
+    "Atomically promote an unchanged certified candidate to verified after independent approval; this still grants no execution authority.",
+    ["certification_id", "certification_version", "promoter", "approval_ref"]
+  ),
+  tool(
+    "craft_supply_chain_advisory_record",
+    "Record an evidence-backed Hub security advisory against one catalog entry or Capability asset.",
+    ["source_id", "severity", "summary", "evidence_ids"],
+    false,
+    ["advisory_id", "entry_id", "asset_id"]
+  ),
+  tool(
+    "craft_supply_chain_advisory_resolve",
+    "Resolve an advisory with new Evidence without erasing its audit history.",
+    ["advisory_id", "resolution", "resolver", "evidence_ids"]
+  ),
+  tool(
+    "craft_supply_chain_reconcile",
+    "Propagate source disablement, withdrawal, digest drift, and security advisories into blocked assets, invalid Activation Profiles, and recoverable recertification work.",
+    ["source_id"]
+  ),
+  tool("craft_supply_chain_publisher_register", "Register one public-key publisher identity for provenance verification; it does not install assets.", ["publisher_id", "public_key_pem", "identity_ref"]),
+  tool("craft_supply_chain_attest", "Verify a signed digest attestation for a Capability, MCP registry entry, or Hub catalog entry.", ["publisher_id", "subject_kind", "subject_id", "subject_digest", "signature"], false, ["attestation_id"]),
+  tool("craft_supply_chain_attestation_assert", "Check that a verified attestation still pins the current subject digest; it never activates an asset.", ["attestation_id", "current_subject_digest"], true),
+  tool("craft_supply_chain_attestation_revoke", "Revoke a provenance attestation without deleting its audit record.", ["attestation_id", "reason"]),
+  tool(
+    "craft_untrusted_content_register",
+    "Register external content by locator and digest without copying its raw body into Craft.",
+    ["task_id", "source_type", "locator", "content_digest"],
+    false,
+    ["content_id", "media_type"]
+  ),
+  tool(
+    "craft_untrusted_extraction_record",
+    "Store data-only structured extraction from an execution-isolated parser and quarantine detected instructions.",
+    ["content_id", "extractor", "schema_id", "structured_data"],
+    false,
+    ["extraction_id", "detected_instructions", "citations", "field_sources"]
+  ),
+  tool(
+    "craft_decision_projection_release",
+    "Release only reviewed top-level fields into decision context; projections never carry execution authority.",
+    ["extraction_id", "reviewer_type", "reviewer_id", "verdict", "allowed_fields"],
+    false,
+    ["projection_id", "approval_ref"]
+  ),
+  tool(
+    "craft_decision_projection_explain",
+    "Explain field-level source, parser, review, and content-digest lineage without exposing unreleased fields.",
+    ["projection_id"],
+    true,
+    ["field"]
+  ),
+  tool(
+    "craft_untrusted_content_parse",
+    "Verify and parse registered JSON or text in memory with deterministic selectors; raw content is never persisted.",
+    ["content_id", "raw_content", "format", "schema_id", "selectors"],
+    false,
+    ["extraction_id"]
+  ),
+  tool(
+    "craft_parser_security_evaluate",
+    "Run a bounded ephemeral parser security suite and persist only digests, labels, metrics, and results.",
+    ["evaluation_id", "suite_id", "suite_version", "cases"]
+  ),
+  tool(
+    "craft_untrusted_content_parse_process",
+    "Parse registered JSON or text in a memory-limited, environment-scrubbed child process with timeout and a durable receipt.",
+    ["content_id", "raw_content", "format", "schema_id", "selectors"],
+    false,
+    ["extraction_id", "receipt_id", "timeout_ms"]
+  ),
+  tool(
+    "craft_sandbox_profile_save",
+    "Declare a versioned Sandbox Adapter contract without claiming it is verified.",
+    ["name", "backend", "adapter_id", "capabilities"],
+    false,
+    ["profile_id"]
+  ),
+  tool(
+    "craft_sandbox_profile_verify",
+    "Verify one exact Sandbox Profile against observed capabilities and Evidence.",
+    ["profile_id", "profile_version", "observed_capabilities", "evidence_ids", "verifier"],
+    false,
+    ["assessment_id"]
+  ),
+  tool(
+    "craft_sandbox_plan",
+    "Issue an exact-version execution ticket only when a verified Sandbox Profile satisfies every requirement.",
+    ["task_id", "profile_id", "requirements", "request_digest"],
+    false,
+    ["profile_version", "ticket_id"]
+  ),
+  tool(
+    "craft_sandbox_receipt",
+    "Close a Sandbox ticket with exact adapter, profile, observed-boundary, and Evidence checks.",
+    ["ticket_id", "receipt_id", "adapter_id", "profile_version", "status", "observed_capabilities", "evidence_ids"]
+  ),
+  tool(
+    "craft_docker_sandbox_request_digest",
+    "Compute the canonical request digest required before issuing a Docker Sandbox ticket.",
+    ["image", "argv"],
+    true
+  ),
+  tool(
+    "craft_docker_sandbox_probe",
+    "Diagnose Docker availability, image presence, and hardened startup without verifying the declared Profile.",
+    ["profile_id", "profile_version", "image"]
+  ),
+  tool(
+    "craft_docker_sandbox_conformance",
+    "Run black-box Docker boundary checks; only a passing suite can verify a declared Profile.",
+    ["profile_id", "profile_version", "image"],
+    false,
+    ["probe_id"]
+  ),
+  tool(
+    "craft_docker_sandbox_execute",
+    "Execute one exact Docker Sandbox ticket with no shell, denied network, bounded resources, and a verified receipt.",
+    ["ticket_id", "receipt_id", "image", "argv"]
+  ),
+  tool("craft_workspace_transaction_begin", "Create a reversible local-write transaction from an exact workspace baseline.", ["workspace_id", "label"], false, ["transaction_id", "effect"]),
+  tool("craft_workspace_transaction_commit", "Commit a prepared transaction to one exact workspace checkpoint.", ["transaction_id", "checkpoint_id"]),
+  tool("craft_workspace_transaction_rollback", "Restore a transaction baseline only after explicit approval.", ["transaction_id", "approved"]),
+  tool("craft_workspace_transaction_get", "Read one local workspace transaction.", ["transaction_id"], true),
+  tool("craft_trajectory_script_compile", "Compile passed same-task trajectories into a deterministic TypeScript proposal; arbitrary source is never accepted.", ["task_id", "name", "trial_ids", "operations"], false, ["proposal_id"]),
+  tool("craft_trajectory_script_authorize", "Mark a compiled script verified only after an exact passed Signoff.", ["proposal_id", "signoff_id"]),
+  tool("craft_trajectory_script_get", "Read one trajectory script proposal.", ["proposal_id"], true, ["version"]),
+  tool("craft_trajectory_script_list", "List trajectory script proposals.", [], true, ["limit", "query"]),
+  tool("craft_verified_script_issue", "Bind one verified script proposal to its prepared Workspace transaction and issue exact Host operations.", ["proposal_id", "workspace_id", "transaction_id"], false, ["run_id"]),
+  tool("craft_verified_script_receipt", "Record one exact Host receipt set for an issued verified script run.", ["run_id", "host_adapter_id", "receipts"]),
+  tool("craft_verified_script_run_get", "Read a verified script run and its Host receipts.", ["run_id"], true),
+  tool("craft_feedback_record", "Record an explicit scoped correction or preference.", ["corrected"], false, ["kind", "scope", "task_id", "original", "applies_to", "source"]),
+  tool("craft_artifact_register", "Register a portable artifact reference.", ["kind", "name", "uri"], false, ["artifact_id", "media_type", "digest", "size_bytes", "producer_type", "producer_id", "metadata"]),
+  tool("craft_artifact_get", "Read an artifact reference.", ["artifact_id"], true),
+  tool("craft_artifact_list", "List artifact references.", [], true, ["limit", "query"]),
+  tool("craft_evidence_record", "Record a claim with source and confidence.", ["source_type", "claim"], false, ["evidence_id", "confidence", "artifact_id", "locator", "observed_at", "metadata"]),
+  tool("craft_evidence_get", "Read an evidence record.", ["evidence_id"], true),
+  tool("craft_evidence_list", "List evidence records.", [], true, ["limit", "query"]),
+  tool("craft_workflow_save", "Save a new draft workflow version.", ["name"], false, ["workflow_id", "inputs", "steps", "description"]),
+  tool("craft_workflow_get", "Read a workflow version.", ["workflow_id"], true, ["version"]),
+  tool("craft_workflow_search", "Search reusable workflows.", [], true, ["limit", "query"]),
+  tool("craft_workflow_plan", "Resolve inputs and side-effect approvals without executing.", ["workflow_id"], true, ["version", "inputs", "allow_execution", "approved_side_effects"]),
+  tool("craft_workflow_run", "Execute deterministic Workflow steps with explicit side-effect approval.", ["workflow_id", "project_root"], false, ["version", "inputs", "allow_execution", "approved_side_effects"]),
+  tool(
+    "craft_workflow_trial_run",
+    "Execute a Workflow and automatically capture its Trial, Trace, Artifact, Evidence, and Outcome.",
+    ["task_id", "workflow_id", "project_root"],
+    false,
+    [
+      "trial_id",
+      "case_id",
+      "version",
+      "inputs",
+      "allow_execution",
+      "approved_side_effects",
+      "harness_configuration_id",
+      "harness_configuration_version",
+      "environment",
+      "budget"
+    ]
+  ),
+  tool("craft_workflow_run_get", "Read a durable Workflow execution receipt.", ["run_id"], true),
+  tool(
+    "craft_workflow_transition",
+    "Move a workflow through draft, candidate, verified, or deprecated with evidence gates.",
+    ["workflow_id", "target", "reason"],
+    false,
+    ["evaluation_run_id", "signoff_id", "promotion_id"]
+  ),
+  tool(
+    "craft_workflow_rollback",
+    "Restore a previously verified workflow version as the latest version.",
+    ["workflow_id", "target_version", "reason"]
+  ),
+  tool("craft_graph_compile", "Compile a validated Graph into an analysis-only Plan for VerifiedWorkLoop; it never calls a Host or creates a second executor.", ["nodes"], true, ["plan_id", "edges", "inputs", "outputs", "checkpoint_policy"]),
+  tool("craft_workflow_checkpoint", "Capture a step-level Workflow checkpoint with graph/state fingerprints.", ["run_id", "workflow_id"], false, ["completed", "pending", "active", "state_digest", "workspace_snapshot", "budget_fingerprint", "environment_fingerprint"]),
+  tool("craft_workflow_resume", "Resume a Workflow checkpoint or return needs_replan on drift.", ["checkpoint_id"], true, ["graph_digest", "state_digest"]),
+  tool("craft_workflow_run_cancel", "Cancel a Workflow run with an auditable reason.", ["run_id", "reason"]),
+  tool("craft_workflow_replan", "Mark a Workflow checkpoint for explicit replanning.", ["checkpoint_id", "reason"]),
+  tool("craft_workflow_export", "Export one exact Workflow DAG JSON document with digest.", ["workflow_id"], true, ["version"]),
+  tool("craft_workflow_import", "Validate and import a Workflow DAG JSON document as a draft.", ["document"], false, ["workflow_id"]),
+  tool("craft_task_state_transition", "Append one idempotent, versioned Task state event and update its projection.", ["task_id", "state", "actor"], false, ["reason", "evidence_ids", "expected_revision"]),
+  tool("craft_task_state_get", "Read a Task state projection and replayable event stream.", ["task_id"], true),
+  tool("craft_task_state_replay", "Replay Task state events into a deterministic projection.", ["task_id"], true),
+  tool(
+    "craft_experience_pattern_create",
+    "Derive a reusable experience pattern from at least two completed Trials and their Evidence references.",
+    ["task_id", "summary", "success_strategy", "applicability", "trial_ids", "evidence_ids", "failure_modes"],
+    false,
+    ["pattern_id"]
+  ),
+  tool("craft_experience_pattern_get", "Read an experience pattern.", ["pattern_id"], true, ["version"]),
+  tool("craft_experience_pattern_list", "List reusable experience patterns.", [], true, ["limit", "query"]),
+  tool("craft_experience_candidate_list", "List automatic Experience Pattern candidates backed by at least two completed Trials with Evidence.", [], true),
+  tool(
+    "craft_experience_mine",
+    "Extract repeated evidence-backed success strategies and failure modes as proposal-only candidates; it never publishes changes.",
+    ["subject_type", "subject_id", "subject_version"]
+  ),
+  tool(
+    "craft_experience_shadow_experiment_create",
+    "Create a shadow-only experiment from a mined proposal candidate; it cannot publish a change.",
+    ["task_id", "mining_candidate_id"],
+    false,
+    ["experiment_id"]
+  ),
+  tool(
+    "craft_experience_shadow_experiment_evaluate",
+    "Run a planned mining candidate only through read-only held-out Workflow evaluation and Promotion; it prepares, but never grants, Signoff or publication.",
+    ["experiment_id", "suite_id", "project_root", "baseline_workflow_id", "baseline_workflow_version", "candidate_workflow_id", "candidate_workflow_version", "signoff_policy_id", "signoff_policy_version"],
+    false,
+    ["shadow_evaluation_id", "suite_version", "trials_per_case", "environment", "budget", "min_trials", "min_pass_rate_delta", "cost_metric", "max_cost_regression_ratio", "max_duration_regression_ratio"]
+  ),
+  tool("craft_experience_procedure_projection_draft", "Create an Experience Procedure candidate from a bounded proposal: Workflow/Graph use checked JSON definitions plus Markdown review views; Prompt uses Markdown. It is not routeable or installed.", ["proposal_id"], false, ["procedure_id", "procedure_kind", "scenario_signature", "trigger", "preconditions", "allowed_effects", "acceptance_ref", "failure_disposition", "evidence_ids", "title", "description"]),
+  tool("craft_experience_procedure_gate", "Record one ordered Shadow, Held-out, Signoff, or Canary gate for a Procedure. A failed Canary rolls it back.", ["procedure_id", "stage", "evidence_ids"], false, ["gate_id", "passed", "verdict", "expected_version", "release_channel"]),
+  tool("craft_experience_procedure_projection_get", "Read one Experience Procedure projection and its checked JSON definition reference when applicable.", ["procedure_id"], true, ["release_channel", "version"]),
+  tool("craft_experience_procedure_projection_list", "List scoped Experience Procedure projections.", [], true, ["scope", "limit"]),
+  tool("craft_experience_procedure_skill_export", "Export only a routeable Procedure as a disabled SKILL.md draft under Craft artifacts.", ["procedure_id"], false, ["export_id", "skill_name"]),
+  // Short daily names. The longer `experience_procedure_projection_*` names remain advanced
+  // compatibility aliases while clients migrate; new product docs and component surfaces use these.
+  tool("craft_procedure_create", "Create one Craft Experience Procedure candidate: Workflow/Graph use checked JSON definitions plus Markdown review views; Prompt uses Markdown. It is not routeable or installed.", ["proposal_id"], false, ["procedure_id", "procedure_kind", "scenario_signature", "trigger", "preconditions", "allowed_effects", "acceptance_ref", "failure_disposition", "evidence_ids", "title", "description", "scope_envelope"]),
+  tool("craft_procedure_gate", "Record one ordered quality gate for a Craft Experience Procedure.", ["procedure_id", "stage", "evidence_ids"], false, ["gate_id", "passed", "verdict", "expected_version", "release_channel"]),
+  tool("craft_procedure_configuration_save", "Save one user-authored scenario configuration as a versioned candidate. Clears prior gates; never invents observations or authorizes execution.", ["procedure_id", "scope", "title", "procedure_kind", "definition"], false, ["expected_version", "scenario_id", "scope_envelope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_experience_graph_inspect", "Inspect scoped Experience Graph assets: list by scenario, read a pinned record version, get a read-only template, inspect draft, validate JSON or preview diff and affected subscenarios. Action=evaluate_applicability runs labelled route matches and reports outside-scenario false activation. Inspection never activates a draft.", ["action"], true, ["graph_id", "scope", "scenario_id", "version", "limit", "template_id", "configuration", "json", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "query", "input_keys", "release_channel", "cases"]),
+  tool("craft_experience_graph_edit", "Save a scoped Graph draft with CAS, submit its exact digest as a new candidate, or copy legacy versions into the unified graph directory while preserving old references. Actions: save, submit, migrate, improvement_propose, improvement_save, improvement_submit. Improvement actions bind public Invocation failures and reviewed proposal/draft digests; never grant execution authority.", ["action", "graph_id", "scope"], false, ["configuration", "json", "template_id", "expected_version", "expected_draft_digest", "before_version", "scope_envelope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "outcome_id", "proposal_id", "reviewer", "expected_proposal_digest"]),
+  tool("craft_knowledge_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_knowledge_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_memory_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_memory_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_experience_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_experience_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_codebase_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_codebase_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_host_control", "Prepare an embedded Host Work Loop without starting a child Host, or record scoped snapshots and dispatch-bound Host/program observations. It grants no execution authority.", ["action", "input"], false, ["invocation_id", "scope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_decision_evaluate", "Evaluate declared graph guards using current accepted program/human fact Evidence and advance only one matching edge. Unknown, ambiguous, stale or unsafe decisions block; it never executes the Host.", ["invocation_id", "scope", "expected_version", "decision_id", "receipt_id", "snapshot_id", "fact_evidence_id"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_invocation_bind", "Bind selected Procedure calls to an existing Verified Work Loop and durable items; no Host execution authority.", ["invocation_id", "work_loop_id", "procedure_id", "procedure_version", "scope", "entry_id", "exit_id", "input_refs", "allowed_effects", "host_id", "model_fingerprint", "budget_fingerprint", "max_dispatches", "ttl_ms"], false, ["subscenario_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "release_channel", "test_workspace_id", "baseline_workspace_id"]),
+  tool("craft_procedure_invocation_dispatch", "Prepare one ready item and bind call-specific fresh preconditions; never executes the Host.", ["invocation_id", "scope", "expected_version", "snapshot_id", "item_key"], false, ["precondition_evidence", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_invocation_report", "Accept an independent terminal Host observation for the exact item, outputs and snapshot; retries are idempotent.", ["invocation_id", "scope", "expected_version", "dispatch_id", "host_session_id", "observation_id", "snapshot_id", "output_refs", "acceptance_evidence_ids"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_invocation_resume", "Resume from durable receipts; pending dispatches require reconciliation, never replay.", ["invocation_id", "scope", "expected_version", "snapshot_id"], false, ["recovery_evidence_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_invocation_transition", "Apply one evidenced graph branch or bounded rework to the existing Invocation; invalidates dependent acceptance and never executes a Host.", ["invocation_id", "scope", "expected_version", "transition_id", "edge_id", "receipt_id", "snapshot_id", "evidence_id"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_invocation_get", "Read scoped invocation, durable items, dispatches, receipts and per-call outcomes.", ["invocation_id", "scope"], true, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_invocation_evaluate", "Compare 3 to 100 independent paired terminal invocations under matching inputs, Host, model and budget; does not promote.", ["scope", "baseline_ids", "candidate_ids"], true, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
+  tool("craft_procedure_plan", "Compile a routeable Workflow Procedure Entry/Exit into a bounded Host plan with exact child versions and contracts. Reads only; does not authorize, execute, or accept work.", ["procedure_id", "procedure_version", "scope", "entry_id", "exit_id", "input_refs", "allowed_effects"], true, ["subscenario_id", "precondition_evidence", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "release_channel", "test_workspace_id", "baseline_workspace_id"]),
+  tool("craft_procedure_get", "Read one Craft Experience Procedure with its Markdown view and checked JSON definition reference when applicable.", ["procedure_id"], true, ["release_channel", "version"]),
+  tool("craft_procedure_list", "List scoped Craft Experience Procedures.", [], true, ["scope", "limit"]),
+  tool("craft_procedure_export_skill", "Export only a routeable Procedure as a disabled SKILL.md draft within the Experience data domain.", ["procedure_id"], false, ["export_id", "skill_name"]),
+  tool(
+    "craft_operational_signal_record",
+    "Record one observed online metric without storing raw payloads.",
+    ["subject_type", "subject_id", "metric", "value"],
+    false,
+    ["signal_id", "task_id"]
+  ),
+  tool(
+    "craft_operational_drift_evaluate",
+    "Evaluate recent operational metric drift and record only a bounded alert.",
+    ["subject_type", "subject_id", "metric", "direction", "threshold"],
+    false,
+    ["window_size", "alert_id"]
+  ),
+  tool(
+    "craft_skill_proposal_create",
+    "Save a versioned SKILL.md candidate derived from Experience Patterns; this does not change any source file.",
+    ["name", "summary", "skill_markdown", "pattern_ids"],
+    false,
+    ["proposal_id"]
+  ),
+  tool("craft_skill_proposal_get", "Read a versioned Skill candidate.", ["proposal_id"], true, ["version"]),
+  tool("craft_skill_proposal_list", "List Skill candidates.", [], true, ["limit", "query"]),
+  tool(
+    "craft_skill_proposal_transition",
+    "Move a Skill candidate through the existing held-out Evaluation and Signoff Gate.",
+    ["proposal_id", "target", "reason"],
+    false,
+    ["evaluation_run_id", "signoff_id"]
+  ),
+  tool(
+    "craft_skill_proposal_rollback",
+    "Restore a previously verified Skill candidate version as the latest version.",
+    ["proposal_id", "target_version", "reason"]
+  ),
+  tool(
+    "craft_skill_proposal_publish",
+    "Write only a verified Skill candidate to an existing SKILL.md with explicit authorization, digest protection, and backup.",
+    ["proposal_id", "source_id", "target_path", "expected_digest", "allow_external_write"],
+    false,
+    ["publication_id"]
+  ),
+  tool("craft_skill_publication_get", "Read a Skill publication receipt.", ["publication_id"], true, ["version"]),
+  tool("craft_skill_publication_list", "List Skill publication receipts.", [], true, ["limit", "query"]),
+  tool(
+    "craft_skill_publication_rollback",
+    "Restore a published SKILL.md only when its digest still matches the published candidate.",
+    ["publication_id", "expected_digest", "allow_external_write"]
+  ),
+  tool("craft_eval_suite_save", "Save an immutable evaluation suite.", ["name"], false, ["suite_id", "cases", "description", "scope"]),
+  tool("craft_eval_suite_get", "Read an evaluation suite.", ["suite_id"], true, ["version"]),
+  tool("craft_eval_suite_list", "Search evaluation suites.", [], true, ["limit", "query"]),
+  tool(
+    "craft_harness_configuration_save",
+    "Save a versioned six-dimensional harness configuration.",
+    ["name", "dimensions"],
+    false,
+    ["configuration_id", "description"]
+  ),
+  tool(
+    "craft_harness_configuration_get",
+    "Read a harness configuration version.",
+    ["configuration_id"],
+    true,
+    ["version"]
+  ),
+  tool("craft_harness_configuration_list", "List harness configurations.", [], true, ["limit", "query"]),
+  tool(
+    "craft_harness_select",
+    "Select the smallest risk- and budget-appropriate Harness and persist the decision.",
+    ["task_id", "risk"],
+    false,
+    ["budget", "requires_external_effect", "harness_id", "strategy_id"]
+  ),
+  tool(
+    "craft_agent_ir_compile",
+    "Compile host-neutral operations and constraints into a versioned Agent IR.",
+    ["task_id", "harness_id", "goal", "operations"],
+    false,
+    ["harness_version", "ir_id"]
+  ),
+  tool(
+    "craft_agent_ir_lower",
+    "Lower a versioned Agent IR into one controlled Runtime Run.",
+    ["ir_id", "policy_id", "environment"],
+    false,
+    ["ir_version", "policy_version", "run_id", "trial_id"]
+  ),
+  tool(
+    "craft_trial_start",
+    "Create an immutable execution trial linked to a task and exact subject version.",
+    ["task_id", "subject_type", "subject_id", "subject_version"],
+    false,
+    ["trial_id", "case_id", "harness_configuration_id", "harness_configuration_version", "environment", "budget"]
+  ),
+  tool(
+    "craft_trial_trace_append",
+    "Append an immutable trace event to a trial.",
+    ["trial_id", "event_type"],
+    false,
+    ["source", "data", "artifact_ids", "evidence_ids"]
+  ),
+  tool("craft_trial_get", "Read a trial with its trace and outcome.", ["trial_id"], true),
+  tool("craft_trial_list", "List immutable trials.", [], true, ["limit", "query"]),
+  tool("craft_trace_start", "Start one canonical, host-neutral Trace with exact task, run, model, policy, capability, and environment fingerprints.", ["task_id"], false, ["trace_id", "launch_id", "run_id", "trial_id", "attempt_id", "operation_id", "model_fingerprint", "environment_fingerprint", "capability_fingerprint", "policy_fingerprint", "metadata"]),
+  tool("craft_trace_append", "Append one contiguous, content-bounded canonical Trace Event with state, action, receipt, provenance, cost, and evidence references.", ["trace_id", "event_kind"], false, ["event_id", "sequence", "span_id", "parent_span_id", "operation_id", "actor", "source", "trust", "data", "action_contract", "state_before", "state_after", "input_refs", "output_refs", "capability_revision", "policy_revision", "model_fingerprint", "environment_fingerprint", "workspace_before", "workspace_after", "usage", "cost_usd", "duration_ms", "error_class", "status", "summary"]),
+  tool("craft_trace_observe", "Append an externally observed state transition to a Trace; observation is distinct from model self-report.", ["trace_id"], false, ["event_id", "state_before", "state_after", "workspace_before", "workspace_after", "summary", "source", "actor", "data"]),
+  tool("craft_trace_feedback", "Record a human or reviewer feedback signal and attach it to the canonical Trace.", ["trace_id", "signal", "summary"], false, ["feedback_id", "actor", "value", "evidence_ids", "outcome"]),
+  tool("craft_trace_finalize", "Close a Trace with a verified terminal status and optional Evidence references.", ["trace_id", "status", "summary"], false, ["verdict", "evidence_ids"]),
+  tool("craft_trace_get", "Read a Trace, canonical events, feedback signals, and content-free replay facts.", ["trace_id"], true),
+  tool("craft_trace_query", "Query canonical Trace Events by Trace, Task, or event kind without returning raw prompt content.", [], true, ["trace_id", "task_id", "event_kind", "limit"]),
+  tool("craft_trace_replay_bundle", "Build a digest-only replay bundle and report whether the Trace has enough fingerprints for reproducible replay.", ["trace_id"], true),
+  tool("craft_trace_case_compile", "Compile one terminal Trace into a sanitized development or approved held-out evolution Case.", ["trace_id", "summary"], false, ["case_id", "partition", "acceptance_contract_ref", "approved_by", "contamination_flags"]),
+  tool("craft_trace_retention_plan", "Save or explicitly replace the default digest-only Trace retention policy. The default is seven hot days; archival precedes terminal-record removal.", [], false, ["policy_id", "max_days", "max_events", "pii_mode", "replace", "updated_by"]),
+  tool("craft_trace_retention_sweep", "Archive and remove terminal Trace records using the saved default policy, or a one-call max_days override; running traces are preserved.", [], false, ["now", "policy_id", "max_days", "limit"]),
+  tool("craft_trace_archive_storage_register", "Register a Trace archive storage plugin configuration. It stores only a credential/configuration reference and never a secret; registration does not load code.", ["storage_id", "backend_id"], false, ["credential_ref", "configuration_ref", "replace"]),
+  tool("craft_trace_archive_storage_list", "List the built-in local archive store and registered storage plugin configurations with runtime availability.", [], true, ["limit"]),
+  tool("craft_trace_archive_storage_activate", "Activate one registered Trace archive storage plugin only when its trusted runtime backend is available.", ["storage_id"], false),
+  tool("craft_host_session_open", "Open one Host-neutral, content-free session bound to the canonical Trace. It does not start a Host process.", ["task_id", "host_id", "environment_fingerprint", "policy_fingerprint", "capability_fingerprint"], false, ["session_id", "trace_id", "model_fingerprint", "budget_fingerprint"]),
+  tool("craft_host_session_append", "Append one contiguous Host Session fact. Raw prompt and chat content are rejected; use artifact, evidence and state references.", ["session_id", "kind"], false, ["event_id", "sequence", "action_contract_ref", "state_before_ref", "state_after_ref", "artifact_refs", "evidence_refs", "summary_digest"]),
+  tool("craft_host_session_resume", "Resume only a paused Host Session with a digest-only reason and append a canonical resume fact.", ["session_id", "actor", "reason_digest"], false),
+  tool("craft_host_session_get", "Read one Host Session, its protocol events and canonical Trace.", ["session_id"], true),
+  tool("craft_outcome_observer_observe", "Record an independent, content-free observation of actual state. It is evidence only and never promotes a candidate by itself.", ["trace_id", "host_id", "observer_id", "observer_kind", "environment_fingerprint", "verdict", "state_snapshot_ref"], false, ["observation_id", "evidence_ids"]),
+  tool("craft_outcome_observer_get", "Read one independent Outcome Observation and its canonical Trace event.", ["observation_id"], true),
+  tool(
+    "craft_outcome_record",
+    "Record the single immutable outcome for a trial.",
+    ["trial_id", "verdict", "summary"],
+    false,
+    ["failure_type", "scores", "costs", "evidence_ids", "source"]
+  ),
+  tool(
+    "craft_evaluation_run_record",
+    "Record a reproducible evaluation from completed trials in one suite partition.",
+    ["suite_id", "split", "subject_type", "subject_id", "subject_version", "trial_ids"],
+    false,
+    ["run_id", "suite_version", "metrics"]
+  ),
+  tool("craft_evaluation_run_get", "Read an immutable evaluation run.", ["run_id"], true),
+  tool("craft_evaluation_run_list", "List evaluation runs.", [], true, ["limit", "query"]),
+  tool("craft_evaluation_run_aggregate", "Compute reproducible quality, score, cost, duration, and failure aggregates for an evaluation run.", ["run_id"], true),
+  tool(
+    "craft_evaluation_compare",
+    "Compare two runs only when suite version, split, subject type, and case set match.",
+    ["baseline_run_id", "candidate_run_id"],
+    false,
+    ["comparison_id"]
+  ),
+  tool(
+    "craft_evaluation_runner_run",
+    "Execute comparable held-out deterministic Workflow trials and record Evaluation Runs.",
+    ["task_id", "suite_id", "split", "project_root", "subjects"],
+    false,
+    ["runner_id", "suite_version", "trials_per_case", "environment", "budget"]
+  ),
+  tool(
+    "craft_evaluation_program_grade",
+    "Run a versioned deterministic program grader across every Trial of an Evaluation Run.",
+    ["evaluation_run_id", "grader_id"],
+    false,
+    ["grader_version"]
+  ),
+  tool(
+    "craft_evaluation_promotion_assess",
+    "Apply held-out repeated-trial, paired comparison, cost, and duration regression thresholds before promotion.",
+    ["comparison_id"],
+    false,
+    ["promotion_id", "min_trials", "min_pass_rate_delta", "cost_metric", "max_cost_regression_ratio", "max_duration_regression_ratio"]
+  ),
+  tool("craft_evaluation_comparison_get", "Read an immutable evaluation comparison.", ["comparison_id"], true),
+  tool("craft_evaluation_comparison_list", "List immutable evaluation comparisons.", [], true, ["limit", "query"]),
+  tool(
+    "craft_grader_save",
+    "Save a versioned program, model, human, or operational grader.",
+    ["name", "grader_type"],
+    false,
+    ["grader_id", "description", "configuration", "rules"]
+  ),
+  tool("craft_grader_get", "Read an exact grader version.", ["grader_id"], true, ["version"]),
+  tool("craft_grader_list", "List graders.", [], true, ["limit", "query"]),
+  tool(
+    "craft_grade_record",
+    "Record one immutable grade for a Trial and exact Grader version.",
+    ["trial_id", "grader_id", "grader_version", "verdict", "summary"],
+    false,
+    ["score", "evidence_ids", "metadata"]
+  ),
+  tool("craft_grade_get", "Read an immutable grade.", ["grade_id"], true),
+  tool("craft_grade_list", "List grades.", [], true, ["limit", "query"]),
+  tool(
+    "craft_signoff_policy_save",
+    "Save a versioned policy for evaluation and grader requirements.",
+    ["name"],
+    false,
+    ["policy_id", "description", "requirements", "require_held_out", "require_outcome_passed"]
+  ),
+  tool("craft_signoff_policy_get", "Read a signoff policy version.", ["policy_id"], true, ["version"]),
+  tool("craft_signoff_policy_list", "List signoff policies.", [], true, ["limit", "query"]),
+  tool(
+    "craft_signoff_evaluate",
+    "Evaluate an immutable signoff decision from an Evaluation Run and explicit Grades.",
+    ["policy_id", "evaluation_run_id"],
+    false,
+    ["signoff_id", "policy_version", "grade_ids"]
+  ),
+  tool("craft_signoff_get", "Read an immutable signoff decision.", ["signoff_id"], true),
+  tool("craft_signoff_list", "List signoff decisions.", [], true, ["limit", "query"]),
+  tool("craft_agent_profile_save", "Save a versioned cross-host agent profile.", ["name", "role", "host", "model"], false, ["profile_id", "provider", "reasoning_effort", "capabilities", "allowed_side_effects", "metadata"]),
+  tool("craft_agent_profile_get", "Read an agent profile.", ["profile_id"], true, ["version"]),
+  tool("craft_agent_profile_list", "List agent profiles.", [], true, ["limit", "query"]),
+  tool("craft_orchestration_plan_create", "Create a dependency-aware multi-Agent plan with pinned Agent Profile versions.", ["goal", "nodes"], false, ["plan_id", "task_id", "max_concurrency", "lease_ttl_seconds", "budget", "policy"]),
+  tool(
+    "craft_orchestration_trial_start",
+    "Create an orchestration plan and automatically capture its Trial lifecycle.",
+    ["task_id", "goal", "nodes"],
+    false,
+    [
+      "plan_id",
+      "trial_id",
+      "case_id",
+      "max_concurrency",
+      "lease_ttl_seconds",
+      "policy",
+      "harness_configuration_id",
+      "harness_configuration_version",
+      "environment",
+      "budget"
+    ]
+  ),
+  tool("craft_orchestration_plan_get", "Read a multi-Agent plan and node states.", ["plan_id"], true),
+  tool("craft_orchestration_plan_list", "List multi-Agent plans.", [], true, ["limit", "query"]),
+  tool("craft_orchestration_dispatch", "Lease ready nodes to a host within concurrency limits.", ["plan_id", "claimed_by"], false, ["capacity"]),
+  tool(
+    "craft_orchestration_renew",
+    "Renew an owned orchestration lease before its TTL expires.",
+    ["plan_id", "lease_id", "claimed_by"]
+  ),
+  tool(
+    "craft_orchestration_submit",
+    "Submit a leased node result; trial-backed plans capture trace, cost, evidence, and terminal outcome automatically.",
+    ["plan_id", "lease_id", "verdict"],
+    false,
+    ["provenance", "claimed_by", "summary", "costs", "artifact_ids", "evidence_ids", "idempotency_key"]
+  ),
+  tool(
+    "craft_orchestration_trial_finalize",
+    "Idempotently reconcile a terminal trial-backed plan into its receipt, evidence, and outcome.",
+    ["plan_id"],
+    false
+  ),
+  tool(
+    "craft_capability_asset_save",
+    "Register a versioned, trusted capability asset without activating it.",
+    ["name", "asset_type", "source_uri", "effect"],
+    false,
+    ["asset_id", "trust", "health", "dependencies", "aliases", "requires_credential", "cost_hint", "source_digest"]
+  ),
+  tool("craft_capability_access_plan", "Recommend the minimal trusted activation profile and persist its selection receipt.", ["task_id", "goal"], false, ["allowed_effects", "receipt_id"]),
+  tool("craft_capability_call_issue", "Issue one expiring, profile-bound capability call token.", ["profile_id", "asset_id", "operation"], false, ["call_id", "expires_at"]),
+  tool("craft_capability_call_consume", "Consume an issued capability call only for its original profile.", ["call_id", "profile_id"], false),
+  tool("craft_capability_kit_install", "Install one declarative Capability Kit after validating its exact manifest and installed dependency versions. Installation never loads code or grants execution authority.", ["manifest"], false, ["origin", "builtin"]),
+  tool("craft_capability_kit_install_builtins", "Install the reviewed Serena project-knowledge and local-workspace sample Capability Kits."),
+  tool("craft_capability_kit_get", "Read one exact installed Capability Kit revision.", ["kit_id"], true, ["version"]),
+  tool("craft_capability_kit_list", "List local Capability Kits and their lifecycle state.", [], true, ["limit"]),
+  tool("craft_capability_kit_activate", "Bind one conformance-passing Capability Kit to a Task. It returns blocked rather than granting execution when Task, dependency or conformance facts are missing.", ["kit_id", "task_id"], false, ["activation_id", "activation_profile_id"]),
+  tool("craft_capability_kit_contribution_record", "Record a digest-only Proposal or Receipt from one declared Kit phase; the Kit cannot write Craft facts directly.", ["kit_id", "activation_id", "phase", "proposal"], false, ["contribution_id", "evidence_ids"]),
+  tool("craft_capability_kit_set_state", "Disable or revoke one Capability Kit and invalidate dependent active Kit activations.", ["kit_id", "state", "actor", "reason"], false),
+  tool("craft_capability_kit_conformance", "Run deterministic manifest and dependency Conformance checks. Passing only proves the mechanism, not business quality or production safety.", ["kit_id"], false, ["report_id"]),
+  tool("craft_capability_kit_distribution", "Describe the shared Skill, MCP, CLI and plugin presentation for one Kit without generating code or enabling it.", ["kit_id"], true),
+  tool("craft_engineering_quality_profile_install", "Explicitly install the version-pinned Engineering Quality sample Kit. It neither changes Host configuration nor grants execution authority."),
+  tool("craft_engineering_quality_profile_case_save", "Freeze one sanitized bug-fix-shared-caller Case as digest-only inputs, workspace scope and deterministic acceptance assertions.", ["case_id", "case_kind", "frozen_input_digest", "allowed_workspace_ref", "acceptance_command_digest", "sibling_caller_assertion_digest", "sanitized"], false),
+  tool("craft_engineering_quality_profile_activate", "Bind the Engineering Quality sample to one Task after generic Kit Conformance has passed.", ["task_id"], false, ["activation_id"]),
+  tool("craft_engineering_quality_profile_trial_context", "Read the fixed-version, no-authority Profile descriptor for a controlled external Host trial.", ["activation_id"], true),
+  tool("craft_engineering_quality_profile_contribution", "Record one evidence-bound, digest-only engineering rule contribution; it cannot bypass Acceptance.", ["activation_id", "rule_id", "proposal", "evidence_ids"], false, ["contribution_id", "review_id"]),
+  tool("craft_engineering_quality_profile_review_aggregate", "Aggregate isolated Standards and Spec review receipts only when they share a baseline and program-reproducible Evidence.", ["activation_id", "reproduction_evidence_ids"], false, ["aggregate_id"]),
+  tool("craft_engineering_quality_profile_evaluation_plan", "Define a 12-20 Case, exactly five-paired-trial Profile evaluation without executing a Host.", ["activation_id", "host_id", "case_ids", "model_fingerprint", "environment_fingerprint", "budget_fingerprint", "trials_per_pair"], false, ["plan_id", "observer_kind"]),
+  tool("craft_engineering_quality_profile_evaluation_record", "Record a legacy unverified Profile trial for revalidation only; it can never promote a Profile.", ["plan_id", "case_id", "trial_index", "arm"], false, ["record_id"]),
+  tool("craft_engineering_quality_profile_evaluation_evaluate", "Summarize complete pairs only; only non-regressing, blocker-free results become Shadow candidates.", ["plan_id"], false, ["evaluation_id"]),
+  tool("craft_engineering_quality_profile_evaluation_get", "Read sanitized Engineering Quality evaluation records, result and rejection receipt.", ["plan_id"], true),
+  tool("craft_capability_connector_register", "Register one user-approved built-in, Skill-source, or MCP connector without storing credentials or starting it.", ["kind", "name"], false, ["connector_id", "endpoint", "approved", "approval_ref", "metadata", "allowed_operations"]),
+  tool("craft_capability_connector_discover", "Record host-discovered, content-free metadata from one configured connector; Craft never fetches or installs it itself.", ["connector_id", "assets"], false),
+  tool("craft_capability_connector_update", "Enable or disable one Connector; disabling it invalidates future ticket consumption.", ["connector_id", "active"], false),
+  tool("craft_capability_connector_health_record", "Record a content-free health receipt pinned to the Connector metadata digest. Only a current healthy receipt enables external invocation.", ["connector_id", "status", "source_digest", "observed_by"], false, ["health_id", "evidence_ids"]),
+  tool("craft_capability_connector_revoke", "Irreversibly revoke one Connector so issued tickets cannot be consumed.", ["connector_id", "reason"], false, ["revocation_id"]),
+  tool("craft_capability_connector_approve", "Approve one discovered connector asset and publish a provenance-pinned Capability Asset; write-capable assets remain non-activatable.", ["connector_asset_id", "approval_ref"], false, ["asset_id"]),
+  tool("craft_capability_connector_list", "List registered connectors and content-free discovered assets.", [], true, ["limit"]),
+  tool("craft_capability_connector_ticket_issue", "Issue one expiring capability ticket pinned to an Activation Profile, connector asset, and source digest.", ["profile_id", "connector_asset_id", "operation"], false, ["ticket_id", "call_id", "expires_at"]),
+  tool("craft_capability_connector_ticket_consume", "Consume a connector ticket exactly once after rechecking connector state and source version.", ["ticket_id", "profile_id"], false),
+  tool("craft_expert_profile_save", "Save the only supported read-only diagnostic research Expert profile.", ["name", "expert_type", "allowed_effects", "output_contract"], false, ["expert_id"]),
+  tool("craft_context_capsule_create", "Create a bounded reference-only Context Capsule for a diagnostic Expert.", ["task_id", "profile_id", "input_boundary"], false, ["capsule_id", "artifact_ids", "evidence_ids"]),
+  tool("craft_expert_subagent_create", "Create one bounded read-only diagnostic Sub-agent Run.", ["run_id", "parent_operation_id", "expert_id", "capsule_id", "objective"], false, ["operation_id"]),
+  tool("craft_expert_subagent_run", "Run one leased read-only diagnostic Sub-agent as a real child loop with its own context window and a budget carved out of the delegating dispatch. It never inherits write authority.", ["operation_id", "parent_dispatch_id"], false),
+  tool("craft_expert_subagent_report", "Submit a structured diagnostic Expert result with Evidence references.", ["operation_id", "lease_id", "claimed_by", "verdict", "report"], false, ["costs"]),
+  tool("craft_evaluation_reliability_assess", "Assess repeated paired evaluation reliability; it can return inconclusive.", ["comparison_id"], false, ["assessment_id", "min_trials", "max_budget_ratio"]),
+  tool("craft_judge_adapter_save", "Save a model or human Judge adapter; it is advisory until calibrated.", ["name", "grader_type"], false, ["judge_id"]),
+  tool("craft_judge_calibration_record", "Record blind human agreement for a Judge adapter.", ["judge_id", "total", "agreed"], false, ["calibration_id", "minimum_agreement"]),
+  tool("craft_judge_promotion_eligible", "Check whether a Judge has passed calibration.", ["judge_id"], true),
+  tool("craft_evaluation_judge_gate", "Bind an eligible reliability assessment to a calibrated Judge before using Judge output as a promotion input.", ["assessment_id", "judge_id"], false, ["gate_id", "evidence_ids"]),
+  tool("craft_adaptation_candidate_create", "Create only a draft candidate with at most two Harness design-axis changes.", ["task_id", "trial_ids", "evidence_ids", "hypothesis", "applicability", "design_axes"], false, ["candidate_id"]),
+  tool("craft_adaptation_candidate_authorize_canary", "Authorize a candidate only after eligible paired reliability and exact passed Signoff.", ["candidate_id", "assessment_id", "signoff_id"]),
+  tool("craft_feedback_intake_create", "Receive a redacted online feedback reference for human review.", ["task_id", "source_uri", "summary"], false, ["intake_id", "metric"]),
+  tool("craft_feedback_case_approve", "Approve reviewed feedback only into an immutable development case.", ["intake_id", "split", "reviewer"], false, ["case_id"]),
+  tool("craft_canary_start", "Start a gated candidate canary with an exact baseline and environment.", ["candidate_id", "baseline_id", "environment"], false, ["canary_id"]),
+  tool("craft_canary_observe", "Observe a canary metric and roll back on a configured regression.", ["canary_id", "metric", "baseline", "candidate", "threshold"], false),
+  tool("craft_host_profile_list", "List all host profiles including built-ins and user-declared model CLIs.", [], true),
+  tool("craft_host_profile_resolve", "Resolve one host profile by exact name.", ["host"], true),
+  tool("craft_workflow_registry_scan", "Discover workflow definitions from a project directory.", ["project_root"], true, ["limit"]),
+  tool("craft_workflow_retirement_plan", "Propose retirement or deprecation for workflows based on usage statistics.", [], true, ["workflow_ids", "policy", "now"]),
+  tool("craft_knowledge_index_sync", "Sync a Markdown knowledge base into the rebuildable FTS5 projection.", ["project_root"], false, ["limit"]),
+  tool("craft_knowledge_search", "Search reviewed Knowledge in an explicit scope. Candidate inspection is opt-in; a missing scope returns no content.", ["query"], true, ["limit", "scope_kind", "scope_id", "include_candidates", "include_global", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "scope"]),
+  tool("craft_execution_budget_plan", "Estimate tokens, check budget, classify complexity, and route to a model tier.", ["host", "limit", "texts"], true, ["reserve", "steps", "distinct_paths", "requires_external_write", "requires_multi_step_reasoning", "tiers", "max_result_tokens"]),
+  tool("craft_hook_catalog", "List hooks planned for one lifecycle point.", ["point"], true, ["hooks"]),
+  tool("craft_hook_run", "Run hooks for one lifecycle point and return outcomes.", ["point", "hooks"], false, ["payload"]),
+  tool("craft_knowledge_scope_set", "Declare a knowledge document's scope (user/project/task) and an optional expiry in days.", ["entries"], false),
+  tool("craft_knowledge_scope_list", "List knowledge scopes and the documents whose expiry has passed.", [], true, ["scope"]),
+  tool("craft_knowledge_scope_forget", "Drop expired documents from the rebuildable projection; Markdown sources are untouched.", [], false),
+  tool("craft_metrics_report", "Aggregate host runs and outcomes into success rate and cost per successful outcome.", [], true, ["host"]),
+  tool("craft_usage_report", "Aggregate observed input/output tokens by day, ISO week, month, year, and host. No prompt content is retained.", [], true, ["from", "to"]),
+  tool("craft_settings_get", "Read the redacted Workbench settings and active data directory.", [], true),
+  tool("craft_settings_update", "Update non-secret Workbench settings; changing dataRoot takes effect after restart.", [], false, ["locale", "theme", "dataRoot", "workbench", "runtime", "privacy"]),
+  tool("craft_settings_reset", "Reset Workbench settings to safe defaults without deleting project data.", [], false),
+  tool("craft_launch_gate", "Evaluate the before-effect launch gates for a payload and report whether they block it.", [], true, ["hooks", "payload"]),
+  tool("craft_model_provider_list", "List the declared model providers with their credential environment variable and whether it is set.", [], true),
+  tool("craft_model_provider_get", "Describe one model provider and, optionally, the model a tier selects.", ["provider"], true, ["tier"]),
+  tool("craft_agent_loop_plan", "Show the circuit-breaker limits a self-hosted loop would run under, without starting one.", [], true, ["limits"]),
+  tool("craft_asset_route", "Select the smallest credible set of declared assets for one task, with the reason for every rejection.", ["signals", "assets"], true),
+  tool("craft_model_independence_compare", "Check whether a subject's declared invariants hold across every model it was tried on.", ["trials", "invariants"], true),
+  tool("craft_autonomous_runtime_prepare", "Prepare a provider-neutral autonomous run with explicit step and token limits.", ["task_id", "goal", "model"], false, ["run_id", "limits"]),
+  tool("craft_autonomous_runtime_run", "Run a bounded autonomous loop from explicit model turns and record every action, checkpoint, and terminal result.", ["task_id", "goal", "model", "turns"], false, ["run_id", "limits", "action_results"]),
+  tool("craft_autonomous_runtime_checkpoint", "Persist a content-bounded autonomous checkpoint without granting new authority.", ["run_id", "state"], false, ["checkpoint_id", "reason"]),
+  tool("craft_autonomous_runtime_resume", "Resume an autonomous run from its exact latest checkpoint.", ["run_id"], false, ["checkpoint_id"]),
+  tool("craft_autonomous_runtime_cancel", "Cancel an autonomous run with an explicit reason.", ["run_id"], false, ["reason"]),
+  tool("craft_autonomous_runtime_get", "Read an autonomous run, turns, and checkpoints.", ["run_id"], true),
+  tool("craft_capability_lifecycle_register", "Register a versioned capability in the unified install/activate/rollback lifecycle.", ["capability_id", "name", "source"], false, ["source_version", "effect", "dependencies", "permissions"]),
+  tool("craft_capability_lifecycle_install", "Install a registered capability without activating it.", ["capability_id"]),
+  tool("craft_capability_lifecycle_activate", "Activate an installed capability after lifecycle checks.", ["capability_id"]),
+  tool("craft_capability_lifecycle_disable", "Disable a capability and retain the reason for audit.", ["capability_id"], false, ["reason"]),
+  tool("craft_capability_lifecycle_upgrade", "Upgrade a capability only when its exact source version and digest are declared.", ["capability_id", "source_version", "source_digest"]),
+  tool("craft_capability_lifecycle_retire", "Retire a capability so it can never be activated again.", ["capability_id"], false, ["reason"]),
+  tool("craft_capability_lifecycle_resolve", "Resolve one active capability name without silently choosing an ambiguous source.", ["name"], true),
+  tool("craft_capability_lifecycle_list", "List unified capability lifecycle records.", [], true),
+  tool("craft_capability_intake_discover", "Record a digest-pinned Capability Source manifest; discovered does not mean executable or trusted.", ["name", "source", "content_digest"], false, ["capability_id", "publisher", "version", "effect", "dependencies", "permissions", "hosts"]),
+  tool("craft_capability_intake_scan", "Run or record a content-free supply-chain scan for a Capability manifest.", ["capability_id"], false, ["scanner", "evidence"]),
+  tool("craft_capability_intake_conformance", "Record capability conformance checks before approval; failed checks cannot be activated.", ["capability_id", "checks"], false),
+  tool("craft_capability_intake_approve", "Approve a conformance-passed capability without activating it.", ["capability_id", "approved_by"]),
+  tool("craft_capability_intake_activate", "Activate an approved capability after the intake gates pass.", ["capability_id"]),
+  tool("craft_capability_intake_revoke", "Revoke a capability and prevent future routing.", ["capability_id", "reason"]),
+  tool("craft_capability_intake_upgrade_plan", "Create a preflight-to-rollback upgrade plan for a capability; it does not publish or activate it.", ["capability_id", "next_version", "next_digest"], false, ["plan_id"]),
+  tool("craft_capability_intake_get", "Read one capability intake record.", ["capability_id"], true),
+  tool("craft_capability_intake_list", "List capability intake records by state.", [], true, ["state", "limit"]),
+  tool("craft_memory_remember_episode", "Store one redacted episodic memory for later consolidation.", ["content"], false, ["memory_id", "scope", "source", "task_id", "confidence"]),
+  tool("craft_memory_consolidate", "Create a content-free consolidation candidate from approved Ledger memories; it is not auto-published.", ["candidate_ids", "summary"], false, ["consolidation_id"]),
+  tool("craft_memory_maintenance_signal", "Record one bounded usage signal for an episodic memory without changing its status.", ["memory_id", "kind"], false, ["value", "signal_id"]),
+  tool("craft_memory_maintenance_run", "Run proposal-only Light, Review or Deep maintenance over accessible Memory records; it never deletes or publishes. Omitting scope never bypasses access restrictions.", [], false, ["stage", "now", "maintenance_id", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
+  tool("craft_memory_maintenance_cycle", "Consume terminal Trace records in a resumable bounded batch and create content-free learning observations; it never publishes a Memory or Workflow.", [], false, ["cursor", "limit", "cycle_id"]),
+  tool("craft_memory_maintenance_get", "Read one Memory maintenance run and its optional candidate.", ["maintenance_id"], true),
+  tool("craft_memory_resolve", "Resolve a semantic memory as active, superseded, or rejected.", ["semantic_id", "status"], false, ["resolution"]),
+  tool("craft_memory_search", "Search active semantic memories by scope and bounded text match.", ["query"], true, ["scope"]),
+  tool("craft_remote_interop_prepare", "Prepare an HTTPS-only remote Agent/MCP request with no execution authority.", ["endpoint", "agent", "operation", "task_id", "input_digest"], false, ["request_id"]),
+  tool("craft_remote_interop_dispatch", "Dispatch one prepared remote request through an approved Host transport and persist the receipt.", ["request_id"], false, ["status", "remote_id", "result_digest"]),
+  tool("craft_remote_interop_report", "Record a remote terminal status without accepting raw remote context as trusted.", ["request_id", "status"], false, ["result_digest"]),
+  tool("craft_remote_interop_get", "Read a remote request and its receipts.", ["request_id"], true),
+  tool("craft_platform_member_save", "Register a local team identity and roles without storing credentials.", ["name"], false, ["member_id", "roles"]),
+  tool("craft_platform_authorize", "Evaluate one action against a member role and persist the decision.", ["member_id", "action"], false, ["authorization_id", "required_role"]),
+  tool("craft_platform_observe", "Record a content-bounded operational observation.", ["event"], false, ["observation_id", "status", "run_id", "metric", "value"]),
+  tool("craft_platform_observability_export", "Export standard content-free observability records for external OTel/log adapters.", [], true, ["limit"]),
+  tool("craft_runtime_truth_standardize", "Normalize a legacy or current Trace into the versionless craft.trace envelope.", ["trace"], true, ["export_id"]),
+  tool("craft_runtime_truth_otlp", "Map a content-free craft.trace record and events to OTLP/HTTP JSON without exporting it.", ["trace"], true, ["events"]),
+  tool("craft_runtime_truth_export", "Export a content-free craft.trace projection to an OTLP/HTTP endpoint and persist only the receipt.", ["endpoint", "trace"], false, ["events", "export_id"]),
+  tool("craft_runtime_truth_compact", "Compact a resumable model conversation while preserving system constraints and the latest work.", ["messages"], false, ["session_id", "max_chars"]),
+  tool("craft_runtime_truth_compaction_get", "Read back the compacted window stored for one session, so a resuming Host does not have to re-derive it.", ["session_id"], true, ["version"]),
+  tool("craft_runtime_truth_compaction_list", "List stored compactions so a Host can find a session it did not name.", [], true, ["limit"]),
+  tool("craft_runtime_truth_work_note", "Persist a structured, digest-backed work note for long-running Agent sessions.", ["goal"], false, ["note_id", "decisions", "constraints", "open_questions", "artifacts"]),
+  tool("craft_runtime_truth_work_note_get", "Read back one persisted work note, which is what a resuming long-running session starts from.", ["note_id"], true, ["version"]),
+  tool("craft_runtime_attempt_prepare", "Create a content-free, idempotent Runtime Execution Attempt bound to Task, Run, Host, Environment and effect.", ["task_id", "work_loop_id", "run_id", "host_id", "environment_digest", "idempotency_key"], false, ["attempt_id", "effect_class"]),
+  tool("craft_runtime_attempt_dispatch", "Record Host dispatch only; Host completion is not an Outcome.", ["attempt_id", "dispatch_ref"]),
+  tool("craft_runtime_attempt_receipt_pending", "Move an attempt to receipt_pending while waiting for a Host receipt.", ["attempt_id"], false, ["receipt_id"]),
+  tool("craft_runtime_attempt_record_receipt", "Bind a content-free Host receipt to the exact Task, Run, Attempt and idempotency key.", ["attempt_id", "result_digest"], false, ["receipt_id"]),
+  tool("craft_runtime_attempt_observe", "Record a fresh observation and make effect_unknown explicit when the external result is uncertain.", ["attempt_id"], false, ["observation_id", "observed_status", "evidence_digest"]),
+  tool("craft_runtime_attempt_resolve_effect", "Resolve an unknown external effect; confirmed success is accepted only as a runtime fact, not a business Outcome.", ["attempt_id", "resolution"], false, ["receipt_id"]),
+  tool("craft_runtime_attempt_recover", "Reconcile an existing idempotency key after interruption; it never automatically replays an unknown effect.", ["attempt_id"], false, ["reason"]),
+  tool("craft_runtime_attempt_cancel", "Cancel a non-terminal Runtime Execution Attempt with a digest-only reason.", ["attempt_id"], false, ["reason"]),
+  tool("craft_runtime_attempt_get", "Read one Runtime Execution Attempt and its current recovery status.", ["attempt_id"], true),
+  tool("craft_os_security_plan", "Plan a platform-specific fail-closed execution boundary with filesystem, network, and secret-broker constraints.", ["workspace"], false, ["plan_id", "platform", "network", "filesystem", "egress_allowlist", "secret_broker"]),
+  tool("craft_os_security_verify", "Verify observed platform-boundary evidence before allowing a governed execution.", ["plan_id", "observed", "evidence_ids"], false, ["receipt_id", "verified_by"]),
+  tool("craft_mcp_registry_source_register", "Register an HTTPS MCP Registry source with an explicit trust class; no network request is performed.", ["endpoint"], false, ["source_id", "trust", "key_digest"]),
+  tool("craft_mcp_registry_server_ingest", "Ingest one digest-pinned MCP server metadata record from a trusted registry source.", ["source_id", "name", "version", "endpoint", "digest"], false, ["server_id", "capabilities"]),
+  tool("craft_mcp_registry_health_record", "Record an MCP server health result without treating health as a trust decision.", ["server_id"], false, ["health_id", "status", "checked_at", "evidence_digest"]),
+  tool("craft_mcp_registry_sync", "Fetch one registry page through an HTTPS adapter and ingest digest-pinned server metadata; it never activates a server.", ["source_id"], false, ["list_url"]),
+  tool("craft_mcp_registry_revoke", "Revoke one MCP registry server version and preserve the audit record.", ["server_id", "reason"]),
+  tool("craft_a2a_transport_dispatch", "Dispatch a digest-only HTTPS A2A envelope and return a bounded remote receipt.", ["endpoint", "request_id", "agent", "operation", "input_digest"]),
+  tool("craft_a2a_transport_task_get", "Read a remote A2A task status and Artifact references without importing raw content.", ["endpoint", "task_id"]),
+  tool("craft_a2a_transport_task_cancel", "Request cancellation of one remote A2A task with a digest-only reason.", ["endpoint", "task_id"], false, ["reason"]),
+  tool("craft_a2a_v1_discover", "Discover an HTTPS A2A v1 Agent Card as untrusted metadata; discovery grants no execution authority.", ["endpoint"], false, ["observation_id"]),
+  tool("craft_a2a_v1_submit", "Submit a digest-only A2A v1 message using an already consumed read-only Federated Grant.", ["grant_id", "card_observation_id", "request_id", "input_digest"], false, ["task_id"]),
+  tool("craft_a2a_v1_task_get", "Poll one A2A v1 task with an idempotency key; no remote Artifact content is imported.", ["task_id", "request_id"], false),
+  tool("craft_a2a_v1_cancel", "Request cancellation of one A2A v1 task with a digest-only reason.", ["task_id", "request_id", "reason_digest"], false),
+  tool("craft_remote_tenant_register", "Register an isolated remote tenant data space. Key and raw tenant data never enter Craft.", ["tenant_id", "data_space_id", "key_envelope_ref", "retention_policy_ref", "deletion_policy_ref"]),
+  tool("craft_remote_task_bind", "Issue a one-time opaque handle that binds one remote principal, tenant, task, scope and expiry.", ["task_id", "tenant_id", "principal_digest", "access_receipt_digest", "audience", "scopes", "expires_at"], false, ["binding_id", "now"]),
+  tool("craft_remote_task_authorize", "Authorize one remote get/result/cancel/stream operation against its exact opaque task binding.", ["binding_id", "handle", "tenant_id", "principal_digest", "access_receipt_digest", "audience", "scopes", "operation"], false, ["receipt_id", "now"]),
+  tool("craft_remote_task_revoke", "Revoke one active remote task handle; subsequent remote task operations fail closed.", ["binding_id", "reason"], false, ["now"]),
+  tool("craft_remote_task_get", "Read one remote task binding and content-free authorization receipts.", ["binding_id"], true),
+  tool("craft_org_sync_prepare", "Prepare an encrypted-adapter organization sync manifest with conflict and deletion-tombstone semantics.", ["workspace_id"], false, ["sync_id", "member_ids", "record_refs"]),
+  tool("craft_org_sync_apply", "Apply an organization sync manifest only when the base digest still matches.", ["sync_id", "base_digest"], false, ["current_digest", "tombstones"]),
+  tool("craft_project_brain_open", "Open the durable user-facing Project Brain that joins goals, materials, tasks, decisions, outcomes, and reusable experience.", ["project_id"], false, ["brain_id", "name", "description"]),
+  tool("craft_project_brain_get", "Read a content-free Project Brain snapshot and its next safe action.", ["project_id"], true, ["limit"]),
+  tool("craft_project_brain_refresh", "Refresh the Project Brain projection from current tasks, sessions, outcomes, and experience.", ["project_id"], true, ["limit"]),
+  tool("craft_project_goal_save", "Save a versioned project goal with constraint digests and a measurable metric.", ["project_id", "title"], false, ["goal_id", "status", "constraint_digests", "metric"]),
+  tool("craft_project_decision_save", "Record why a capability, Workflow, or other option was chosen and what was excluded.", ["project_id", "title", "rationale", "chosen_ref"], false, ["decision_id", "excluded_refs", "status"]),
+  tool("craft_project_material_bind", "Bind a digest-pinned project material without copying raw business content into the control plane.", ["project_id", "name", "uri", "content_digest"], false, ["material_id", "source_type", "scope"]),
+  tool("craft_project_outcome_record", "Record an evidence-backed project result and attach it to the Project Brain.", ["project_id", "verdict", "summary"], false, ["outcome_id", "task_id", "session_id", "evidence_ids", "artifact_ids"]),
+  tool("craft_project_experience_record", "Create a candidate reusable experience from an observed project outcome; publication remains governed.", ["project_id", "name", "pattern"], false, ["experience_id", "source_outcome_id"]),
+  tool("craft_work_session_prepare", "Bind one task to its exact Project Brain, knowledge, capability, Workflow, model, Host, and acceptance context without starting execution.", ["project_id", "task_id"], false, ["session_id", "goal", "knowledge_refs", "capability_refs", "workflow_refs", "excluded_refs", "selection_rationale", "model", "host", "acceptance_ref"]),
+  tool("craft_work_session_get", "Read a content-free Work Session context plan and selection rationale.", ["session_id"], true),
+  tool("craft_work_session_refresh", "Re-observe a Work Session and fail closed on task or Project Brain drift.", ["session_id"], false),
+  tool("craft_work_session_bind_launch", "Bind one exact Work Launch to the prepared Work Session.", ["session_id", "launch_id"], false),
+  tool("craft_work_session_bind_dispatch", "Bind one exact standalone internal Host dispatch to the prepared Work Session.", ["session_id", "dispatch_id"], false),
+  tool("craft_work_session_complete", "Close a Work Session with an independently observed result summary digest.", ["session_id", "summary"], false, ["status", "outcome_id"]),
+  tool("craft_workbench_experience_query", "Read the Workbench project/task/session projection: trace timeline, launches, outcomes, artifacts, and next action.", [], true, ["project_id", "task_id", "session_id", "limit"]),
+  tool("craft_workbench_experience_get", "Read one Work Session-centered Workbench projection.", ["session_id"], true, ["limit"]),
+  tool("craft_workbench_experience_review", "Generate a content-free review report with evidence requirements and the next safe action.", [], true, ["project_id", "task_id", "session_id", "limit"]),
+  tool("craft_workbench_trace_replay_plan", "Build a revalidation-required replay plan from a canonical Trace; it never executes actions.", ["trace_id"], true),
+  tool("craft_workbench_command_execute", "Apply one versioned human Workbench command through Craft's service facade; it never writes the Store directly from the UI.", ["task_id", "command", "actor", "decision", "expected_version", "reason_digest"], false, ["command_id"]),
+  tool("craft_workbench_command_get", "Read one Workbench command receipt.", ["command_id"], true),
+  tool("craft_workbench_command_list", "List versioned Workbench command receipts for a task.", [], true, ["task_id", "limit"]),
+  tool("craft_long_task_suspend", "Persist a durable long-task checkpoint, release the Host, and retain only resumable references and digests.", ["session_id", "wait_condition"], false, ["checkpoint_id", "task_run_id", "host_run_id", "resume_action", "now"]),
+  tool("craft_long_task_wake", "Wake a suspended long task from an external event or human signal.", ["checkpoint_id", "signal"], false, ["reason", "now"]),
+  tool("craft_long_task_resume", "Revalidate a woken long task and return a fresh Host dispatch plan or a fail-closed replan.", ["checkpoint_id"], false, ["now"]),
+  tool("craft_long_task_get", "Read one long-task checkpoint and its current state.", ["checkpoint_id"], true),
+  tool("craft_long_task_list", "List durable long-task checkpoints for the Workbench recovery view.", [], true, ["session_id", "limit"]),
+  tool("craft_long_task_tick", "Run one bounded background-worker tick for expired or externally woken checkpoints.", [], false, ["now"]),
+  tool("craft_context_manifest_save", "Pin one unified Context Manifest joining knowledge, capabilities, Workflow, model, Host and acceptance references.", ["project_id", "task_id"], false, ["manifest_id", "knowledge_refs", "capability_refs", "workflow_refs", "excluded_refs", "model", "host", "acceptance_ref", "selection_rationale"]),
+  tool("craft_context_manifest_get", "Read one digest-pinned unified Context Manifest.", ["manifest_id"], true),
+  tool("craft_context_manifest_audit", "Revalidate a Context Manifest and fail closed on digest drift.", ["manifest_id"], false, ["expected_digest"]),
+  tool("craft_replay_runner_prepare", "Prepare a revalidation-gated replay run from a terminal Trace; it never replays stale actions.", ["trace_id", "approval_ref", "workspace_digest"], false, ["replay_id"]),
+  tool("craft_replay_runner_execute", "Execute an approved replay through the registered runtime executor; without an executor it records a dry-run receipt.", ["replay_id"], false, ["approval_ref"]),
+  tool("craft_replay_runner_get", "Read a controlled replay run and its step receipts.", ["replay_id"], true),
+  tool("craft_local_service_configure", "Configure the persistent local Craft runtime service for tray, cron, or startup integration.", [], false, ["service_id", "schedule", "startup", "notification", "crash_recovery"]),
+  tool("craft_local_service_start", "Start the persistent local Craft runtime service.", [], false, ["service_id"]),
+  tool("craft_local_service_stop", "Stop the persistent local Craft runtime service.", [], false, ["service_id"]),
+  tool("craft_local_service_tick", "Run one bounded local runtime tick and dispatch pending wake records.", [], false, ["service_id", "now"]),
+  tool("craft_local_service_get", "Read local runtime service state.", [], true, ["service_id"]),
+  tool("craft_automation_job_save", "Register a routeable Experience Workflow as a bounded manual or interval Job. It never installs cron, executes Graph/Prompt Procedures, or permits external effects. Result admission requires an explicit task_id and activation_id.", ["procedure_id", "workspace", "verifier_step_id"], false, ["task_id", "activation_id", "job_id", "trigger", "interval_seconds", "inputs", "allow_local_write", "max_attempts", "max_no_progress", "quota_slots", "quota_window_seconds", "retry_delay_seconds", "notification", "next_run_at", "now"]),
+  tool("craft_automation_job_pause", "Pause or resume one Procedure Automation Job without deleting its receipts or handoffs.", ["job_id"], false, ["paused", "now"]),
+  tool("craft_automation_job_run", "Prepare one active Procedure Automation dispatch for an external Host. Craft never executes the Workflow.", ["job_id"], false, ["run_id", "now"]),
+  tool("craft_automation_job_receipt_record", "Record an external terminal Host receipt and independent acceptance Observation for a prepared automation dispatch.", ["run_id", "host_session_id", "observation_id", "acceptance_evidence_ids"], false, ["observed_at"]),
+  tool("craft_automation_job_tick", "Advance due interval Jobs only when the named local service is running. A host cron, tray process or CI runner must invoke this tool explicitly.", [], false, ["service_id", "now", "limit"]),
+  tool("craft_automation_job_get", "Read one Procedure Automation Job, its bounded run history and pending record-only notices.", ["job_id"], true, ["limit"]),
+  tool("craft_automation_job_eligibility", "Decide whether one Procedure Automation Job has useful, budgeted work before a Host spends a model or execution slot.", ["job_id"], true, ["now"]),
+  tool("craft_ticket_dispatch_scan", "Classify host-observed tickets into ready, blocked or needs_human using only supplied read-only repository facts. It never calls a tracker or creates a worktree.", ["repository", "scope", "source_ref", "issues"], false, ["ledger_id", "repository_state"]),
+  tool("craft_ticket_dispatch_evaluate", "Run deterministic fixed cases against one ticket dispatch ledger. Eligibility is evidence for a candidate, never permission to execute Forge effects.", ["ledger_id", "cases"], false, ["evaluation_id", "minimum_accuracy"]),
+  tool("craft_forge_policy_save", "Save a project-scoped Forge policy bound to one exact Domain Kit. It declares permitted repositories, branches and operations but does not connect to GitHub or GitLab.", ["scope", "repositories", "branches", "operations", "domain_kit_id", "domain_kit_version"], false, ["policy_id", "auto_merge_enabled", "require_ci_green", "require_protected_branch"]),
+  tool("craft_forge_action_prepare", "Prepare a Host/Forge Adapter request only after ready dispatch, eligible evaluation, routeable Procedure, active Domain Kit application and explicit approval. It never performs the action.", ["action", "policy_id", "ledger_id", "evaluation_id", "ticket_id", "branch", "procedure_id", "kit_application_id", "task_id", "approval_ref"], false, ["forge_action_id"]),
+  tool("craft_forge_action_get", "Read one prepared Forge Adapter request and its immutable authority references.", ["forge_action_id"], true),
+  tool("craft_project_bundle_export", "Create a portable digest-verified Project Bundle for backup, migration and cross-host handoff.", ["project_id"], false, ["bundle_id", "limit"]),
+  tool("craft_project_bundle_verify", "Verify a stored Project Bundle without changing project data.", ["bundle_id"], true),
+  tool("craft_knowledge_memory_bundle", "Export, verify, plan, explicitly apply, or transport a scoped portable Knowledge/Memory/Experience bundle. Transport writes only a reviewable JSON bundle, never SQLite files, credentials, or implicit Git commits.", ["operation"], false, ["scope_kind", "scope_id", "include_candidates", "include_global", "limit", "exported_at", "bundle", "approved", "import_id", "transport", "transport_root", "file_name", "allow_local_write", "device_id", "export_id", "cursor"]),
+  tool("craft_feedback_learning_record", "Record a scoped user correction or acceptance signal without auto-publishing experience.", ["action", "diff_digest", "reason"], false, ["signal_id", "scope", "project_id", "task_id", "outcome_id", "accepted"]),
+  tool("craft_feedback_learning_resolve", "Resolve whether a feedback signal is reusable for the current project and optionally mark it stale.", ["signal_id"], false, ["project_id", "stale"]),
+  tool("craft_domain_evaluator_save", "Register a lightweight domain evaluator with explicit metric rules.", ["domain", "name", "rules"], false, ["evaluator_id", "description"]),
+  tool("craft_domain_evaluator_evaluate", "Evaluate observed domain metrics and return an evidence digest.", ["evaluator_id", "metrics"], true),
+  tool("craft_handoff_manifest_create", "Create a host-neutral handoff manifest preserving context, permissions, artifacts, evidence and outcome references.", ["task_id", "context_manifest_id", "host"], false, ["handoff_id", "session_id", "model", "allowed_effects", "artifact_ids", "evidence_ids", "outcome_id"]),
+  tool("craft_handoff_manifest_get", "Read a host-neutral handoff manifest.", ["handoff_id"], true),
+  tool("craft_cost_price_save", "Save a provider/model price snapshot used for real cost attribution.", ["provider", "model", "input_per_million", "output_per_million"], false, ["price_id", "effective_at"]),
+  tool("craft_cost_usage_record", "Record explicit token counts against a configured price snapshot; missing usage must not be estimated as zero.", ["provider", "model", "input_tokens", "output_tokens"], false, ["usage_id", "project_id", "task_id"]),
+  tool("craft_cost_ledger_report", "Report recorded cost and tokens by project. Missing, invalid or overflowed totals are null and listed in unavailable_metrics; truncated reports never expose partial sums as totals. Numeric totals do not attest Host usage or provider billing.", [], true, ["project_id"]),
+  tool("craft_verified_work_prepare", "Prepare the unified Verified Autonomous Work slice with pinned context, workspace, action and acceptance references.", ["task_id", "context_manifest_id", "host", "workspace_digest", "action_digest", "acceptance_ref"], false, ["work_id", "model", "effect", "budget"]),
+  tool("craft_verified_work_authorize", "Authorize one exact work slice; writes require approval and a verified platform profile.", ["work_id", "authorization_ref"], false, ["approved", "approved_by", "platform_profile_id"]),
+  tool("craft_verified_work_action", "Record one observed action receipt after the Host/tool call; duplicate idempotency keys are safe.", ["work_id", "action_contract", "idempotency_key", "input_digest", "result_digest"], false, ["reobserved"]),
+  tool("craft_verified_work_reobserve", "Compare external state after an action and fail closed into replanning on drift.", ["work_id", "observed_digest"], false, ["expected_digest"]),
+  tool("craft_verified_work_deliver", "Close work only after independent acceptance, artifacts and evidence are present.", ["work_id", "acceptance_verdict"], false, ["artifact_ids", "evidence_ids"]),
+  tool("craft_verified_work_resume", "Resume paused or interrupted work only from fresh context and observed state.", ["work_id", "context_digest", "observed_digest"], false, ["expected_context_digest"]),
+  tool("craft_verified_work_handoff", "Pause and hand off one authorized work slice to another Host without copying raw prompts.", ["work_id", "target_host"], false, ["handoff_id"]),
+  tool("craft_verified_work_get", "Read one Verified Autonomous Work state and its phase.", ["work_id"], true),
+  tool("craft_sandbox_conformance_save", "Record verifier-attributed platform sandbox conformance; this does not run the probe.", ["platform", "isolation", "network", "checks", "verifier"], false, ["profile_id", "status", "capabilities"]),
+  tool("craft_sandbox_conformance_admit", "Admit an effect only when the exact platform profile is verified, isolated and network-denied.", ["effect"], false, ["profile_id"]),
+  tool("craft_sandbox_conformance_get", "Read one platform conformance profile.", ["profile_id"], true),
+  tool("craft_trace_explorer_query", "Query a content-free Trace Explorer projection with event digests for Workbench diagnostics.", [], true, ["task_id", "status", "limit"]),
+  tool("craft_action_gateway_prepare", "Prepare one bounded workspace action with an effect and input digest.", ["task_id", "workspace", "operation", "input_digest"], false, ["action_id", "effect", "approval_ref"]),
+  tool("craft_action_gateway_execute", "Execute one prepared workspace read/write; shell, browser and MCP actions require external adapters.", ["action_id", "relative_path"], false, ["content", "approved"]),
+  tool("craft_action_gateway_get", "Read one action contract and receipt.", ["action_id"], true),
+  tool("craft_acceptance_gate_prepare", "Prepare an independent acceptance gate; Host completion is not a passing verdict.", ["task_id", "work_id", "acceptance_ref"], false, ["gate_id", "required_artifact_ids", "required_evidence_ids"]),
+  tool("craft_acceptance_gate_assess", "Assess an independent acceptance gate with artifact and evidence references.", ["gate_id", "verdict"], false, ["artifact_ids", "evidence_ids", "assessor"]),
+  tool("craft_acceptance_gate_outcome", "Create a verified Outcome only from a passed acceptance gate.", ["gate_id"], false, ["summary"]),
+  tool("craft_acceptance_gate_get", "Read one acceptance gate.", ["gate_id"], true),
+  tool("craft_durable_worker_configure", "Configure the local Worker lease and recovery policy.", [], false, ["worker_id", "startup", "notification", "lease_ttl_ms"]),
+  tool("craft_durable_worker_start", "Start the local Worker state machine; an OS service still owns the process.", [], false, ["worker_id"]),
+  tool("craft_durable_worker_stop", "Stop the local Worker state machine.", [], false, ["worker_id"]),
+  tool("craft_durable_worker_enqueue", "Enqueue one durable Worker job.", ["task_id", "action"], false, ["worker_id", "job_id", "payload"]),
+  tool("craft_durable_worker_tick", "Lease pending Worker jobs in one bounded tick.", [], false, ["worker_id", "now"]),
+  tool("craft_durable_worker_recover", "Return expired Worker leases to pending with a recovery receipt.", [], false, ["worker_id", "now"]),
+  tool("craft_durable_worker_get", "Read Worker state and jobs.", [], true, ["worker_id"]),
+  tool("craft_provider_route_plan", "Plan preferred and fallback model providers with a bounded budget digest.", ["providers"], false, ["route_id", "preferred", "task_id", "budget"]),
+  tool("craft_provider_route_record", "Record which declared provider was actually used.", ["route_id", "provider"], false, ["status", "usage"]),
+  tool("craft_provider_route_get", "Read one Provider route.", ["route_id"], true),
+  tool("craft_a2a_message_send", "Send a digest-only A2A message through the standard message/send operation.", ["endpoint", "message_digest"], false, ["request_id", "context_id"]),
+  tool("craft_a2a_message_stream", "Request a digest-only A2A streaming message operation.", ["endpoint", "message_digest"], false, ["request_id", "context_id"]),
+  tool("craft_a2a_task_list", "List remote A2A tasks without importing raw content.", ["endpoint"], false, ["request_id", "page_token"])
+];
+var RETIRED_PUBLIC_TOOL_NAMES = /* @__PURE__ */ new Set([
+  "craft_work_launch_prepare",
+  "craft_work_launch_decide",
+  "craft_work_launch_get",
+  "craft_work_launch_retry",
+  "craft_execution_fabric_prepare",
+  "craft_execution_fabric_execute",
+  "craft_execution_fabric_advance",
+  "craft_execution_fabric_consume",
+  "craft_execution_fabric_get",
+  "craft_verified_work_prepare",
+  "craft_verified_work_authorize",
+  "craft_verified_work_action",
+  "craft_verified_work_reobserve",
+  "craft_verified_work_deliver",
+  "craft_verified_work_resume",
+  "craft_verified_work_handoff",
+  "craft_verified_work_get",
+  "craft_capability_context_work_launch_prepare",
+  "craft_capability_context_work_launch_decide",
+  "craft_knowledge_context_work_launch_prepare",
+  "craft_knowledge_context_work_launch_decide",
+  "craft_knowledge_context_work_launch_retry",
+  "craft_guided_work_launch_prepare",
+  "craft_safety_work_launch_prepare",
+  "craft_safety_work_launch_decide"
+]);
+var TOOLS = TOOL_DEFINITIONS.filter((item) => !RETIRED_PUBLIC_TOOL_NAMES.has(item.name));
+var ACTIVE_TOOLS = TOOLS;
+
+// core/mcp/context-tools.ts
+var TASK_TOOLS = {
+  recall: ["craft_context_open", "craft_context_resolution_feedback"],
+  knowledge: ["craft_knowledge_search", "craft_knowledge_claim_save", "craft_knowledge_host_review", "craft_knowledge_source_ingest"],
+  memory: ["craft_memory_governance", "craft_memory_capture_user_statement", "craft_memory_conflict_list", "craft_memory_conflict_resolve", "craft_memory_candidate_review", "craft_memory_ledger_remember_approved"],
+  experience: ["craft_experience_graph_inspect", "craft_experience_graph_edit", "craft_procedure_plan", "craft_procedure_host_control", "craft_procedure_decision_evaluate", "craft_procedure_invocation_bind", "craft_procedure_invocation_dispatch", "craft_procedure_invocation_report"],
+  code: ["craft_codebase_symbol_find", "craft_codebase_callers_find", "craft_codebase_impact_query", "craft_codebase_context_slice"]
+};
+function discoverContextTools(args) {
+  const intent = String(args.intent ?? "recall");
+  if (!Object.hasOwn(TASK_TOOLS, intent)) throw new Error("Unsupported Context tool intent");
+  const names3 = /* @__PURE__ */ new Set([...TASK_TOOLS.recall, ...TASK_TOOLS[intent]]);
+  const tools = ACTIVE_TOOLS.filter((tool2) => names3.has(tool2.name));
+  return { intent, tools, schema_estimated_tokens: estimateTokens(JSON.stringify(tools)), exact: false, changes_host_registration: false };
 }
 
 // core/docker-sandbox.ts
@@ -224224,7 +226602,14 @@ var KnowledgeSourceRegistry = class {
           const evidence2 = this.store.find("evidence", evidenceId) ?? this.store.create("evidence", evidenceId, { source_type: "knowledge_fragment", source_id: source.id, source_revision_id: fragment.source_revision_id, fragment_id: fragment.id, locator: fragment.locator, claim: "Source fragment retained for review.", confidence: source.trust === "verified" ? "bounded" : "unverified", content_digest: fragment.content_digest, observed_at: (/* @__PURE__ */ new Date()).toISOString() });
           const claimId = `knowledge_claim_from_${fragmentId}`;
           const identity = { source_id: source.id, source_revision_id: fragment.source_revision_id, document_id: doc.id, document_digest: doc.digest, fragment_id: fragment.id, scope: `${source.scope.kind}:${source.scope.id}`, scope_envelope: source.scope_envelope, kind: "fact", content_digest: fragment.content_digest, evidence_ids: [evidence2.id], valid_until: null };
-          const claim = this.store.find("knowledge_claim", claimId) ?? this.store.create("knowledge_claim", claimId, { ...identity, content_ref: fragment.content_ref, identity_digest: stableDigest(identity), status: "candidate", review: null, ingest_generated: true, publication_allowed: false });
+          const shared = this.store.list("knowledge_claim", 1e5, (item) => item.status === "candidate" && item.content_digest === fragment.content_digest && item.scope === identity.scope && item.source_id !== source.id)[0];
+          let claim = this.store.find("knowledge_claim", claimId) ?? (shared ? this.store.save("knowledge_claim", String(shared.id), { ...payload(shared), evidence_ids: [.../* @__PURE__ */ new Set([...(Array.isArray(shared.evidence_ids) ? shared.evidence_ids : []).map(String), String(evidence2.id)])].sort() }) : this.store.create("knowledge_claim", claimId, { ...identity, content_ref: fragment.content_ref, identity_digest: stableDigest(identity), status: "candidate", review: null, ingest_generated: true, publication_allowed: false }));
+          if (source.trust === "verified" && ["bounded", "confirmed"].includes(String(evidence2.confidence))) {
+            const observationKey = `knowledge-source:${String(source.id)}:${String(doc.digest)}`;
+            const supportIdentity = { claim_id: claim.id, claim_version: claim.version, evidence_id: evidence2.id, observation_key: observationKey, scope: identity.scope };
+            const supportId = `knowledge_support_${stableDigest(supportIdentity).slice(-24)}`;
+            if (!this.store.find("knowledge_claim_support", supportId)) this.store.create("knowledge_claim_support", supportId, { ...supportIdentity, identity_digest: stableDigest(supportIdentity), recorded_at: (/* @__PURE__ */ new Date()).toISOString(), source_type: evidence2.source_type, confidence: evidence2.confidence });
+          }
           const candidateId2 = `knowledge_ingest_candidate_${fragmentId}`;
           const candidate2 = this.store.find("knowledge_ingest_candidate", candidateId2) ?? this.store.create("knowledge_ingest_candidate", candidateId2, { source_id: source.id, source_revision_id: fragment.source_revision_id, fragment_id: fragment.id, claim_id: claim.id, evidence_id: evidence2.id, scope: identity.scope, status: "candidate", structural_review: "pending", semantic_review: "pending", publication_allowed: false });
           fragments.push(fragment);
@@ -224457,15 +226842,15 @@ function bm25Ranking(query, items2) {
   }
   return index.score(query).filter((entry2) => entry2.score > 0).map((entry2) => ({ id: entry2.id }));
 }
-function parseSkill(text31, fallback2) {
+function parseSkill(text32, fallback2) {
   let metadata = {};
-  let body3 = text31;
-  if (text31.startsWith("---\n") || text31.startsWith("---\r\n")) {
-    const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(text31);
+  let body3 = text32;
+  if (text32.startsWith("---\n") || text32.startsWith("---\r\n")) {
+    const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(text32);
     if (match) {
       const parsed2 = (0, import_yaml.parse)(match[1]);
       if (parsed2 && typeof parsed2 === "object" && !Array.isArray(parsed2)) metadata = parsed2;
-      body3 = text31.slice(match[0].length);
+      body3 = text32.slice(match[0].length);
     }
   }
   return {
@@ -224627,14 +227012,14 @@ var Catalog = class {
         unchanged += 1;
         continue;
       }
-      const text31 = await (0, import_promises7.readFile)(path2, "utf8");
-      const digest35 = (0, import_node_crypto17.createHash)("sha256").update(text31).digest("hex");
+      const text32 = await (0, import_promises7.readFile)(path2, "utf8");
+      const digest35 = (0, import_node_crypto17.createHash)("sha256").update(text32).digest("hex");
       if (previous?.digest === digest35) {
         this.store.save("capability", assetId, { ...previous, size: fileStat.size, mtime_ms: fileStat.mtimeMs });
         unchanged += 1;
         continue;
       }
-      const skill = parseSkill(text31, (0, import_node_path13.basename)((0, import_node_path13.resolve)(path2, "..")));
+      const skill = parseSkill(text32, (0, import_node_path13.basename)((0, import_node_path13.resolve)(path2, "..")));
       this.store.save("capability", assetId, {
         ...skill,
         kind: "skill",
@@ -230879,8 +233264,8 @@ function persistedConversation(messages) {
     return { role: message.role, content: redact6(raw).slice(0, MAX_SESSION_MESSAGE_CHARS), content_digest: digestJson(raw), tool_calls_digest: message.tool_calls ? digestJson(message.tool_calls) : null };
   });
 }
-function parseAction(text31) {
-  const trimmed = text31.trim();
+function parseAction(text32) {
+  const trimmed = text32.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return null;
   let parsed2;
   try {
@@ -231161,2361 +233546,6 @@ var InternalHostDriver = class {
     return { dispatch: saved, receipt, idempotent: false };
   }
 };
-
-// core/mcp/tool-schema.ts
-var BOOLEAN_PARAMS = ["scan", "enabled", "allow_execution", "allow_external_write", "require_held_out", "require_outcome_passed", "retryable", "requires_external_effect", "supports_pause_resume", "supports_evidence_receipts", "generated_code", "requires_credential", "has_compensation", "approved", "start_trial", "untrusted_input", "confirmed_original_runner_stopped", "sanitized", "active", "acceptance_required", "trusted", "unattended", "reobserve_required", "compensation_or_handoff", "require_governance", "accepted", "stale", "crash_recovery", "reobserved", "delivered", "allowed", "allow_restricted", "privacy_reviewed", "complete", "content_stored", "candidate_change", "requires_real_host"];
-var INTEGER_PARAMS = [
-  "limit",
-  "max_days",
-  "version",
-  "capacity",
-  "max_concurrency",
-  "size_bytes",
-  "subject_version",
-  "expected_version",
-  "max_candidates",
-  "suite_version",
-  "configuration_version",
-  "harness_configuration_version",
-  "target_version",
-  "profile_version",
-  "grader_version",
-  "policy_version",
-  "signoff_policy_version",
-  "lease_ttl_seconds",
-  "ttl_seconds",
-  "trials_per_case",
-  "window_size",
-  "max_attempts",
-  "min_trials",
-  "harness_version",
-  "ir_version",
-  "runtime_adapter_version",
-  "agreed",
-  "total",
-  "expected_state_revision",
-  "expected_revision",
-  "observed_revision",
-  "max_chars",
-  "max_items",
-  "timeout_ms",
-  "output_limit",
-  "max_turns",
-  "after_sequence",
-  "context_profile_version",
-  "activation_profile_version",
-  "budget_account_version",
-  "contract_version",
-  "conformance_version",
-  "max_latency_ms",
-  "dormant_after_days"
-];
-var NUMBER_PARAMS = ["score", "value", "threshold", "confidence", "min_pass_rate_delta", "max_cost_regression_ratio", "max_duration_regression_ratio", "max_budget_ratio", "baseline", "candidate", "minimum_agreement", "max_budget_usd", "input_per_million", "output_per_million", "minimum_recall", "max_cost_usd"];
-var OBJECT_PARAMS = [
-  "input",
-  "inputs",
-  "metadata",
-  "policy",
-  "dimensions",
-  "environment",
-  "budget",
-  "data",
-  "scores",
-  "costs",
-  "metrics",
-  "configuration",
-  "receipt_requirements",
-  "execution",
-  "rules",
-  "authorization_requests",
-  "notification_refs",
-  "cost_hint",
-  "design_axes",
-  "report",
-  "limits",
-  "resources",
-  "actual",
-  "actual_resources",
-  "estimated_resources",
-  "observation",
-  "trial_budget",
-  "policy_fingerprints",
-  "structured_data",
-  "field_sources",
-  "observed_capabilities",
-  "requirements",
-  "output",
-  "transform",
-  "entity",
-  "values",
-  "budget_limits",
-  "sandbox_requirements",
-  "eval_suite_ref",
-  "checks",
-  "state",
-  "action_results",
-  "workbench",
-  "runtime",
-  "privacy",
-  "acceptance",
-  "budget",
-  "allocation",
-  "action_contract",
-  "result_schema",
-  "state_before",
-  "state_after",
-  "usage",
-  "model_fingerprint",
-  "environment_fingerprint",
-  "capability_fingerprint",
-  "policy_fingerprint",
-  "metadata",
-  "trace",
-  "scope",
-  // Action gate (plan 4.2–6.3.1): `checker` and `receipt` are objects, `guard_values` is
-  // the context guard clauses are evaluated against. `guard` is an array of clauses.
-  "checker",
-  "receipt",
-  "guard_values",
-  // Evidence receipt (plan 10–11.5): both observed states are objects carrying metrics
-  // plus a `provenance` block.
-  "pre_state",
-  "post_state",
-  // Subscription drift (plan 7.4): the authorized `structure` and the incoming `event` are
-  // deliberately separate shapes, and neither is accepted where the other belongs.
-  "structure",
-  "event",
-  // Prepared state (plan 13A.3.2–3.3): the submit payload and the re-stated assertions are
-  // both objects; `assertions` is an array of named observations.
-  "submit_payload",
-  // Authorization (plan 11.4): `effect` is the descriptor whose digest the authorization
-  // binds, so it is an object rather than a scalar.
-  "effect"
-];
-var ARRAY_PARAMS = [
-  "completed",
-  "pending",
-  "decisions",
-  "artifacts",
-  "steps",
-  "cases",
-  "capabilities",
-  "allowed_side_effects",
-  "approved_side_effects",
-  "nodes",
-  "artifact_ids",
-  "evidence_ids",
-  "trial_ids",
-  "grade_ids",
-  "pattern_ids",
-  "failure_modes",
-  "receipt_ids",
-  "criteria",
-  "acceptance_criteria",
-  "allowed_extensions",
-  "fields",
-  "capability_requirements",
-  "object_schemas",
-  "components",
-  "action_contracts",
-  "bindings",
-  "source_refs",
-  "changes",
-  "tags",
-  "claim_ids",
-  "evidence_ids",
-  "expected_claim_ids",
-  "case_ids",
-  "allowed_operations",
-  "allowed_effects",
-  "require_approval_for",
-  "operations",
-  "subjects",
-  "children",
-  "trusted_hosts",
-  "command_allowlist",
-  "path_allowlist",
-  "kinds",
-  "effects",
-  "allowed_kinds",
-  "dependencies",
-  "aliases",
-  "assets",
-  "asset_ids",
-  "connector_ticket_ids",
-  "artifact_ids",
-  "final_artifact_ids",
-  "evidence_ids",
-  "gold_case_ids",
-  "output_contract",
-  "trial_ids",
-  "include_paths",
-  "affected_paths",
-  "object_ids",
-  "depends_on",
-  "source_paths",
-  "applies_to",
-  "patches",
-  "snapshot_refs",
-  "triggers",
-  "allowed_hosts",
-  "allowed_actions",
-  "approval_required_actions",
-  "detected_instructions",
-  "citations",
-  "allowed_fields",
-  "argv",
-  "sources",
-  "providers",
-  "budget_ids",
-  "recovery_item_ids",
-  "memory_kinds",
-  "object_types",
-  "required_memory_ids",
-  "required_object_ids",
-  "benchmark_ids",
-  "memory_ids",
-  "source_ids",
-  "document_ids",
-  "paths",
-  "state_paths",
-  "turns",
-  "messages",
-  "events",
-  "decisions",
-  "constraints",
-  "open_questions",
-  "artifacts",
-  "roles",
-  "changed_paths",
-  "materials",
-  "non_goals",
-  "input_refs",
-  "output_refs",
-  "evidence_ids",
-  "gold_case_ids",
-  "contamination_flags",
-  "trace_ids",
-  "knowledge_refs",
-  "capability_refs",
-  "workflow_refs",
-  "excluded_refs",
-  "selection_rationale",
-  "change_kinds",
-  "platforms",
-  "permissions",
-  "required",
-  "candidates",
-  "required_artifacts",
-  "required_evidence",
-  "evidence_refs",
-  "criteria",
-  // Action gate: `guard` is an array of { field, op, value } clauses.
-  "guard",
-  // Evidence receipt: `proofs` is an array of observed proofs, `cross_checks` an array of
-  // independent machine confirmations.
-  "proofs",
-  "cross_checks",
-  // Prepared state: `assertions` and `observed` are arrays of named observations.
-  "assertions",
-  "observed",
-  // Adjudication queue: `item_ids` is the batch, `authorizations` one record per effect.
-  "item_ids",
-  "authorizations",
-  // Object hatching (plan 5.3): `fields` names what is missing, `values` supplies it.
-  "values"
-];
-var schemaFor = (name) => {
-  if (BOOLEAN_PARAMS.includes(name)) return { type: "boolean" };
-  if (INTEGER_PARAMS.includes(name)) return { type: "integer" };
-  if (NUMBER_PARAMS.includes(name)) return { type: "number" };
-  if (OBJECT_PARAMS.includes(name)) return { type: "object" };
-  if (ARRAY_PARAMS.includes(name)) return { type: "array" };
-  return { type: "string" };
-};
-var TYPES_BY_TOOL = {
-  craft_procedure_configuration_save: { scope: "string", definition: "object", scope_envelope: "object", principal_ids: "array" },
-  craft_knowledge_evaluation_run: { expected_relevant_refs: "array", retrieved_refs: "array", citation_judgements: "array" },
-  craft_experience_graph_inspect: { cases: "array", input_keys: "array", scope: "string", configuration: "object", principal_ids: "array" },
-  craft_experience_graph_edit: { scope: "string", configuration: "object", scope_envelope: "object", principal_ids: "array", before_version: "integer" },
-  craft_knowledge_asset_inspect: { before_version: "integer", principal_ids: "array" },
-  craft_knowledge_asset_restore: { principal_ids: "array" },
-  craft_memory_asset_inspect: { before_version: "integer", principal_ids: "array" },
-  craft_memory_asset_restore: { principal_ids: "array" },
-  craft_experience_asset_inspect: { before_version: "integer", principal_ids: "array" },
-  craft_experience_asset_restore: { principal_ids: "array" },
-  craft_codebase_asset_inspect: { before_version: "integer", principal_ids: "array" },
-  craft_codebase_asset_restore: { principal_ids: "array" },
-  craft_context_open: { max_tokens: "integer", required_refs: "array", history_refs: "array", state_refs: "array", members: "array", principal_ids: "array", include_codebase: "boolean", include_global: "boolean", include_working_notes: "boolean" },
-  craft_evidence_record: { confidence: "string" },
-  craft_component_diagnose: { observed_tool_names: "array" },
-  craft_context_resolution_feedback: { injected_tokens: "integer", schema_tokens: "integer", history_tokens: "integer", asset_refs: "array", members: "array" },
-  craft_retrieval_adapter_evaluate: { dataset: "object", metrics: "object" },
-  craft_context_working_set_resolve: { required_refs: "array", history_refs: "array", state_refs: "array", members: "array" },
-  craft_context_resolution_resolve: { required_refs: "array", members: "array", principal_ids: "array", include_global: "boolean", include_working_notes: "boolean", history_view: "boolean" },
-  craft_decision_context_gate_open: { members: "array", require_context: "boolean" },
-  craft_knowledge_search: { scope: "string", include_candidates: "boolean", include_global: "boolean", principal_ids: "array" },
-  craft_knowledge_claim_save: { scope: "string", scope_envelope: "object" },
-  craft_knowledge_source_register: { scope_envelope: "object" },
-  craft_knowledge_source_ingest: { max_files: "integer", max_chars_per_fragment: "integer" },
-  craft_knowledge_auto_review: { auto_promote: "boolean" },
-  craft_knowledge_memory_bundle: { allow_local_write: "boolean", include_candidates: "boolean", include_global: "boolean" },
-  craft_memory_governance: { principal_ids: "array", explicit_consent: "boolean" },
-  craft_memory_capture_user_statement: { explicit_consent: "boolean", auto_accept: "boolean", scope_envelope: "object" },
-  craft_memory_candidate_propose: { confidence: "string", scope_envelope: "object" },
-  craft_memory_ledger_get: { principal_ids: "array" },
-  craft_memory_ledger_list: { include_history: "boolean", principal_ids: "array" },
-  craft_memory_maintenance_run: { principal_ids: "array" },
-  craft_memory_maintenance_schedule: { budget_available: "boolean", idle: "boolean", model_available: "boolean" },
-  craft_experience_observe: { verification: "object", scope: "string", scenario_signature: "object", execution_shape: "array" },
-  craft_experience_procedure_draft: { design_axes: "array", observation_ids: "array" },
-  craft_experience_procedure_submit: { composition: "object", graph_control: "object", inputs: "array", steps: "array", nodes: "array", edges: "array", outputs: "object", checkpoint_policy: "object" },
-  craft_procedure_create: { scenario_signature: "object", preconditions: "array", scope_envelope: "object" },
-  craft_host_session_open: { environment_fingerprint: "string", policy_fingerprint: "string", capability_fingerprint: "string", model_fingerprint: "string", budget_fingerprint: "string" },
-  craft_outcome_observer_observe: { environment_fingerprint: "string" },
-  craft_procedure_host_control: { scope: "string", input: "object", principal_ids: "array" },
-  craft_procedure_decision_evaluate: { scope: "string", expected_version: "integer", principal_ids: "array" },
-  craft_procedure_invocation_transition: { scope: "string", expected_version: "integer", principal_ids: "array" },
-  craft_procedure_invocation_bind: { model_fingerprint: "string", budget_fingerprint: "string", scope: "string", expected_version: "integer", principal_ids: "array", procedure_version: "integer", input_refs: "object", allowed_effects: "array", max_dispatches: "integer", ttl_ms: "integer" },
-  craft_procedure_invocation_dispatch: { scope: "string", expected_version: "integer", principal_ids: "array", precondition_evidence: "object" },
-  craft_procedure_invocation_report: { scope: "string", expected_version: "integer", principal_ids: "array", output_refs: "object", acceptance_evidence_ids: "array" },
-  craft_procedure_invocation_resume: { scope: "string", expected_version: "integer", principal_ids: "array" },
-  craft_procedure_invocation_get: { scope: "string", expected_version: "integer", principal_ids: "array" },
-  craft_procedure_invocation_evaluate: { scope: "string", expected_version: "integer", principal_ids: "array", baseline_ids: "array", candidate_ids: "array" },
-  craft_procedure_plan: { procedure_version: "integer", scope: "string", input_refs: "object", precondition_evidence: "object", principal_ids: "array" },
-  craft_procedure_gate: { passed: "boolean" },
-  craft_procedure_list: { scope: "string" },
-  craft_experience_procedure_gate: { passed: "boolean" },
-  craft_experience_procedure_projection_list: { scope: "string" },
-  craft_experience_procedure_projection_draft: { scenario_signature: "object", preconditions: "array" },
-  craft_codebase_analysis_import: { analysis: "object" },
-  craft_codebase_context_slice: { node_ids: "array" },
-  craft_codebase_impact_query: { max_depth: "integer" }
-};
-var objectSchema = (toolName, required5 = [], optional2 = []) => ({
-  type: "object",
-  properties: Object.fromEntries([...required5, ...optional2].map((name) => [name, TYPES_BY_TOOL[toolName]?.[name] ? { type: TYPES_BY_TOOL[toolName][name] } : schemaFor(name)])),
-  required: required5,
-  additionalProperties: false
-});
-var tool = (name, description, required5 = [], readOnly = false, optional2 = []) => ({
-  name,
-  description,
-  inputSchema: objectSchema(name, required5, optional2),
-  ...readOnly ? { annotations: { readOnlyHint: true } } : {}
-});
-
-// core/mcp/tool-catalog.ts
-var TOOL_DEFINITIONS = [
-  tool("craft_info", "Show the Craft version, data location, and record counts.", [], true),
-  tool("craft_component_readiness_get", "Read content-free readiness only. This never retrieves Knowledge, Memory, or Experience, never resolves context, and does not count as using the component; call the component's actual search, context, write, or observation tool when the task requires it. Standalone surfaces accept only their mounted component.", ["component"], true),
-  tool("craft_component_diagnose", "Diagnose the currently attached Knowledge, Memory, or Experience component. Optionally compare the Host-visible tools to the expected small surface.", ["component"], true, ["observed_tool_names", "expected_schema_digest", "session_id"]),
-  tool("craft_activation_proof_doctor", "Read content-free Codex/Claude Hook execution proof for this session. Configuration and an installed manifest are not treated as execution proof.", [], true, ["session_id"]),
-  tool("craft_context_tools_discover", "Discover a small task-specific Context tool subset and its exact input schemas. Existing registered tools remain compatible.", [], true, ["intent"]),
-  tool("craft_context_open", "Open the current repository context: automatically reuse/update its index and resolve bounded Knowledge, Memory and routeable Experience with receipts. Set include_codebase=false for context-only work. Existing source, required-memory, retrieval and access controls apply; inspect pack partial_reasons for unavailable or omitted material.", ["project_root", "query"], false, ["max_items", "max_chars", "members", "index_depth", "include_codebase", "source_ids", "memory_ids", "retrieval_adapter_id", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "user_scope_id", "team_scope_id", "organization_scope_id", "session_scope_id", "include_global", "include_working_notes", "now", "task_kind", "required_refs", "task_id", "session_id", "turn_id", "history_refs", "state_refs", "max_tokens"]),
-  tool("craft_codebase_repository_ensure", "Automatically discover the current Git repository, respect ignores and project opt-out, and reuse or incrementally update a checkpoint-pinned index. No manual workspace activation is required. Semantic relations are built only when index_depth is semantic.", ["project_root"], false, ["index_depth"]),
-  tool("craft_codebase_workspace_open", "Declare an explicit read-only analysis workspace and checkpoint its allowed paths. Repeating the same declaration is idempotent.", ["workspace_id", "root_path", "include_paths"], false, ["name"]),
-  tool("craft_codebase_refresh", "Checkpoint changed workspace files and rebuild its structural index; requires explicit activation.", ["workspace_id"], false, ["activation_id"]),
-  tool("craft_codebase_activate", "Explicitly enable read-only structural analysis for one declared Workspace. It does not scan files or modify any Host configuration.", ["workspace_id"], false, ["activation_id", "actor"]),
-  tool("craft_codebase_deactivate", "Disable read-only structural analysis for one Workspace. Existing indexes remain stored but are not queryable until explicitly reactivated.", ["workspace_id"], false, ["activation_id", "actor"]),
-  tool("craft_codebase_status", "Report whether codebase analysis is explicitly enabled, its available snapshot indexes, and any stale state. It never reads source files.", ["workspace_id"], true, ["activation_id"]),
-  tool("craft_codebase_analysis_import", "Import bounded language analyzer facts pinned to an active workspace checkpoint. Adapter assertions remain static, partial evidence.", ["workspace_id", "checkpoint_id", "analysis"], false, ["activation_id", "index_id"]),
-  tool("craft_codebase_index_build", "Build a read-only structural index from one declared Workspace checkpoint. It stores paths, digests, spans and relations, never source bodies.", ["workspace_id"], false, ["activation_id", "checkpoint_id", "index_id", "analyzer"]),
-  tool("craft_codebase_symbol_find", "Find bounded symbols in one ready codebase index and return snapshot-pinned source spans.", ["index_id", "workspace_id", "query"], true, ["activation_id", "limit"]),
-  tool("craft_codebase_callers_find", "Find static caller candidates for one indexed symbol. Heuristic relations and unresolved coverage remain explicit.", ["index_id", "workspace_id"], true, ["activation_id", "symbol_id", "node_id", "limit"]),
-  tool("craft_codebase_impact_query", "Return a bounded static candidate impact subgraph. It is never a runtime-completeness or release-safety claim.", ["index_id", "workspace_id", "node_id"], true, ["activation_id", "max_depth", "limit"]),
-  tool("craft_codebase_context_slice", "Return only codebase references for selected nodes; it never injects source bodies into Host context.", ["index_id", "workspace_id", "node_ids"], true, ["activation_id", "limit"]),
-  tool("craft_component_history_knowledge_migrate", "Plan or explicitly apply reviewed Knowledge provenance repair. Missing Source Revision, Fragment, Evidence, or semantic review is downgraded to revalidation_required.", [], false, ["apply"]),
-  tool("craft_component_history_experience_migrate", "Plan or explicitly apply workflow_evolution_observation migration into Experience Observation records. Untrusted Evidence remains revalidation_required.", [], false, ["apply"]),
-  tool("craft_adapter_manifest_save", "Register a versioned Generic Adapter Manifest with declared capabilities, permissions, effects, and platform support.", ["adapter_id", "version", "kind"], false, ["platforms", "entry", "transport", "capabilities", "permissions", "effects", "dependencies", "integrity", "signature", "sandbox_profile", "metadata"]),
-  tool("craft_adapter_manifest_get", "Read one exact Generic Adapter Manifest.", ["adapter_id"], true),
-  tool("craft_adapter_manifest_list", "List registered Generic Adapter Manifests.", [], true, ["limit"]),
-  tool("craft_adapter_health", "Run a platform compatibility health check for one adapter.", ["adapter_id"], true),
-  tool("craft_adapter_conformance", "Run deterministic Generic Adapter conformance checks.", ["adapter_id"], true),
-  tool("craft_adapter_quarantine", "Quarantine an adapter without deleting its manifest.", ["adapter_id", "reason"]),
-  tool("craft_adapter_rollback", "Reactivate a quarantined adapter after review.", ["adapter_id"]),
-  tool("craft_command_plan", "Plan a cross-platform argv command without executing it.", ["argv"], false, ["cwd", "shell", "timeout_ms", "output_limit", "effect", "approval_ref", "adapter_id"]),
-  tool("craft_command_run", "Execute one governed cross-platform command and return a bounded receipt.", ["argv"], false, ["cwd", "shell", "timeout_ms", "output_limit", "effect", "approval_ref", "adapter_id", "run_id"]),
-  tool("craft_command_observe", "Read one command receipt.", ["run_id"], true),
-  tool("craft_command_cancel", "Cancel one running command or return an idempotent terminal receipt.", ["run_id"]),
-  tool("craft_capability_projection", "Project only required capabilities within a token budget and explain exclusions.", ["candidates"], true, ["required", "token_budget"]),
-  tool("craft_durable_run_start", "Create a leased, recoverable durable run.", [], false, ["run_id", "task_id", "goal"]),
-  tool("craft_durable_run_tick", "Claim one queued or expired durable run with a lease.", [], false, ["owner", "lease_seconds"]),
-  tool("craft_durable_run_complete", "Complete a durable run with an explicit terminal status.", ["run_id", "status"], false, ["result"]),
-  tool("craft_durable_run_recover", "Return running runs to the queue after owner failure.", [], false, ["owner"]),
-  tool("craft_trust_curve_record", "Record scoped evidence and calculate a bounded autonomy suggestion.", ["scope", "passed", "failed"], false, ["evidence_refs"]),
-  tool("craft_model_route", "Select a model candidate by quality, cost, or latency under an optional budget.", ["candidates"], true, ["objective", "budget"]),
-  tool("craft_delivery_gate", "Independently gate delivery on required artifacts and evidence.", ["artifacts", "evidence"], true, ["required_artifacts", "required_evidence"]),
-  tool("craft_task_handoff_manifest", "Create a host-neutral task handoff manifest.", ["context_manifest", "host", "task"], true, ["budget"]),
-  tool("craft_domain_evaluator_run", "Run a domain evaluator against structured observations.", ["evaluator_id", "observations"], true),
-  tool("craft_openapi_import", "Import an OpenAPI document into a governed read/write adapter contract.", ["document"], false),
-  tool("craft_trust_profile_record", "Record scoped evidence for a trust recommendation; it never grants execution authority.", ["scope", "evidence_ids"], false, ["profile_id", "passed", "failed", "interventions", "ttl_seconds", "reason"]),
-  tool("craft_trust_profile_recommend", "Recommend automatic, notify-only, human-approval, or blocked handling from scoped evidence.", ["profile_id"], true),
-  tool("craft_trust_profile_get", "Read one scoped trust profile.", ["profile_id"], true),
-  tool("craft_trust_profile_list", "List scoped trust profiles.", [], true, ["limit", "task_class"]),
-  tool("craft_trust_profile_revoke", "Revoke a trust profile immediately; existing policy still controls execution.", ["profile_id"], false, ["reason"]),
-  tool("craft_web_fetch", "Fetch a bounded public HTTP(S) resource as an untrusted, content-free observation; cookies and credentials are never sent.", ["url"], false, ["method", "allowed_hosts", "timeout_ms", "max_bytes", "accept", "operation_id"]),
-  tool("craft_web_action_prepare", "Prepare a browser navigation/click/fill/submit contract for an explicit host adapter; Craft does not drive a browser itself.", ["task_id", "workspace", "url", "input_digest"], false, ["operation", "approval_ref", "operation_id"]),
-  tool("craft_web_action_complete", "Record an adapter receipt for a prepared browser action.", ["operation_id", "adapter_id", "verdict", "result_digest"], false),
-  tool("craft_web_operation_get", "Read one web or browser operation receipt.", ["operation_id"], true),
-  tool("craft_source_add", "Add and optionally scan a local capability directory. Equivalent mounts are idempotent; mirrors remain provenance.", ["path"], false, ["label", "scan", "priority"]),
-  tool("craft_source_list", "List configured capability sources and resolved paths.", [], true),
-  tool("craft_source_update", "Enable, disable, relabel, or reprioritize a source mount.", ["source_id"], false, ["enabled", "label", "priority"]),
-  tool("craft_source_remove", "Remove a source index without deleting its files.", ["source_id"]),
-  tool("craft_source_scan", "Incrementally scan one or all enabled sources.", [], false, ["source_id"]),
-  tool("craft_capability_search", "Return a small hybrid-ranked set of matching capabilities; semantic retrieval is optional and safely falls back to keywords.", ["query"], true, ["limit"]),
-  tool("craft_logical_capability_list", "List logical capabilities, their source instances, selected mount, and explicit content conflicts.", [], true),
-  tool(
-    "craft_logical_activation_plan",
-    "Select matching logical capabilities for one task, pin their content digests, and optionally bind an exact Context Profile. This only activates read-only context.",
-    ["task_id", "query"],
-    false,
-    ["plan_id", "limit", "allowed_effects", "context_profile_id", "context_profile_version"]
-  ),
-  tool("craft_logical_activation_plan_get", "Read one digest-pinned logical capability activation plan.", ["plan_id"], true, ["version"]),
-  tool("craft_logical_activation_plan_list", "List digest-pinned logical capability activation plans.", [], true, ["limit", "query"]),
-  tool("craft_logical_activation_audit", "Audit one activation plan for missing content, content drift, or safe mirror reselection; it never executes a capability.", ["plan_id"], false, ["audit_id"]),
-  tool(
-    "craft_logical_activation_resolve",
-    "Revalidate and load digest-pinned local capability documents as bounded read-only context. It never executes their instructions.",
-    ["plan_id"],
-    false,
-    ["resolution_id", "audit_id", "max_chars"]
-  ),
-  tool("craft_logical_activation_resolution_get", "Read one content-free logical capability resolution receipt.", ["resolution_id"], true, ["version"]),
-  tool("craft_logical_activation_resolution_list", "List content-free logical capability resolution receipts.", [], true, ["limit", "query"]),
-  tool("craft_semantic_status", "Show whether optional semantic capability retrieval is disabled, configured, ready, or temporarily degraded.", [], true),
-  tool("craft_execution_policy_decide", "Classify an effect into normal host execution, isolation, approval, or a fail-closed block.", ["effect", "platform"], true, ["generated_code", "requires_credential", "has_compensation"]),
-  tool("craft_capability_get", "Read one indexed capability.", ["asset_id"], true),
-  // v0.12.33: the first-run and distribution surface. These answer "can an
-  // ordinary user actually run this", which no earlier tool did.
-  tool("craft_first_run_readiness", "Report which configured models are usable right now and, when none are, the exact environment variable or action that unblocks a first run.", [], true, ["models", "env", "credential_source"]),
-  tool("craft_credential_resolve", "Resolve credential names from the process environment plus an optional desktop-written credential file. Names are returned; values are never returned.", [], true, ["credential_file", "env"]),
-  tool("craft_mcp_protocol_negotiate", "Negotiate the MCP protocol version and report whether a downgrade occurred and why.", [], true, ["protocolVersion"]),
-  tool("craft_mcp_migration_assess", "Assess whether the MCP 2026-07-28 revision can be adopted, and name what blocks it.", [], true, ["host_supports_mrtr", "has_durable_tasks", "tasks_extension_adopted"]),
-  tool("craft_isolation_capability_get", "Report the real isolation boundary for a platform, distinguishing an enforced backend from a declared one.", [], true, ["platform"]),
-  tool("craft_distribution_plan_get", "Report where a user obtains the desktop build and what remains before a download exists.", [], true, ["release_assets_available"]),
-  tool("craft_context_project", "Project context into a token budget without destroying anything. With a session_id the projection is stored, so an omitted segment can be restored in a later call without re-supplying it.", ["max_tokens"], false, ["segments", "session_id"]),
-  tool("craft_context_restore", "Pull an omitted context segment back into the projection. With a session_id the segments come from the store, which is the case this exists for: the caller knows the id and nothing else. It reports failure if the segment genuinely cannot fit.", ["segment_id"], false, ["max_tokens", "segments", "session_id"]),
-  tool("craft_context_projection_get", "Read one session's stored projection and its segment count, without reading the transcript back.", ["session_id"], true),
-  tool("craft_state_view_get", "Read one unified, read-only view of a task's state: the workspace snapshot, the run, the manifest, a derived status and the single safe next action.", [], true, ["task_id"]),
-  tool("craft_bm25_search", "Rank records by BM25 with an exact-identifier boost, so a digest or ticket id outranks a semantic near-miss.", ["query"], false, ["documents"]),
-  tool("craft_retrieval_fuse", "Fuse several ranked lists by reciprocal rank into one ordering, with a source count per item.", ["rankings"], false, ["k"]),
-  tool("craft_experience_capture_decide", "Decide whether a finished turn is worth remembering, from observed signals rather than model discretion.", ["outcome"], false, ["retries", "corrections", "distinct_tools", "novel", "user_explicit", "threshold"]),
-  tool("craft_experience_capture_build", "Turn an accepted capture into a reviewable experience record carrying its provenance.", ["outcome", "summary"], false, ["task_id", "scope", "experience_id", "retries", "corrections", "distinct_tools", "novel", "user_explicit", "threshold"]),
-  tool("craft_memory_decay_get", "Weight a memory by age, successful use and source trust, so a stale preference stops competing with a recent correction.", ["confirmed_at", "now"], false, ["accesses", "trust"]),
-  tool("craft_memory_capture_propose", "Decide whether a turn should propose a memory candidate without being asked. Approval stays mandatory; only the proposal threshold moves.", ["signals", "succeeded"], false, ["corrections", "retries", "novel", "mode"]),
-  tool("craft_memory_promotion_preview", "Preview the promotion of a legacy memory into the governed ledger as an approvable candidate. Never migrates silently.", ["legacy_kind", "legacy_id", "content"], false, ["legacy_version", "scope", "kind"]),
-  tool("craft_memory_hybrid_scores", "Fuse keyword and vector rankings for memory retrieval, so an eligible adapter actually changes the result rather than the label.", ["candidates"], false, ["vector_eligible", "k"]),
-  tool("craft_memory_usage_record", "Record that a resolved memory was in context for a turn that succeeded, which is the access signal decay learns from.", ["memory_ids", "outcome", "turn_id"], false, ["receipt_id"]),
-  // v0.12.36: the deterministic verification sensor. It compares bytes the caller
-  // already observed and executes nothing, which is why all three are `read`.
-  tool("craft_verification_check", "Evaluate one deterministic check (exit code, expected output, file digest) as passed, failed, blocked or inconclusive. It executes nothing.", ["kind", "name"], false, ["expected_exit_code", "observed_exit_code", "expected_substring", "expected_pattern", "observed_output", "expected_digest", "observed_digest", "observed_present"]),
-  tool("craft_verification_evaluate", "Combine independent deterministic checks into one verdict: any failed check fails the plan, and an unevaluable check is blocked, never a pass.", ["checks"], false),
-  tool("craft_verification_capture_signals_get", "Turn deterministic check results into the outcome the experience-capture decision consumes, so a lesson comes from an observed failure rather than a reported one.", ["checks"], false, ["retries"]),
-  // v0.12.37: cross-trajectory abstraction. Reading across runs is `read`; the
-  // deliberate exception is `craft_abstraction_build`, which is `governed`
-  // because minting an abstraction asserts a claim about the future.
-  tool("craft_trajectory_signature_get", "Derive the deterministic failure signature for one trajectory. Order-independent, so the same failure reported differently still groups together.", ["failed_checks"], false),
-  tool("craft_abstraction_evaluate", "Find failure signatures recurring across independent trajectories and report which clear the evidence floor, including the near-misses.", ["trajectories"], false, ["scope"]),
-  tool("craft_abstraction_build", "Build a reviewable abstraction from a demonstrated recurring failure. It always requires review and grants no execution authority.", ["trajectories", "signature"], false, ["scope", "abstraction_id"]),
-  // v0.12.38: failure attribution. It names the cause the observations support,
-  // or reports `unattributed` — a guessed cause is worse than an admitted gap.
-  tool("craft_failure_attribution_get", "Attribute one failure to the layer that caused it (echo, coverage, grounding, revision, scope, temporal, retrieval, synthesis) from observed signals only.", [], false, ["evidence_already_in_input", "source_contained_answer", "relevant_retrieved", "answer_in_context", "fact_extracted", "superseded_by_newer", "wrong_scope_applied", "wrong_time_applied", "answer_wrong_with_full_context"]),
-  tool("craft_failure_attribution_summary_get", "Attribute many failures and rank where the system is weakest, reporting the unattributed count rather than hiding it.", ["failures"], false),
-  // v0.12.39: compare what this build declares against what it implements. An
-  // unchecked claim is reported as `unverifiable`, never as passing.
-  tool("craft_mcp_declarations_get", "Read this build's MCP declarations as data, each with the fact that would falsify it.", [], true),
-  tool("craft_consistency_check", "Check declarations against observed implementation facts, returning confirmed, contradicted, or unverifiable for each.", ["declarations", "observed"], true),
-  // v0.12.40: governance pinning. Constraints are removed from the eviction
-  // competition and integrity-checked by content, not by presence.
-  tool("craft_governance_pin_get", "Render the pinned governance block that must survive every compaction, with its integrity digest.", ["constraints"], true),
-  tool("craft_governance_pin_check", "Verify the pinned governance block is still intact in a rendered context, detecting both loss and rewording.", ["constraints", "rendered"], true),
-  tool("craft_governance_compaction_evaluate", "Plan a compaction that removes constraints from the eviction competition, and report what it would drop.", ["constraints", "max_tokens", "segments"], true),
-  tool("craft_governance_constraint_define", "Define one standing governance constraint as data, so it can be pinned and its survival checked.", ["id", "kind", "statement", "effect"], false, ["scope"]),
-  // v0.12.41: MCP 2026-07-28 forward compatibility, reported honestly rather
-  // than claimed.
-  tool("craft_mcp_discover_get", "Report the revisions this build speaks, its capabilities, and its assessment of the 2026-07-28 revision.", [], true, ["server_name", "version"]),
-  tool("craft_mcp_forward_compat_get", "Report which 2026-07-28 requirements are addressed and which remain, without claiming compliance.", [], true, ["protocol_version"]),
-  tool(
-    "craft_default_route",
-    "Create a durable route that prefers matching verified Workflows and otherwise returns the shortest safe host plan.",
-    ["goal"],
-    false,
-    ["title", "project_id", "mode"]
-  ),
-  tool(
-    "craft_default_route_execute",
-    "Run the exact verified Workflow selected by a route and capture its Trial lifecycle.",
-    ["route_id", "project_root"],
-    false,
-    [
-      "inputs",
-      "allow_execution",
-      "approved_side_effects",
-      "case_id",
-      "harness_configuration_id",
-      "harness_configuration_version",
-      "environment",
-      "budget"
-    ]
-  ),
-  tool("craft_default_route_resume", "Resume a durable default route and return only its next safe action.", ["task_id"], true),
-  tool(
-    "craft_default_route_find",
-    "Find one uniquely matching active default route for a natural-language continuation; never guess on a tie.",
-    ["query"],
-    true,
-    ["project_id"]
-  ),
-  tool(
-    "craft_project_policy_save",
-    "Save a versioned project policy that can require evidence-backed route receipts.",
-    ["project_id", "name"],
-    false,
-    ["policy_id", "enforcement", "receipt_requirements"]
-  ),
-  tool("craft_project_policy_get", "Read a project policy version.", ["policy_id"], true, ["version"]),
-  tool("craft_project_policy_list", "List project policies.", [], true, ["limit", "query"]),
-  tool(
-    "craft_route_receipt_record",
-    "Register a structured command receipt for the current safe route stage; secrets are rejected.",
-    ["route_id", "stage_id", "kind", "status", "command", "summary"],
-    false,
-    ["receipt_id", "uri", "host_adapter_id"]
-  ),
-  tool(
-    "craft_host_adapter_save",
-    "Save a versioned Host Adapter contract; it grants only listed route operations.",
-    ["name", "host", "allowed_operations"],
-    false,
-    ["host_adapter_id"]
-  ),
-  tool("craft_host_adapter_get", "Read a Host Adapter version.", ["host_adapter_id"], true, ["version"]),
-  tool("craft_host_adapter_list", "List Host Adapter contracts.", [], true, ["limit", "query"]),
-  tool(
-    "craft_host_adapter_dispatch",
-    "Lease only the next safe route action to a compatible Host Adapter.",
-    ["host_adapter_id", "route_id"],
-    false,
-    ["host_adapter_version", "dispatch_id"]
-  ),
-  tool(
-    "craft_host_adapter_report",
-    "Record a Host Adapter dispatch completion without fabricating route evidence.",
-    ["dispatch_id", "status", "summary"]
-  ),
-  tool(
-    "craft_runtime_policy_save",
-    "Save a versioned runtime effect, approval, concurrency, budget, and deterministic-driver policy.",
-    ["name", "allowed_effects"],
-    false,
-    ["runtime_policy_id", "require_approval_for", "max_concurrency", "budget", "max_attempts", "lease_ttl_seconds", "trusted_hosts", "command_allowlist", "path_allowlist"]
-  ),
-  tool("craft_runtime_policy_get", "Read an exact runtime policy version.", ["runtime_policy_id"], true, ["version"]),
-  tool("craft_runtime_policy_list", "List runtime policies.", [], true, ["limit", "query"]),
-  tool(
-    "craft_runtime_run_start",
-    "Create a durable controlled run with policy and environment fingerprints.",
-    ["task_id", "policy_id", "environment", "operations"],
-    false,
-    ["run_id", "policy_version", "trial_id"]
-  ),
-  tool("craft_runtime_run_get", "Read a durable runtime run, operations, and immutable trace.", ["run_id"], true),
-  tool(
-    "craft_runtime_dispatch",
-    "Lease only pending policy-approved runtime operations to a host.",
-    ["run_id", "claimed_by"],
-    false,
-    ["capacity", "kinds", "effects", "authorization_requests", "notification_refs", "now"]
-  ),
-  tool("craft_runtime_operation_get", "Read one runtime operation.", ["operation_id"], true),
-  tool(
-    "craft_runtime_operation_decision",
-    "Approve or reject an effect that is awaiting human approval.",
-    ["operation_id", "decision", "actor"]
-  ),
-  tool(
-    "craft_runtime_operation_submit",
-    "Submit an observed leased operation result and optional child operations.",
-    ["operation_id", "lease_id", "claimed_by", "verdict"],
-    false,
-    ["costs", "children", "idempotency_key", "artifact_ids", "evidence_ids", "retryable"]
-  ),
-  tool("craft_runtime_lease_recover", "Recover expired runtime leases or terminally fail exhausted attempts.", ["run_id"], false, ["now"]),
-  tool(
-    "craft_runtime_driver_tick",
-    "Execute only trusted, policy-approved deterministic Workflow operations; leave Agent work to a compatible Host.",
-    ["run_id", "driver_id"],
-    false,
-    ["capacity"]
-  ),
-  tool("craft_runtime_run_resume", "Return the next durable runtime action without guessing.", ["run_id"], true),
-  tool(
-    "craft_runtime_promotion_eligibility",
-    "Check exact policy and environment fingerprints before promotion.",
-    ["run_id", "policy_id", "environment"],
-    true,
-    ["policy_version"]
-  ),
-  tool(
-    "craft_runtime_adapter_save",
-    "Save a versioned Host execution contract that limits operation kinds, effects, concurrency, and receipt support.",
-    ["name", "host", "allowed_kinds", "allowed_effects"],
-    false,
-    ["runtime_adapter_id", "max_concurrency", "execution_environment", "supports_pause_resume", "supports_evidence_receipts"]
-  ),
-  tool("craft_runtime_adapter_get", "Read an exact Runtime Adapter contract.", ["runtime_adapter_id"], true, ["version"]),
-  tool("craft_runtime_adapter_list", "List registered Runtime Adapter contracts.", [], true, ["limit", "query"]),
-  tool(
-    "craft_runtime_adapter_dispatch",
-    "Lease only operations declared by one Runtime Adapter contract.",
-    ["runtime_adapter_id", "run_id"],
-    false,
-    ["runtime_adapter_version", "capacity", "authorization_requests", "notification_refs", "now"]
-  ),
-  tool(
-    "craft_runtime_adapter_report",
-    "Submit an adapter-attributed operation receipt with bounded Evidence.",
-    ["runtime_adapter_id", "operation_id", "lease_id", "verdict", "summary"],
-    false,
-    ["runtime_adapter_version", "costs", "artifact_ids", "evidence_ids", "retryable", "idempotency_key"]
-  ),
-  tool(
-    "craft_local_isolated_execute",
-    "Execute one leased local operation in a fail-closed network-denied platform sandbox.",
-    ["run_id", "operation_id", "lease_id", "claimed_by", "command"],
-    false,
-    ["args", "cwd", "requires_credential", "compensation", "costs", "idempotency_key"]
-  ),
-  tool(
-    "craft_route_workflow_proposal_create",
-    "Create only a draft Workflow from two or more passed evidence-backed safe routes; promotion still requires evaluation.",
-    ["route_id", "name", "steps"],
-    false,
-    ["workflow_id", "description", "inputs"]
-  ),
-  tool(
-    "craft_default_route_update",
-    "Record one required safe-plan stage with real evidence; the final stage records the route Outcome.",
-    ["route_id", "stage_id", "summary"],
-    false,
-    ["artifact_ids", "evidence_ids", "receipt_ids", "verdict"]
-  ),
-  tool("craft_task_open", "Create a durable task or resume one by ID.", [], false, ["task_id", "title", "goal", "project_id"]),
-  tool("craft_task_list", "List durable tasks.", [], true, ["limit", "status", "project_id"]),
-  tool("craft_intent_compile", "Compile one natural-language goal into a durable, host-neutral Task Contract. Ambiguous goals return explicit clarification questions.", ["goal"], false, ["intent_id", "workspace", "scope", "metric", "threshold", "baseline", "test_command", "changed_paths", "materials", "non_goals", "acceptance", "allowed_effects", "host", "model", "budget", "require_governance"]),
-  tool("craft_intent_get", "Read one compiled Task Contract.", ["intent_id"], true),
-  tool("craft_acceptance_compile", "Compile the exact Acceptance Contract for a previously compiled governed intent; it never treats a model claim as completion.", ["intent_id"], false, ["acceptance_id"]),
-  tool("craft_acceptance_contract_get", "Read one compiled Acceptance Contract.", ["acceptance_id"], true),
-  tool("craft_task_checkpoint", "Persist task progress, evidence references, and pending work.", ["task_id", "summary"], false, ["completed", "pending", "decisions", "artifacts", "status", "source"]),
-  tool("craft_task_control_save", "Pin one Task's workspace, allowed effects, optional capability/budget references, and acceptance requirement. It never starts a Host.", ["task_id", "workspace"], false, ["contract_id", "allowed_effects", "acceptance_required", "activation_profile_id", "activation_profile_version", "budget_account_id", "budget_account_version"]),
-  tool("craft_task_control_bind_launch", "Bind exactly one compatible Work Launch to a pinned Task Control contract.", ["contract_id", "launch_id"], false),
-  tool("craft_task_control_refresh", "Materialize the current Task Control status and its one safe next action from observed facts.", ["contract_id"], false),
-  tool("craft_task_control_get", "Read a Task Control contract, latest state, delivery loop, and content-free handoffs.", ["contract_id"], true),
-  tool("craft_task_control_handoff", "Create a content-free, resumable Task Control handoff without storing prompts or business data.", ["contract_id", "reason"], false, ["handoff_id"]),
-  tool("craft_task_run_prepare", "Bind one exact Work Launch to its Task Control contract and create a durable Task Run manifest. Read-only launches may start through the existing Host path; writes still await approval.", ["contract_id", "host", "workspace", "prompt"], false, ["task_run_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "environment", "budget"]),
-  tool("craft_task_run_refresh", "Re-observe one Task Run and return its only safe next action; environment or budget drift enters needs_replan.", ["task_run_id"], false, ["environment", "budget"]),
-  tool("craft_task_run_get", "Read a Task Run, its latest state, and content-free handoffs.", ["task_run_id"], true),
-  tool("craft_task_run_pause", "Pause one Task Run without dispatching or changing its Host permissions.", ["task_run_id", "reason"]),
-  tool("craft_task_run_resume", "Resume a paused Task Run only after re-observing optional environment and budget inputs.", ["task_run_id"], false, ["environment", "budget"]),
-  tool("craft_task_run_cancel", "Cancel a locally owned live Host Run when possible, then mark the Task Run cancelled.", ["task_run_id", "reason"]),
-  tool("craft_task_run_handoff", "Create a content-free Task Run handoff with its current resume action.", ["task_run_id", "reason"], false, ["handoff_id"]),
-  tool("craft_verified_work_loop_prepare", "Prepare Craft's single verified work loop: Task Contract, initial State Snapshot, Work Launch, Task Run and durable loop manifest.", ["workspace_id", "goal", "host", "prompt"], false, ["work_loop_id", "task_id", "title", "project_id", "contract_id", "allowed_effects", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "environment", "budget", "state_adapter", "state_paths", "artifact_ids", "activation_profile_id", "activation_profile_version", "budget_account_id", "budget_account_version"]),
-  tool("craft_verified_work_loop_advance", "Re-observe a verified work loop after Host progress; workspace or input drift becomes needs_replan rather than a model claim.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths", "artifact_ids", "snapshot_id", "receipt_id"]),
-  tool("craft_verified_work_loop_decide", "Record one human decision and apply only the corresponding approved launch, acceptance, or human-change action.", ["work_loop_id", "decision", "actor", "summary"], false, ["approved", "prompt", "criterion_id", "affected_paths", "change_id", "state_adapter", "state_paths"]),
-  tool("craft_verified_work_loop_resume", "Resume a non-drifted verified work loop only after re-observing its environment, budget and workspace.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths"]),
-  tool("craft_verified_work_loop_get", "Read one verified work loop with content-free receipts and human decisions.", ["work_loop_id"], true),
-  tool("craft_work_control_prepare", "Prepare the single WorkControl protocol. A turn returns a non-durable context-only result; goal, plan, execute, verify and learn use the verified task ledger.", [], false, ["interaction_mode", "workspace_id", "goal", "target", "plan", "acceptance_criteria", "host", "prompt"]),
-  tool("craft_work_control_advance", "Advance one WorkControl loop from observed State. Repeated no-progress observations create a checkpoint/handoff rather than unbounded retries.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths", "artifact_ids", "receipt_id"]),
-  tool("craft_work_control_decide", "Record an approved WorkControl decision without bypassing Policy, Receipt or Acceptance.", ["work_loop_id", "decision", "actor", "summary"], false, ["approved", "criterion_id"]),
-  tool("craft_work_control_resume", "Revalidate then resume WorkControl; drift returns needs_replan instead of replaying an unknown effect.", ["work_loop_id"], false, ["environment", "budget", "state_adapter", "state_paths"]),
-  tool("craft_work_control_get", "Read one WorkControl loop, receipts and decisions.", ["work_loop_id"], true),
-  tool("craft_evaluation_contract_define", "Define the staged evaluation contract for one capability without making it routable.", ["capability_id", "capability_version", "input_contract", "output_contract"], false, ["contract_id", "scope", "effect", "fixture_id", "host_compatibility", "budget"]),
-  tool("craft_evaluation_contract_record", "Advance one capability evaluation contract monotonically with evidence and metrics.", ["contract_id", "stage"], false, ["evidence", "metrics"]),
-  tool("craft_evaluation_contract_get", "Read one capability evaluation contract and its stage history.", ["contract_id"], true),
-  tool("craft_durable_action_loop_create", "Attach explicit dependency-aware work items to one Verified Work Loop; Craft never executes these actions itself.", ["work_loop_id", "work_items"], false, ["action_loop_id"]),
-  tool("craft_durable_action_loop_next", "Return the next bounded action or blocker for one durable action loop.", ["action_loop_id"], true),
-  tool("craft_durable_action_loop_propose", "Propose a digest-only action for a ready work item without dispatching a Host.", ["action_loop_id", "item_key", "kind", "action_digest"], false, ["action_id", "effect"]),
-  tool("craft_durable_action_loop_dispatch", "Record handoff of an exact durable action to a Host without executing it in Craft.", ["action_id", "dispatch_ref"], false),
-  tool("craft_durable_action_loop_report", "Bind a Host receipt and re-observed Snapshot. Only a passed verification and Acceptance Gate prove work-item progress.", ["action_id", "outcome", "snapshot_id"], false, ["receipt_ref", "acceptance_ref", "input_drift", "replan_reason"]),
-  tool("craft_durable_action_loop_resume", "Revalidate an observed Snapshot before resuming; workspace drift becomes needs_replan.", ["action_loop_id", "snapshot_id"], false),
-  tool("craft_durable_action_loop_get", "Read one durable action loop with its work items and action receipts.", ["action_loop_id"], true),
-  tool("craft_host_activation_manifest_prepare", "Create a content-free, profile-pinned Host capability manifest. It never modifies Codex, Claude, MCP configuration, or starts a Host.", ["task_id", "profile_id", "host"], false, ["manifest_id", "profile_version", "asset_ids", "connector_ticket_ids"]),
-  tool("craft_host_activation_manifest_validate", "Revalidate one Host activation manifest against exact asset, profile, connector-ticket, and expiry facts.", ["manifest_id"], true),
-  tool("craft_host_activation_manifest_consume", "Record that the declared Host accepted one exact capability manifest; it does not start or configure that Host.", ["manifest_id", "call_id", "host"], false),
-  tool("craft_host_activation_manifest_get", "Read one Host activation manifest and its content-free Host receipts.", ["manifest_id"], true),
-  tool("craft_execution_fabric_prepare", "Prepare the single verified execution path: Profile, Host manifest, Work Loop, Task Run, state baseline, and Fabric join. It does not start the Host before a later exact Fabric execution.", ["workspace_id", "goal", "host", "prompt"], false, ["fabric_id", "manifest_id", "profile_id", "task_id", "title", "project_id", "allowed_effects", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "environment", "budget", "state_adapter", "state_paths", "artifact_ids", "activation_profile_id", "activation_profile_version", "budget_account_id", "budget_account_version", "asset_ids", "connector_ticket_ids"]),
-  tool("craft_execution_fabric_execute", "Revalidate the exact Host manifest, consume its one receipt, then start the prepared Host. Workspace writes additionally require an explicit approval and actor.", ["fabric_id", "prompt"], false, ["invocation_id", "call_id", "approved", "actor"]),
-  tool("craft_execution_fabric_advance", "Revalidate the Host manifest, re-observe the Work Loop, and append one immutable Fabric receipt.", ["fabric_id"], false, ["advance_id", "activation_receipt_id", "environment", "budget", "state_adapter", "state_paths", "artifact_ids", "snapshot_id", "work_loop_receipt_id"]),
-  tool("craft_execution_fabric_consume", "Bind an observed Work Loop receipt to the Host's acceptance receipt without bypassing profile or expiry checks.", ["fabric_id", "work_loop_receipt_id", "call_id", "host"], false, ["advance_id"]),
-  tool("craft_execution_fabric_get", "Read the joined Fabric, Work Loop, Host Manifest, Host Bridge invocations, and immutable advances.", ["fabric_id"], true),
-  tool("craft_host_bridge_get", "Read one exact Host Bridge invocation without exposing its Prompt.", ["invocation_id"], true),
-  tool("craft_state_workspace_observe", "Create a content-free file-tree or file-artifact State Snapshot for one declared Workspace.", ["workspace_id"], false, ["adapter", "paths", "artifact_ids", "snapshot_id"]),
-  tool("craft_state_workspace_compare", "Compare two State Snapshots by digest and paths without reading raw business content into Craft records.", ["before_snapshot_id", "after_snapshot_id"], true),
-  tool("craft_workspace_observer_observe", "Poll a declared Workspace and record only a snapshot/diff classification. Unattributed changes are never guessed to be human or Host edits.", ["workspace_id"], false, ["adapter", "paths", "artifact_ids", "snapshot_id", "previous_snapshot_id", "source", "observation_id"]),
-  tool("craft_workspace_observer_get", "Read one content-free Workspace observation and timeline.", ["observation_id"], true),
-  tool("craft_autonomy_ladder_decide", "Classify portable reads, human-approved guarded local writes, verified unattended writes, and external effects without overstating isolation.", ["effect"], false, ["decision_id", "task_id", "workspace_id", "action_digest", "unattended", "approved", "platform_profile_id", "authorization_ref", "reobserve_required", "compensation_or_handoff"]),
-  tool("craft_autonomy_ladder_get", "Read one immutable autonomy classification decision.", ["decision_id"], true),
-  tool("craft_work_coordinator_prepare", "Join one Execution Fabric to its durable Managed Run. It does not start a Host.", ["fabric_id"], false, ["coordinator_id", "managed_run_id"]),
-  tool("craft_work_coordinator_attach_host_run", "Attach the exact matching Host Run to a prepared Work Coordinator.", ["coordinator_id", "host_run_id"]),
-  tool("craft_work_coordinator_observe", "Record the exact receipt, re-observed state and snapshot after a coordinated Host action.", ["coordinator_id", "task_run_state_id", "snapshot_id", "work_loop_receipt_id"], false, ["observation_id"]),
-  tool("craft_work_coordinator_handoff", "Pause a coordinated run with a structured, reference-only handoff.", ["coordinator_id", "observation_id", "reason"], false, ["handoff_id", "artifact_ids", "evidence_ids", "resume_action"]),
-  tool("craft_work_coordinator_get", "Read a Work Coordinator, Managed Run facts and timeline.", ["coordinator_id"], true),
-  tool("craft_eval_campaign_create", "Plan comparable held-out Case \xD7 Harness \xD7 Trial slots; it never starts a hidden model or Host.", ["case_ids", "baseline_harness", "candidate_harness", "trials_per_case", "acceptance_ref"], false, ["campaign_id", "environment", "budget"]),
-  tool("craft_eval_campaign_bind", "Bind one observed Task Run to exactly one planned Eval Campaign slot.", ["slot_id", "task_run_id"]),
-  tool("craft_eval_campaign_advance", "Evaluate only fully observed Eval Campaign pairs and return eligible, rejected, or inconclusive.", ["campaign_id"]),
-  tool("craft_eval_campaign_get", "Read an Eval Campaign and all planned slots.", ["campaign_id"], true),
-  tool("craft_eval_campaign_report", "Report observed Campaign delivery rates and pair verdicts without retaining raw task content or claiming business quality.", ["campaign_id"], true, ["report_id"]),
-  tool("craft_runtime_acceptance_plan", "Plan a real two-Case paired runtime acceptance campaign on one pinned Host, or two Hosts for replication. It starts no model or Host.", ["case_ids", "host_ids", "baseline_harness", "candidate_harness", "environment_fingerprint", "budget_fingerprint", "trials_per_pair", "observer_kind"], false, ["plan_id"]),
-  tool("craft_runtime_acceptance_record", "Bind a real Host Session and independent Outcome Observation to one pinned acceptance slot.", ["plan_id", "host_id", "case_id", "arm", "harness", "trial_index", "environment_fingerprint", "budget_fingerprint", "host_session_id", "observation_id"], false, ["record_id"]),
-  tool("craft_runtime_acceptance_evaluate", "Evaluate the acceptance campaign. Only five repeated strictly positive pairs are eligible for default activation.", ["plan_id"], false, ["evaluation_id"]),
-  tool("craft_runtime_acceptance_get", "Read a runtime acceptance plan, observed slots, and its conservative conclusion.", ["plan_id"], true),
-  tool("craft_evaluation_program_save", "Register one reviewed cadence for sanitized development and independently approved held-out Cases.", ["program_id", "name", "owner_ref", "reviewer_ref", "development_case_ids", "held_out_case_ids"], false, ["domain_terms", "cadence_hours", "lifecycle"]),
-  tool("craft_evaluation_program_due", "Read whether a reviewed Evaluation Program is due; it never starts a Host.", ["program_id"], true, ["now"]),
-  tool("craft_evaluation_program_plan", "Create one pinned Campaign only when a reviewed Evaluation Program is due. Host slots remain explicit.", ["program_id", "baseline_harness", "candidate_harness", "acceptance_ref", "environment", "budget", "planned_by"], false, ["program_run_id", "campaign_id", "partition", "trials_per_case", "independent_approval_ref", "now"]),
-  tool("craft_evaluation_program_report", "Read a Program's content-free Campaign history and next due state.", ["program_id"], true),
-  tool("craft_adaptive_harness_recommend", "Choose the declared minimal Harness unless a Signoff-approved, evidence-backed Canary candidate matches the task.", ["task_id", "goal", "baseline_harness"], true, ["recommendation_id"]),
-  tool("craft_managed_write_get", "Read the scoped local-write transaction and settlement state for one Execution Fabric.", ["fabric_id"], true),
-  tool("craft_managed_write_rollback", "Restore only the declared local workspace baseline after explicit human approval; external effects are excluded.", ["fabric_id", "actor", "approved"]),
-  tool("craft_managed_run_create", "Create the durable, host-neutral continuation spine for one existing Verified Work Loop. It stores references and digests, never prompts or raw session text.", ["work_loop_id"], false, ["managed_run_id"]),
-  tool("craft_managed_run_observe", "Attach an exact Task Run State, Workspace Snapshot and Verified Work Loop receipt to a Managed Run. Drift becomes needs_replan.", ["managed_run_id", "task_run_state_id", "snapshot_id", "work_loop_receipt_id"], false, ["observation_id"]),
-  tool("craft_managed_run_handoff", "Create a content-free structured handoff from an observed Managed Run; Artifact and Evidence references are pinned.", ["managed_run_id", "observation_id", "reason"], false, ["handoff_id", "artifact_ids", "evidence_ids", "resume_action"]),
-  tool("craft_managed_run_resume", "Resume only from a fresh observed state; drift fails closed into fresh planning.", ["managed_run_id", "handoff_id", "observation_id"]),
-  tool("craft_managed_run_fork_shadow", "Fork only a read-only shadow continuation from a structured handoff; it cannot repeat external effects.", ["managed_run_id", "handoff_id"], false, ["fork_id"]),
-  tool("craft_managed_run_get", "Read a Managed Run's content-free observation, handoff, shadow and timeline facts.", ["managed_run_id"], true),
-  tool("craft_campaign_runner_create", "Create a controlled Host-bound runner over an immutable Eval Campaign; it does not start hidden model work.", ["campaign_id", "evaluator_ref"], false, ["runner_id"]),
-  tool("craft_campaign_runner_claim", "Issue the next deterministic Case \xD7 Harness \xD7 Trial slot for explicit Host preparation.", ["runner_id"], false, ["dispatch_id"]),
-  tool("craft_campaign_runner_bind", "Bind a Host-observed Task Run to its issued Campaign slot after environment and budget verification.", ["dispatch_id", "task_run_id"]),
-  tool("craft_campaign_runner_advance", "Aggregate only bound observed Campaign slots through the existing held-out comparison gate.", ["runner_id"]),
-  tool("craft_campaign_runner_get", "Read a Campaign Runner, slot dispatches, Campaign state and immutable timeline.", ["runner_id"], true),
-  tool("craft_evaluation_model_profile_save", "Save a secret-free exact model configuration for evaluation; it never stores an API key or starts a network call.", ["provider"], false, ["profile_id", "model", "tier", "temperature", "max_output_tokens", "max_attempts", "purposes", "network_execution_enabled"]),
-  tool("craft_evaluation_model_profile_get", "Read a versioned Evaluation Model Profile and its non-secret readiness.", ["profile_id"], true, ["version"]),
-  tool("craft_evaluation_model_profile_list", "List secret-free Evaluation Model Profiles and readiness.", [], true, ["limit"]),
-  tool("craft_evaluation_model_ticket_issue", "Issue one content-free evaluation or Workflow-evolution model call contract; only a later compatible Adapter may perform the network call.", ["profile_id", "purpose", "input_ref", "output_contract_ref"], false, ["ticket_id", "campaign_dispatch_id", "workflow_evolution_request_id"]),
-  // The Experience product speaks in its own domain language.  The older
-  // workflow_evolution MCP family has been retired; its storage and kernels
-  // remain behind this seam so existing evidence stays usable.
-  tool("craft_experience_observe", "Record one sanitized, evidence-backed Experience Observation. It is not a Workflow and cannot publish anything.", ["scenario_key", "source_kind", "source_id", "source_digest", "outcome", "evidence_ids", "sanitized"], false, ["observation_id", "failure_type", "content_stored", "scope", "scenario_signature", "execution_shape", "verification"]),
-  tool("craft_experience_patterns_list", "List bounded Experience Observations for one scenario so repeated evidence can be inspected before proposing a procedure.", [], true, ["scenario_key", "limit"]),
-  tool("craft_experience_procedure_draft", "Create a proposal-only Procedure draft request from at least two independent Experience Observations. Linear Workflow is the default; Graph is allowed only when the observations prove branching, join, approval, recovery, or compensation.", ["scenario_key", "hypothesis", "design_axes", "output_contract_ref"], false, ["request_id", "observation_ids", "procedure_kind"]),
-  tool("craft_experience_procedure_submit", "Submit the bounded linear Workflow or evidence-required Graph draft for an exact Experience request. This never routes, publishes, or executes it.", ["request_id", "workflow_id", "name", "description", "inputs"], false, ["steps", "nodes", "edges", "outputs", "checkpoint_policy", "proposal_id", "model_ticket_id", "replaces_workflow_id", "composition", "graph_control"]),
-  tool("craft_experience_procedure_get", "Read one proposal-only Experience Procedure draft and its pinned request.", ["proposal_id"], true, ["request_id"]),
-  tool("craft_runtime_assurance_attest", "Attest one terminal Host attempt only after environment, budget, re-observation and required platform boundary checks match the Task Run.", ["task_run_id"], false, ["attestation_id", "host_run_id", "effect", "environment", "budget", "workspace_observation_id", "work_loop_receipt_id", "preflight_id", "evidence_ids"]),
-  tool("craft_runtime_assurance_intervene", "Append a content-free approval, pause, retry, cancellation or handoff intervention to one Task Run ledger.", ["task_run_id", "kind", "actor", "reason"], false, ["intervention_id", "evidence_ids"]),
-  tool("craft_runtime_assurance_campaign_advance", "Advance a Campaign only when every bound Task Run has a matching verified runtime attestation.", ["runner_id"], false, ["assurance_campaign_id"]),
-  tool("craft_runtime_assurance_get", "Read immutable runtime attestations, interventions and timeline for one Task Run.", ["task_run_id"], true),
-  tool("craft_trace_review", "Review one immutable Trace for a content-free verdict, first error and bounded root-cause classification.", ["trace_id"], false, ["review_id", "summary", "evidence_ids"]),
-  tool("craft_trace_review_get", "Read one Trace Review and its referenced Trace.", ["review_id"], true),
-  tool("craft_trace_review_list", "List Trace Reviews by bounded status.", [], true, ["status", "limit"]),
-  tool("craft_assured_pilot_seal_case", "Seal an independently approved held-out Case by content-free digest; Craft never stores its raw input.", ["case_id", "custodian", "opaque_locator_digest", "approval_ref"], false, ["sealed_case_id"]),
-  tool("craft_assured_pilot_access_issue", "Issue one bounded evaluation-only reference to a sealed Case for an exact Task Run.", ["sealed_case_id", "task_run_id", "recipient", "expires_at"], false, ["access_id"]),
-  tool("craft_assured_pilot_access_consume", "Consume one unexpired sealed Case reference before the external evaluator accesses it.", ["access_id", "task_run_id"], false, ["now"]),
-  tool("craft_assured_pilot_recovery_record", "Record a confirmed rehydration and re-observation drill for one verified Task Run; it never claims a deployed sandbox.", ["task_run_id", "attestation_id", "readiness_id", "environment_digest", "checks", "evidence_ids"], false, ["drill_id"]),
-  tool("craft_assured_pilot_prepare", "Bind verified Host facts, runtime readiness, a recovery drill, exact trusted capabilities and consumed sealed evaluation access into one evidence-only Pilot.", ["task_id", "task_run_id", "attestation_id", "readiness_id", "recovery_drill_id", "activation_profile_id", "sealed_access_id"], false, ["pilot_id"]),
-  tool("craft_assured_pilot_reassess", "Recheck an Assured Pilot after environment, capability, Case or human workspace changes; drift fails closed to needs_replan.", ["pilot_id", "environment_digest"]),
-  tool("craft_assured_pilot_get", "Read one content-free Assured Pilot evidence chain and its current attention items.", ["pilot_id"], true),
-  tool("craft_agent_eval_lab_create", "Create a Host-backed Agent evaluation lab over one immutable Campaign Runner.", ["runner_id"], false, ["lab_id"]),
-  tool("craft_agent_eval_lab_start", "Explicitly claim one Campaign slot, bind a comparable prepared Fabric, start its exact Host, and attach an Agent Eval attempt.", ["lab_id", "fabric_id", "prompt"], false, ["dispatch_id", "harness", "invocation_id", "call_id", "approved", "actor", "attempt_id"]),
-  tool("craft_agent_eval_lab_observe", "Record the re-observed terminal result of an Agent Eval attempt; Host completion alone is insufficient.", ["attempt_id", "observation_id"]),
-  tool("craft_agent_eval_lab_get", "Read one Agent evaluation lab and its immutable attempts.", ["lab_id"], true),
-  tool("craft_project_knowledge_discover", "Discover only trusted project-local Serena memory descriptors; global memory is never imported.", ["project_root", "trusted"], false, ["discovery_id"]),
-  tool("craft_project_knowledge_resolve", "Resolve one to three digest-pinned Serena memories as bounded read-only task context; Craft stores only the receipt.", ["discovery_id", "memory_ids"], false, ["resolution_id", "max_chars"]),
-  tool("craft_project_knowledge_propose_update", "Create an evidence-backed draft suggestion for Serena memory maintenance without writing external files.", ["discovery_id", "memory_id", "evidence_ids", "summary"], false, ["proposal_id"]),
-  tool("craft_task_benchmark_create", "Pair two observed Task Runs for one sanitized evaluation Case; it does not start hidden Hosts.", ["case_id", "baseline_task_run_id", "candidate_task_run_id"], false, ["benchmark_id"]),
-  tool("craft_task_benchmark_evaluate", "Materialize a pair comparison only after both Task Runs have immutable deliveries.", ["benchmark_id"]),
-  tool("craft_task_benchmark_aggregate", "Aggregate comparable Task Benchmark pairs into an existing held-out delivery evaluation recommendation.", ["benchmark_ids"], false, ["run_id", "min_trials"]),
-  tool("craft_task_benchmark_candidate_propose", "Create a digest-only candidate from an eligible held-out benchmark; it cannot publish or route by itself.", ["evaluation_run_id", "summary", "candidate_axes"], false, ["candidate_id", "candidate_harness", "applicability_terms"]),
-  tool("craft_task_benchmark_candidate_authorize_canary", "Allow an eligible Task Benchmark candidate into Canary only after an existing passed Signoff.", ["candidate_id", "signoff_id"]),
-  tool("craft_task_benchmark_candidate_canary_start", "Start an observation-only Canary at the exact evaluated environment and budget; it cannot publish.", ["candidate_id", "baseline_id"], false, ["canary_id", "environment", "budget"]),
-  tool("craft_task_benchmark_candidate_canary_observe", "Record an aggregate Canary observation and return an exact baseline rollback reference on quality regression.", ["canary_id", "baseline_quality", "candidate_quality"], false, ["regression_threshold", "sample_id", "evidence_id"]),
-  tool("craft_task_benchmark_candidate_canary_conclude", "Allow routing only after sufficient evidence-backed, non-regressed Canary samples; it never publishes or executes a candidate.", ["candidate_id", "canary_id", "reviewer"], false, ["min_samples"]),
-  tool("craft_codex_dispatch_prepare", "Prepare an exact, digest-bound Codex CLI dispatch. The prompt is not persisted and workspace writes still require Craft authorization.", ["task_id", "workspace", "prompt"], false, ["dispatch_id", "sandbox", "model", "timeout_ms", "output_limit"]),
-  tool("craft_codex_dispatch_execute", "Execute a prepared Codex CLI dispatch with shell disabled, bounded JSONL capture, and a durable receipt.", ["dispatch_id", "prompt"], false, ["authorization_request_id", "notification_ref", "now"]),
-  tool("craft_claude_dispatch_prepare", "Prepare an exact Claude Code dispatch with bounded turns, optional cost cap, and a restricted tool set.", ["task_id", "workspace", "prompt"], false, ["dispatch_id", "sandbox", "model", "max_turns", "max_budget_usd", "timeout_ms", "output_limit"]),
-  tool("craft_claude_dispatch_execute", "Execute a prepared Claude Code dispatch with shell disabled, restricted tools, bounded stream JSON, and a durable receipt.", ["dispatch_id", "prompt"], false, ["authorization_request_id", "notification_ref", "now"]),
-  tool(
-    "craft_capability_context_dispatch_prepare",
-    "Prepare a Codex or Claude dispatch with a digest-pinned logical capability plan as bounded read-only prompt context.",
-    ["host", "task_id", "workspace", "prompt", "plan_id"],
-    false,
-    ["dispatch_id", "sandbox", "model", "max_turns", "max_budget_usd", "timeout_ms", "output_limit", "max_chars"]
-  ),
-  tool(
-    "craft_capability_context_dispatch_execute",
-    "Revalidate a capability-bound dispatch immediately before execution; it fails closed if its local capability context drifted.",
-    ["host", "dispatch_id", "prompt"],
-    false,
-    ["authorization_request_id", "notification_ref", "now"]
-  ),
-  tool("craft_host_run_start", "Start a prepared Codex or Claude dispatch in the background and expose content-free progress events.", ["host", "dispatch_id", "prompt"], false, ["run_id", "authorization_request_id", "notification_ref", "now"]),
-  tool("craft_host_run_get", "Read one background Host run and its content-free progress timeline.", ["run_id"], true),
-  tool("craft_host_run_cancel", "Request explicit cancellation of a live Host process.", ["run_id", "reason"]),
-  tool("craft_host_run_recover", "Mark one exact stopped Runner owner's orphaned Host records as interrupted.", ["owner_id", "confirmed_original_runner_stopped"]),
-  tool("craft_work_launch_prepare", "Create a task and exact Host dispatch; read-only work starts immediately while workspace writes wait for approval.", ["title", "goal", "host", "workspace", "prompt"], false, ["launch_id", "task_id", "project_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria"]),
-  tool("craft_work_launch_decide", "Approve or deny one exact prepared workspace-write launch.", ["launch_id", "actor", "approved"], false, ["prompt"]),
-  tool("craft_work_launch_get", "Read a launch, effective Host status, and incremental sanitized events.", ["launch_id"], true, ["after_sequence", "limit"]),
-  tool("craft_work_launch_retry", "Create a new traceable attempt for a failed, cancelled, or interrupted launch without replaying a stored prompt.", ["launch_id", "prompt"], false, ["new_launch_id", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd"]),
-  tool("craft_work_delivery_observe", "Create an immutable delivery observation from an exact terminal Host receipt and independent acceptance state.", ["launch_id"], false, ["delivery_id"]),
-  tool("craft_work_delivery_get", "Read one immutable delivery observation.", ["delivery_id"], true),
-  tool("craft_delivery_loop_refresh", "Materialize the durable next delivery action from current Host and acceptance facts.", ["launch_id"], false, ["loop_id"]),
-  tool("craft_delivery_loop_get", "Read one content-free delivery-loop projection.", ["loop_id"], true),
-  tool("craft_delivery_evaluation_case_save", "Register a sanitized development or independently approved held-out delivery Case.", ["case_id", "name", "domain", "partition", "acceptance_contract_ref", "sanitized"], false, ["approved_by"]),
-  tool("craft_delivery_evaluation_compare", "Compare two observed deliveries under one explicit environment and budget fingerprint. It never promotes a candidate.", ["case_id", "baseline_delivery_id", "candidate_delivery_id", "environment_fingerprint", "budget_fingerprint"], false, ["comparison_id"]),
-  tool("craft_delivery_evaluation_run", "Aggregate explicit delivery comparisons under one environment and budget. It can recommend Signoff but never promotes.", ["environment_fingerprint", "budget_fingerprint", "items"], false, ["run_id", "min_trials"]),
-  tool("craft_platform_execution_profile_save", "Register one platform execution boundary; only verified network-denied boundaries may authorize writes.", ["profile_id", "platform", "isolation", "network"], false, ["verified_by", "active"]),
-  tool("craft_platform_execution_conformance_record", "Record a verifier-attributed platform boundary conformance result. It does not execute probes or create a sandbox.", ["platform", "verifier", "checks"], false, ["conformance_id"]),
-  tool("craft_platform_execution_preflight", "Check whether a requested effect is portable read-only or bound to an exact verified platform boundary.", ["platform", "effect"], false, ["profile_id", "preflight_id"]),
-  tool("craft_platform_execution_probe", "Record actual local platform health only; it never certifies a security boundary.", [], false, ["platform", "probe_id"]),
-  tool("craft_platform_execution_probe_get", "Read one local platform health probe receipt.", ["probe_id"], true),
-  tool("craft_capability_context_work_launch_prepare", "Prepare a Work Launch with an exact digest-pinned read-only capability context; it never grants extra write authority.", ["task_id", "host", "workspace", "prompt", "plan_id"], false, ["launch_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "max_chars", "acceptance_name", "acceptance_criteria"]),
-  tool("craft_capability_context_work_launch_decide", "Approve or deny one capability-bound workspace-write launch after revalidating the exact local context.", ["launch_id", "actor", "approved", "prompt"], false),
-  tool("craft_knowledge_context_work_launch_prepare", "Prepare a Work Launch with one exact Wiki Context Bundle. Every Claim, Evidence reference, scope, expiry, and digest is revalidated before any Host run; the rendered knowledge is bounded read-only context.", ["task_id", "host", "workspace", "prompt", "bundle_id"], false, ["bundle_version", "launch_id", "sandbox", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria", "now"]),
-  tool("craft_knowledge_context_work_launch_decide", "Approve or deny one knowledge-bound workspace-write launch after fail-closed revalidation of its exact Wiki Context Bundle.", ["launch_id", "actor", "approved", "prompt"], false, ["now"]),
-  tool("craft_knowledge_context_work_launch_retry", "Create a new traceable attempt from a failed knowledge-bound Work Launch, after revalidating the original exact Wiki Context Bundle.", ["launch_id", "prompt"], false, ["new_launch_id", "model", "timeout_ms", "output_limit", "max_turns", "max_budget_usd", "now"]),
-  tool("craft_acceptance_plan_save", "Attach explicit program, model, human, or business-signal acceptance criteria to one Work Launch.", ["task_id", "launch_id", "name", "criteria"], false, ["plan_id"]),
-  tool("craft_acceptance_plan_get", "Read one acceptance plan, its evidence-backed checks, assessment, and business outcome.", ["plan_id"], true),
-  tool("craft_acceptance_check_record", "Record one criterion result from the evaluator type declared by the plan.", ["plan_id", "criterion_id", "evaluator_type", "evaluator_id", "result", "summary", "evidence_ids"], false, ["check_id"]),
-  tool("craft_acceptance_human_review", "Record an explicit human acceptance decision with its own evidence and immediately reassess the plan.", ["plan_id", "criterion_id", "reviewer", "result", "summary"], false, ["review_id"]),
-  tool("craft_acceptance_evaluator_save", "Register an exact-version program, model, or business-signal evaluator behind a domain adapter.", ["name", "method", "adapter_id"], false, ["evaluator_id", "configuration", "max_attempts", "enabled"]),
-  tool("craft_acceptance_evaluation_prepare", "Bind one non-human acceptance criterion to an exact evaluator version and create a durable job.", ["plan_id", "criterion_id", "evaluator_id"], false, ["evaluator_version", "job_id", "input"]),
-  tool("craft_acceptance_file_prepare", "Prepare the built-in deterministic file-artifact evaluator for one program acceptance criterion.", ["plan_id", "criterion_id", "workspace", "relative_path"], false, ["job_id", "allowed_extensions", "max_bytes", "expected_sha256"]),
-  tool("craft_acceptance_coverage_prepare", "Prepare a deterministic Istanbul/nyc coverage-summary gate; coverage is read from evidence, never estimated by a model.", ["plan_id", "criterion_id", "workspace", "relative_path"], false, ["job_id", "lines_threshold", "branches_threshold", "functions_threshold", "statements_threshold"]),
-  tool("craft_acceptance_media_probe_prepare", "Prepare a deterministic ffprobe JSON gate for duration, dimensions, streams, and codecs.", ["plan_id", "criterion_id", "workspace", "relative_path"], false, ["job_id", "min_duration_seconds", "min_width", "min_height"]),
-  tool("craft_acceptance_evaluation_claim", "Lease ready acceptance jobs to the matching domain adapter.", ["adapter_id"], false, ["plan_id", "limit", "lease_seconds"]),
-  tool("craft_acceptance_evaluation_recover", "Return expired evaluation leases to ready state or mark retry-exhausted jobs for operator attention.", [], false, ["now", "limit"]),
-  tool("craft_acceptance_evaluation_report", "Submit an evidence-backed adapter receipt for one exact leased acceptance job.", ["job_id", "lease_id", "adapter_id", "result", "summary"], false, ["receipt"]),
-  tool("craft_acceptance_assess", "Aggregate required acceptance checks without treating Host success as business success.", ["plan_id"]),
-  tool("craft_verified_iteration_create", "Bind a bounded verification-driven iteration to one exact Work Launch and independent acceptance plan; it grants no additional write authority.", ["task_id", "launch_id", "acceptance_plan_id"], false, ["iteration_id", "max_attempts", "allowed_paths"]),
-  tool("craft_verified_iteration_get", "Read a verification-driven iteration and its content-free attempt history.", ["iteration_id"], true),
-  tool("craft_verified_iteration_assess", "Classify one independent acceptance assessment as pass, retry, block, or human handoff; only task failures can retry within budget.", ["iteration_id", "assessment_id", "classification"], false, ["attempt_id", "feedback"]),
-  tool("craft_strategy_recommend", "Recommend a candidate strategy only from a comparable held-out evaluation; it never changes routing or executes work.", ["task_id", "comparison_id"], false, ["recommendation_id", "cost_metric"]),
-  tool("craft_knowledge_claim_save", "Save a candidate fact, rule, decision, term, or failure mode only with existing evidence; it is not automatically trusted or executable.", ["kind", "content", "evidence_ids"], false, ["claim_id", "title", "scope", "tags", "valid_until", "scope_envelope", "source_id"]),
-  tool("craft_knowledge_semantic_review_packet", "Build the exact Claim, source fragment and rubric packet a Codex, Claude, or Provider reviewer must inspect.", ["claim_id"], true),
-  tool("craft_knowledge_semantic_provider_review", "Run an explicitly configured OpenAI-compatible semantic review. Keys are only read from the named environment variable.", ["claim_id", "endpoint", "model", "credential_env"], false, ["timeout_ms"]),
-  tool("craft_knowledge_claim_get", "Read one exact evidence-backed knowledge claim after current and historical audience checks.", ["claim_id"], true, ["version", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "allow_restricted"]),
-  tool("craft_knowledge_claim_list", "List locally stored evidence-backed knowledge claims visible to the current audience.", [], true, ["limit", "query", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "allow_restricted"]),
-  tool("craft_knowledge_claim_review", "Explicitly review, dispute, supersede, or expire a candidate knowledge claim without deleting history.", ["claim_id", "status", "reviewer", "reason"], false),
-  tool("craft_knowledge_promotion_policy_get", "Read this local Knowledge component's automatic promotion threshold. It is local configuration and never imported from another machine.", [], true),
-  tool("craft_knowledge_promotion_policy_save", "Adjust the local automatic Knowledge promotion threshold. This is an optional operator override, not a required human review queue.", [], false, ["minimum_independent_support", "minimum_confidence", "automatic", "actor"]),
-  tool("craft_knowledge_support_record", "Attach one independently observed bounded or confirmed Evidence record to a candidate Claim. Duplicate Evidence or observation keys cannot inflate trust.", ["claim_id", "evidence_id", "observation_key"], false, ["support_id", "scope"]),
-  tool("craft_knowledge_host_review", "Record a Codex/Claude/independent Host model review bound to the exact Claim Source digest. A supported current Claim is automatically promoted without an extra API key; reviewed Knowledge still never grants effects or routes Workflows.", ["claim_id", "host_run_key", "source_digest", "decision"], false, ["host_kind", "model_ref", "rubric_id", "packet_digest", "reason_code", "now"]),
-  tool("craft_knowledge_auto_review", "Evaluate candidate knowledge against the local evidence promotion policy. By default eligible current Claims are automatically promoted; pass auto_promote:false for a dry-run. Legacy, expired, conflicted, or under-supported claims remain outside Context.", [], false, ["claim_ids", "now", "auto_promote"]),
-  tool("craft_knowledge_candidate_model_review", "Submit a model review bound to immutable source digests. Supported pages become bounded reviewed knowledge with restored full bodies; uncertain or rejected pages remain outside Context.", ["migration_id", "reviewer", "model_ref", "assessments"], false),
-  tool("craft_content_status", "Read Markdown content storage status for knowledge and memory bodies; SQLite remains the lifecycle index.", [], true),
-  tool("craft_content_verify", "Verify Markdown body references and detect missing or drifted content without changing records.", [], true, ["kind"]),
-  tool("craft_content_migrate", "Explicitly migrate legacy inline knowledge, memory, and Wiki bodies into versioned Markdown with a database backup.", [], false, ["dry_run"]),
-  tool("craft_wiki_page_save", "Save or revise an editable Wiki page whose referenced claims retain their evidence identity.", ["title", "body"], false, ["page_id", "scope", "claim_ids", "author"]),
-  tool("craft_wiki_page_get", "Read one exact Wiki page revision.", ["page_id"], true, ["version"]),
-  tool("craft_wiki_page_list", "List locally stored Wiki pages.", [], true, ["limit", "query"]),
-  tool("craft_wiki_page_refresh", "Record a human Markdown edit as a new Wiki page revision; it never infers trust from the edit.", ["page_id"], false),
-  tool("craft_knowledge_workbench_view", "Read the bounded Workbench projection of Claims, Wiki pages, Context Bundles, conflicts, evaluations, candidates, and knowledge-bound launches.", [], true, ["limit"]),
-  tool("craft_knowledge_context_bundle_preview", "Revalidate one exact Context Bundle and render its bounded read-only knowledge preview without preparing or starting a Work Launch.", ["bundle_id"], true, ["bundle_version", "now"]),
-  tool("craft_knowledge_relation_save", "Create a typed support, contradiction, supersession, applicability, or dependency relation between two evidence-backed claims.", ["from_claim_id", "to_claim_id", "relation"], false, ["relation_id"]),
-  tool("craft_relation_relate", "Create one typed, evidence-backed relation between two addressable knowledge objects (claim, memory, knowledge document, evidence, capability, or page). Confirmed relations require Evidence. It grants no execution authority.", ["source", "target", "relation"], false, ["relation_id", "confidence", "evidence_ids", "valid_from", "rationale"]),
-  tool("craft_relation_neighbors", "Read the live one-hop neighbours of one addressable knowledge object, spanning both directions and labelled forward or inverse.", ["kind", "id"], true, ["version", "direction", "relation", "as_of", "limit"]),
-  tool("craft_relation_traverse", "Walk relations from one knowledge object to a bounded depth (max 3) with cycle detection; it never expands without limit.", ["kind", "id"], true, ["version", "max_depth", "direction", "relation", "as_of", "limit"]),
-  tool("craft_relation_retract", "Soft-invalidate one relation by setting its valid_to instant; the record and its history are preserved rather than deleted.", ["relation_id", "reason"], false, ["valid_to", "now"]),
-  tool("craft_relation_get", "Read one exact knowledge relation revision.", ["relation_id"], true, ["version"]),
-  tool("craft_wiki_context_compile", "Compile only reviewed, current, scope-matching evidence-backed claims into a bounded Agent context using deterministic keyword matching by default.", ["query"], true, ["bundle_id", "scope", "max_items", "max_chars", "now"]),
-  tool("craft_wiki_context_bundle_get", "Read a content-free Wiki context compilation receipt.", ["bundle_id"], true, ["version"]),
-  tool("craft_wiki_context_bundle_list", "List local Wiki context compilation receipts.", [], true, ["limit", "query"]),
-  tool("craft_wiki_skill_candidate_create", "Create a proposal-only Skill or Workflow candidate from at least two reviewed knowledge claims; it cannot publish or execute.", ["title", "kind", "claim_ids", "instructions", "applicability", "fallback_condition"], false, ["candidate_id"]),
-  tool("craft_wiki_skill_candidate_get", "Read one exact Wiki-derived capability candidate.", ["candidate_id"], true, ["version"]),
-  tool("craft_wiki_skill_candidate_list", "List local Wiki-derived capability candidates.", [], true, ["limit", "query"]),
-  tool("craft_wiki_skill_candidate_review", "Mark a Wiki-derived candidate ready for independent evaluation or reject it; neither choice publishes it.", ["candidate_id", "status", "reviewer", "reason"], false),
-  tool("craft_wiki_skill_candidate_evaluation_attest", "Bind one ready Wiki candidate to an eligible leak-free knowledge evaluation, a passed held-out Evaluation Run, and an exact passed Signoff. It does not publish or execute the candidate.", ["candidate_id", "knowledge_evaluation_run_id", "evaluation_run_id", "signoff_id"], false, ["attestation_id"]),
-  tool("craft_wiki_skill_candidate_publication_authorize", "Record an explicit human authorization to publish an already-attested Wiki candidate. It preserves non-execution and does not write a Skill or Workflow to any host.", ["candidate_id", "attestation_id", "reviewer", "reason"], false, ["authorization_id"]),
-  tool("craft_wiki_skill_candidate_publication_package_prepare", "Prepare a deterministic, evidence-linked portable Skill or Workflow package for one compatible Host after human publication authorization. It never writes to a Host or grants execution authority.", ["candidate_id", "authorization_id", "target_host"], false, ["package_id"]),
-  tool("craft_wiki_skill_candidate_publication_package_get", "Read one exact prepared portable candidate package for human review and manual import.", ["package_id"], true, ["version"]),
-  tool("craft_wiki_skill_candidate_publication_package_list", "List prepared portable candidate packages without importing or executing them.", [], true, ["limit", "query"]),
-  tool("craft_guided_work_create", "Create a user-readable goal, material references, and explicit decisions; it does not start a Host.", ["title", "goal"], false, ["brief_id", "project_id", "materials", "decisions"]),
-  tool("craft_guided_work_decide", "Record one explicit answer for a pending guided-work decision without storing its raw value in the decision receipt.", ["brief_id", "decision_id", "answer", "actor"]),
-  tool("craft_guided_work_get", "Read a guided-work brief, its task, material references, decision states, and any bound Work Launch.", ["brief_id"], true, ["version"]),
-  tool("craft_guided_work_launch_prepare", "Prepare a normal Work Launch only after all required guided-work decisions are answered; normal Host approval rules still apply.", ["brief_id", "host", "workspace", "prompt"], false, ["launch_id", "sandbox", "model", "acceptance_name", "acceptance_criteria"]),
-  tool("craft_execution_safety_preflight", "Prove a verified Sandbox Profile can meet a bounded Host resource contract. It records no OS-sandbox claim and does not execute a Host.", ["task_id", "host", "workspace", "sandbox", "profile_id", "profile_version", "timeout_ms", "output_limit"], false, ["preflight_id", "max_turns", "max_budget_usd"]),
-  tool("craft_execution_safety_get", "Read and revalidate a safety preflight and its exact Host resource contract.", ["preflight_id"], true, ["version"]),
-  tool("craft_safety_work_launch_prepare", "Prepare and bind a normal Work Launch to a verified safety preflight and enforced Host timeout/output contract; it does not claim OS isolation.", ["task_id", "host", "workspace", "prompt", "sandbox", "profile_id", "profile_version", "timeout_ms", "output_limit"], false, ["preflight_id", "launch_id", "max_turns", "max_budget_usd", "acceptance_name", "acceptance_criteria"]),
-  tool("craft_safety_work_launch_decide", "Revalidate the exact safety preflight and resource contract before approving its workspace-write Work Launch.", ["launch_id", "actor", "approved"], false, ["prompt"]),
-  tool("craft_wiki_candidate_local_import", "Explicitly write one reviewed portable package to a user-selected descendant Markdown path. It never overwrites, enables, or executes the import.", ["package_id", "target_root", "relative_path", "reviewer", "confirmed"], false, ["import_id"]),
-  tool("craft_wiki_candidate_local_import_get", "Read an auditable local package-import receipt; imported files remain disabled and non-executable.", ["import_id"], true),
-  tool("craft_a2a_agent_card_discover", "Fetch one HTTPS A2A Agent Card as untrusted read-only metadata. It never dispatches work, sends credentials, or grants execution authority.", ["url"], false, ["card_id"]),
-  tool("craft_a2a_agent_card_get", "Read one discovered untrusted A2A Agent Card receipt.", ["card_id"], true),
-  tool("craft_a2a_agent_card_list", "List untrusted read-only A2A Agent Card receipts.", [], true, ["limit"]),
-  tool("craft_a2a_agent_trust_approve", "Approve a discovered Agent Card only with enterprise identity and confirmed evidence; trust remains read-only.", ["trust_id", "card_id", "provider_id", "allowed_effects", "evidence_ids", "approval_ref"], false),
-  tool("craft_a2a_collaboration_session_create", "Create bounded remote collaboration only after an eligible single-Agent baseline and confirmed justification evidence.", ["session_id", "task_id", "trust_id", "evaluation_run_id", "justification_evidence_id", "budget"], false, ["max_delegations"]),
-  tool("craft_a2a_delegation_prepare", "Prepare a content-free, read-only remote delegation with Artifact/Evidence references.", ["delegation_id", "session_id", "objective", "evidence_ids"], false, ["artifact_ids", "ttl_seconds", "now"]),
-  tool("craft_a2a_delegation_dispatch", "Issue a sealed A2A envelope after a trusted transport records confirmed dispatch Evidence; Craft does not perform network transport.", ["delegation_id", "transport_evidence_id", "dispatched_by"], false, ["now"]),
-  tool("craft_a2a_delegation_report", "Record an observed remote read-only result by digest and Evidence, never raw result content.", ["delegation_id", "receipt_id", "verdict", "result", "evidence_ids"], false),
-  tool("craft_a2a_delegation_get", "Read one governed A2A delegation and its digest-only receipt.", ["delegation_id"], true),
-  tool("craft_federated_agent_health_record", "Record an evidence-backed health receipt for one exact remote Agent Card; stale cards fail closed.", ["card_id", "card_digest", "status", "evidence_ids", "observed_by"], false, ["health_id"]),
-  tool("craft_federated_delegation_grant_issue", "Issue one expiring, reference-only Delegation Grant for a prepared governed A2A delegation.", ["grant_id", "delegation_id", "parent_task_run_id", "parent_operation_ref", "audience", "issued_by"], false, ["capability_ids", "artifact_ids"]),
-  tool("craft_federated_delegation_grant_consume", "Consume a Federated Delegation Grant exactly once for its bound remote audience.", ["grant_id", "audience", "consumer_ref"], false, ["now"]),
-  tool("craft_federated_remote_receipt_record", "Record a content-free remote state only when grant, Artifact scope, environment and Evidence all match.", ["receipt_id", "grant_id", "state", "environment_digest", "effect", "result_digest", "evidence_ids"], false, ["artifact_grant_ids"]),
-  tool("craft_federated_delegation_revoke", "Revoke an active Federated Delegation Grant and every derived Artifact Grant.", ["grant_id", "reason", "evidence_ids"], false),
-  tool("craft_federated_delegation_reconcile", "Fail closed to indeterminate after a remote Grant expires without a terminal receipt.", ["grant_id"], false, ["now"]),
-  tool("craft_federated_delegation_get", "Read a Federated Delegation Grant, scoped Artifact grants, remote receipts and indeterminate incident.", ["grant_id"], true),
-  tool("craft_harness_topology_define", "Define a bounded Harness topology. The only baseline is single primary Agent; extra roles remain shadow candidates.", ["topology_id", "task_id", "roles", "mode"], false, ["max_agents"]),
-  tool("craft_harness_topology_promote", "Make a multi-Agent topology routing eligible only after an eligible paired evaluation and confirmed Evidence.", ["topology_id", "evaluation_run_id", "evidence_ids"], false),
-  tool("craft_harness_topology_select", "Select the evaluated candidate topology for a Task, otherwise return its single-Agent baseline.", ["task_id", "baseline_topology_id"], false, ["selection_id"]),
-  tool("craft_harness_topology_suspend", "Suspend a routing-eligible multi-Agent topology on regression evidence; the single-Agent baseline remains intact.", ["topology_id", "reason", "evidence_ids"], false),
-  tool("craft_harness_topology_get", "Read one topology and its exact lifecycle.", ["topology_id"], true),
-  tool("craft_runtime_readiness_assess", "Assess deployment readiness from real evidence, platform preflight, recovery and enterprise binding facts; it never claims deployment is live.", ["task_id", "host", "platform", "effect", "environment_digest", "evidence_ids"], false, ["workspace_recovery", "preflight_id", "enterprise_binding_id", "compensation_ref", "assessment_id"]),
-  tool("craft_runtime_readiness_get", "Read one content-free deployment readiness assessment.", ["assessment_id"], true),
-  tool("craft_runtime_model_status", "List configured model providers and whether their credential environment variable is available; never returns a secret.", [], true),
-  tool("craft_runtime_model_probe", "Probe one configured model with a bounded request and persist only an availability receipt; missing or failed providers return unavailable.", [], false, ["provider", "probe_id", "refresh"]),
-  tool("craft_mcp_task_create", "Create a durable owner-scoped MCP Task before any asynchronous work; request and result bodies are represented only by digests.", ["request_id", "operation"], false, ["task_id", "input_digest", "input", "owner", "ttl_seconds", "poll_interval_ms"]),
-  tool("craft_mcp_task_get", "Read one owner-scoped MCP Task and expire it when its TTL has elapsed; tasks cannot be enumerated across owners.", ["task_id"], true, ["owner"]),
-  tool("craft_mcp_task_update", "Update a durable MCP Task status or digest-only result; terminal state is immutable and owner scoped.", ["task_id"], false, ["status", "input_digest", "result_digest", "error_code", "owner"]),
-  tool("craft_mcp_task_cancel", "Cancel one owner-scoped MCP Task idempotently.", ["task_id"], false, ["owner", "reason"]),
-  tool("craft_mcp_task_expire", "Expire overdue MCP Tasks without exposing their payloads.", [], false, ["now"]),
-  tool("craft_runtime_proof_manifest", "Declare a content-free execution manifest for workspace, network, credentials, process and resources.", ["runtime_id", "platform", "adapter_id", "workspace_digest"], false, ["manifest_id", "network", "credential_mode", "process_mode", "resources"]),
-  tool("craft_runtime_proof_probe", "Record a bounded runtime capability probe for one manifest.", ["manifest_id", "environment_digest"], false, ["probe_id", "checks"]),
-  tool("craft_runtime_proof_conformance", "Verify runtime boundary checks and fail closed for unsupported high-risk Windows execution.", ["manifest_id", "verifier", "checks"], false, ["conformance_id"]),
-  tool("craft_runtime_proof_attest", "Bind a verified runtime conformance to a run, profile and expiry.", ["conformance_id", "run_id", "environment_digest", "profile_version", "expires_at"], false, ["attestation_id", "evidence_ids"]),
-  tool("craft_runtime_proof_rehydrate", "Revalidate a checkpoint environment before recovery; drift returns needs_replan.", ["checkpoint_id", "expected_environment_digest", "current_environment_digest"], true),
-  tool("craft_knowledge_evaluation_case_save", "Save a fixed query-to-expected-claim knowledge evaluation case.", ["query", "expected_claim_ids"], false, ["case_id", "scope"]),
-  tool("craft_knowledge_evaluation_case_list", "List fixed knowledge evaluation cases.", [], true, ["limit", "query"]),
-  tool("craft_knowledge_evaluation_run", "Run deterministic recall, evidence-coverage, and candidate-leak checks, or mode=citation_support to separately assess emitted retrieval relevance and bound citation support; never changes routing or publication.", [], false, ["run_id", "case_ids", "top_k", "now", "min_recall", "min_evidence_coverage", "mode", "emission_id", "expected_relevant_refs", "retrieved_refs", "citation_judgements"]),
-  tool("craft_knowledge_evaluation_run_get", "Read one exact knowledge evaluation result.", ["run_id"], true, ["version"]),
-  tool("craft_knowledge_evaluation_run_list", "List knowledge evaluation results.", [], true, ["limit", "query"]),
-  tool("craft_domain_kit_save", "Save a versioned domain form, object, capability, sandbox, budget, evaluation, action, and acceptance contract without binding it to one Host.", ["name", "domain", "description", "fields", "criteria"], false, ["kit_id", "capability_requirements", "object_schemas", "components", "action_contracts", "budget_limits", "sandbox_requirements", "eval_suite_ref"]),
-  tool("craft_domain_kit_get", "Read one exact Domain Kit version.", ["kit_id"], true, ["kit_version"]),
-  tool("craft_domain_kit_list", "List locally installed Domain Kits.", [], true, ["limit"]),
-  tool("craft_domain_kit_install_builtins", "Install the reviewed built-in software and video delivery Kits."),
-  tool("craft_domain_kit_apply", "Validate form values, recursively lock exact dependencies, reserve budget, and bind one Domain Kit to an existing Work Launch.", ["kit_id", "launch_id", "values"], false, ["kit_version", "application_id", "sandbox_profile_id", "sandbox_profile_version", "budget_id"]),
-  tool("craft_domain_kit_settle", "Settle actual resource use within a Domain Kit reservation and release unused capacity.", ["application_id"], false, ["actual", "trial_id"]),
-  tool("craft_domain_kit_action_lock_get", "Read immutable verified Contract and Capability bindings for one Domain Kit application.", ["application_id"], true),
-  tool("craft_domain_kit_action_prepare", "Validate ephemeral input against the locked Schema and derive an exact Autonomy request without granting execution authority.", ["application_id", "action_id", "input", "target", "policy_id", "policy_version"], false, ["request_id", "requested_by"]),
-  tool("craft_domain_kit_action_report", "Close one authorized and consumed Domain Kit action with output-Schema validation and real evidence.", ["request_id", "outcome", "evidence_ids"], false, ["output"]),
-  tool("craft_workspace_open", "Register an explicit local Agent-Native Workspace; no files are copied until a checkpoint.", ["name", "root_path", "include_paths"], false, ["workspace_id", "git_baseline_ref"]),
-  tool("craft_workspace_get", "Read one workspace state, checkpoints, and human changes.", ["workspace_id"], true),
-  tool("craft_workspace_checkpoint", "Create a content-addressed file snapshot for the workspace's declared paths.", ["workspace_id", "label"], false, ["checkpoint_id", "artifact_ids", "evidence_ids"]),
-  tool("craft_workspace_diff", "Compare two immutable workspace checkpoints.", ["workspace_id", "from_checkpoint_id", "to_checkpoint_id"], true),
-  tool("craft_workspace_human_change", "Record a human state intervention without importing its raw content.", ["workspace_id", "summary"], false, ["change_id", "affected_paths", "source"]),
-  tool("craft_workspace_restore", "Restore declared workspace paths only after explicit approval.", ["workspace_id", "checkpoint_id", "approved"]),
-  tool(
-    "craft_work_object_put",
-    "Create or revise a typed workspace object with explicit dependencies and optimistic concurrency.",
-    ["workspace_id", "object_type", "name"],
-    false,
-    ["object_id", "data", "depends_on", "source_paths", "artifact_ids", "status", "evidence_ids", "expected_state_revision"]
-  ),
-  tool("craft_work_object_list", "List the human/Agent shared objects in one workspace.", ["workspace_id"], true, ["status", "limit"]),
-  tool(
-    "craft_workspace_impact",
-    "Preview the transitive object impact of changed objects or source paths without mutating state.",
-    ["workspace_id"],
-    true,
-    ["object_ids", "affected_paths"]
-  ),
-  tool(
-    "craft_workspace_change_apply",
-    "Record an intervention and mark its transitive dependents for review with revision conflict protection.",
-    ["workspace_id", "summary"],
-    false,
-    ["change_id", "object_ids", "affected_paths", "source", "expected_state_revision"]
-  ),
-  tool(
-    "craft_memory_remember",
-    "Store a scoped, attributable fact, preference, decision, or experience.",
-    ["kind", "scope", "content", "source"],
-    false,
-    ["memory_id", "task_id", "workspace_id", "applies_to", "valid_until", "evidence_ids", "supersedes_id"]
-  ),
-  tool("craft_memory_transition", "Supersede, expire, or reject a memory item without deleting its history.", ["memory_id", "status"], false, ["replacement_id", "reason"]),
-  tool(
-    "craft_context_assemble",
-    "Build a bounded context capsule from current workspace objects and valid scoped memories.",
-    ["query"],
-    true,
-    ["task_id", "workspace_id", "limit", "max_chars"]
-  ),
-  tool(
-    "craft_context_profile_save",
-    "Save a versioned, scoped context selection policy; it does not grant execution authority.",
-    ["name"],
-    false,
-    ["profile_id", "task_id", "workspace_id", "memory_kinds", "object_types", "required_memory_ids", "required_object_ids", "max_items", "max_chars"]
-  ),
-  tool("craft_context_profile_get", "Read one exact context profile version.", ["profile_id"], true, ["version"]),
-  tool("craft_context_profile_list", "List stored context profiles.", [], true, ["limit", "query"]),
-  tool(
-    "craft_context_profile_assemble",
-    "Assemble a bounded, attributable context using one exact Context Profile.",
-    ["profile_id", "query"],
-    true,
-    ["profile_version", "task_id", "workspace_id"]
-  ),
-  tool("craft_knowledge_memory_install_builtins", "Register the built-in Evidence Wiki and Serena knowledge source descriptors; it never scans or writes external files."),
-  tool("craft_knowledge_bootstrap_install", "Idempotently register Craft's built-in Evidence Wiki and Serena descriptors for the complete primary plugin. It never scans external files or stores conversation content."),
-  tool("craft_knowledge_source_register", "Register a digest-pinned Wiki, Serena, kefu, README, or custom Knowledge Source with explicit trust and read/write boundary.", ["kind", "label", "scope_kind", "scope_id", "locator", "content_digest"], false, ["source_id", "trust", "access", "scope_envelope"]),
-  tool("craft_knowledge_source_ingest", "Read a bounded trusted Markdown, README, Obsidian, or Serena source into immutable revisions, fragments, Evidence, and candidate review packets. It never silently promotes claims.", ["source_id"], false, ["root", "revision_id", "max_files", "max_chars_per_fragment", "cursor"]),
-  tool("craft_knowledge_expiry_sweep", "Revalidate reviewed Claims for expiry, changed Sources/Documents and contradictions; optionally narrow dependencies.", [], false, ["now", "source_ids", "document_ids"]),
-  tool("craft_knowledge_conflict_resolve", "Resolve a Claim conflict with Evidence-backed reviewer decision.", ["claim_id", "decision", "reviewer", "reason"]),
-  tool("craft_knowledge_source_list", "List active Knowledge Sources by exact optional scope.", [], true, ["scope_kind", "scope_id", "limit"]),
-  tool("craft_knowledge_source_transition", "Disable or revoke one Knowledge Source without deleting history.", ["source_id", "status", "reason"]),
-  tool("craft_memory_ledger_remember", "Store one scoped working, episodic, preference, or procedural Memory with source, sensitivity, validity, Evidence and revocation metadata.", ["source_id", "kind", "scope_kind", "scope_id", "content"], false, ["memory_id", "sensitivity", "confidence", "evidence_ids", "valid_until", "scope_envelope", "topic", "observed_at", "effective_from"]),
-  tool("craft_memory_ledger_get", "Read one canonical Memory Ledger entry under its current and historical access restrictions, including current source permissions.", ["memory_id"], true, ["version", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
-  tool("craft_memory_ledger_list", "List accessible active Memories in one explicit scope. Historical entries require include_history=true; current source permissions still apply.", ["scope_kind", "scope_id"], true, ["limit", "include_history", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
-  tool("craft_memory_capture_user_statement", "Capture one explicitly consented user statement as bounded Evidence, then create a governed Memory candidate. It never archives a whole conversation; optional auto_accept is blocked by conflicts.", ["content", "explicit_consent"], false, ["candidate_id", "memory_id", "evidence_id", "kind", "scope_kind", "scope_id", "topic", "sensitivity", "valid_until", "auto_accept", "scope_envelope"]),
-  tool("craft_memory_ledger_transition", "Supersede, revoke, or expire a Memory Ledger entry without deleting history.", ["memory_id", "status", "reason"], false, ["replacement_id", "expected_version"]),
-  tool("craft_memory_ledger_compat_bind", "Reference one legacy Craft memory record through the Ledger without migrating or rewriting its content.", ["legacy_kind", "legacy_id", "source_id"], false, ["binding_id"]),
-  tool("craft_memory_candidate_propose", "Propose a sanitized scoped memory; it remains candidate until Evidence-backed review.", ["source_id", "kind", "scope_kind", "scope_id", "content"], false, ["candidate_id", "topic", "confidence", "evidence_ids", "valid_until", "scope_envelope"]),
-  tool("craft_memory_policy_save", "Save the scoped memory capture mode: off, propose, or governed. Governed mode still requires Evidence and conflict-free candidates.", ["mode"], false, ["policy_id", "min_confidence", "updated_by"]),
-  tool("craft_memory_policy_get", "Read the scoped memory capture mode and its Evidence threshold.", [], true, ["policy_id"]),
-  tool("craft_memory_candidate_review", "Approve or reject a memory candidate; approval requires bounded or confirmed Evidence.", ["candidate_id", "decision", "reviewer", "reason"]),
-  tool("craft_memory_ledger_remember_approved", "Write an approved candidate into the canonical Memory Ledger.", ["candidate_id"], false, ["memory_id"]),
-  tool("craft_memory_governance", "Suggest existing topics for confirmation, inspect scoped governance tasks, or confirm an unchanged entry with explicit user Evidence.", ["action"], false, ["content", "scope_kind", "scope_id", "memory_id", "expected_version", "explicit_consent", "evidence_ids", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
-  tool("craft_memory_conflict_list", "List unresolved Memory Ledger candidate conflicts.", [], true, ["limit"]),
-  tool("craft_memory_conflict_resolve", "Resolve a memory conflict while retaining both historical candidates.", ["candidate_id", "resolution", "actor", "reason"]),
-  tool("craft_memory_expiry_sweep", "Expire candidates and Ledger entries whose valid_until has elapsed.", [], false, ["now"]),
-  tool("craft_memory_session_finalize", "Finalize a session using only a redacted summary and candidate references.", ["session_id", "summary"], false, ["candidate_ids"]),
-  tool("craft_context_resolution_feedback", "Record bounded feedback on an exact Context receipt. Feedback never changes source status or grants execution authority.", ["receipt_id", "outcome"], false, ["feedback_id", "evidence_ids", "members", "asset_refs", "usage_stage", "injected_tokens", "schema_tokens", "history_tokens"]),
-  tool("craft_context_resolution_resolve", "Resolve a bounded, scoped host context and write a content-free reproducible Context Resolution Receipt. If no scope is available, return an empty skipped result without reading global memory.", ["query"], false, ["scope_kind", "scope_id", "receipt_id", "source_ids", "memory_ids", "retrieval_adapter_id", "max_items", "max_chars", "now", "allow_restricted", "user_scope_id", "team_scope_id", "organization_scope_id", "session_scope_id", "include_global", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "members", "required_refs", "task_id", "session_id", "turn_id", "include_working_notes", "history_view", "as_of", "known_at", "project_scope_id", "project_root"]),
-  tool("craft_scope_identity_resolve_project", "Resolve a portable Git-first project identity and bind the current filesystem path only as a local alias.", ["project_root"], false, ["project_id"]),
-  tool("craft_scope_alias_migrate", "Bind a known legacy project scope to a canonical project identity without changing historical records.", ["project_root", "legacy_scope_id"], false, ["project_id"]),
-  tool("craft_context_resolution_get", "Read one content-free Context Resolution Receipt.", ["receipt_id"], true, ["version"]),
-  tool("craft_context_working_set_resolve", "Resolve the fixed Context Working Set and explain selected or host-owned members without storing content in the receipt.", ["query"], false, ["working_set_id", "members", "scope_kind", "scope_id", "required_refs", "retrieval_adapter_id", "max_items", "max_chars", "history_refs", "state_refs", "task_id", "session_id", "turn_id"]),
-  tool("craft_context_working_set_get", "Read one content-free Context Working Set receipt.", ["working_set_id"], true, ["version"]),
-  tool("craft_decision_context_gate_open", "Resolve bounded Context before a named decision point. Missing scope is skipped; a required but empty Context blocks execution and requests clarification or replanning.", ["decision_kind", "query"], false, ["gate_id", "task_id", "scope_kind", "scope_id", "memory_ids", "source_ids", "retrieval_adapter_id", "max_items", "max_chars", "allow_restricted", "require_context", "context_receipt_id", "members"]),
-  tool("craft_decision_context_gate_get", "Read one decision-point Context Gate and its exact receipt reference.", ["gate_id"], true),
-  tool("craft_retrieval_adapter_configure", "Configure keyword or vector retrieval metadata. A vector adapter remains inactive until an explicit leakage, recall, cost, and latency evaluation passes.", ["strategy"], false, ["adapter_id", "provider_fingerprint", "configuration"]),
-  tool("craft_retrieval_adapter_evaluate", "Evaluate one retrieval adapter; vector use requires recall, zero cross-project leakage, latency, and cost thresholds.", ["adapter_id"], false, ["dataset", "metrics", "evaluation_id", "minimum_recall", "max_latency_ms", "max_cost_usd"]),
-  tool("craft_memory_maintenance_schedule", "Run lease-bound Memory maintenance. Light is local and idempotent; review/deep require explicit idle budget and model availability and cannot publish.", [], false, ["lease_id", "stage", "idle", "budget_available", "model_available"]),
-  tool("craft_turn_policy_save", "Save a scoped Turn Policy that deterministically decides whether a turn needs context, capability discovery, governed work, candidate memory, or observation.", ["scope_kind", "scope_id"], false, ["policy_id", "mode", "context_on", "capability_on", "workflow_on", "memory_capture", "evaluation_capture"]),
-  tool("craft_turn_policy_get", "Read one exact Turn Policy version.", ["policy_id"], true, ["version"]),
-  tool("craft_turn_proposal_submit", "Submit a content-free semantic Turn Proposal from a Host or configured Craft Agent mode; it never executes a model or Host.", ["scope_kind", "scope_id", "semantic_owner", "input_digest", "intents"], false, ["proposal_id", "host_adapter_id", "work_runtime_mode_id", "signals", "memory_candidate"]),
-  tool("craft_turn_host_adapter_save", "Declare a Host Turn Proposal contract and manual or event-hook delivery capability. Craft never installs Host hooks itself.", ["host"], false, ["adapter_id", "delivery", "supports_turn_hook", "proposal_contract"]),
-  tool("craft_turn_hook_plan", "Describe how a declared Host may submit Turn Proposals without changing Host configuration.", ["adapter_id"], true),
-  tool("craft_turn_intake_assess", "Assess one Turn Proposal under one scoped Policy and issue a content-free Turn Receipt plus at most one candidate memory.", ["proposal_id", "policy_id"], false, ["receipt_id"]),
-  tool("craft_turn_receipt_get", "Read one content-free Turn Receipt.", ["receipt_id"], true, ["version"]),
-  tool("craft_turn_memory_candidate_list", "List user-governed candidate memories; candidates are not durable memory until explicitly accepted.", [], true, ["scope_kind", "scope_id", "status", "limit"]),
-  tool("craft_turn_memory_candidate_decide", "Accept, reject, or revoke a candidate memory. Acceptance writes through the Memory Ledger with its original scope and Evidence.", ["candidate_id", "status", "reason"], false, ["memory_id", "confidence"]),
-  tool("craft_turn_evaluation_case_save", "Save one content-free deterministic Turn Policy evaluation Case.", ["policy_id", "proposal", "expected_actions"], false, ["case_id"]),
-  tool("craft_turn_evaluation_run", "Run deterministic Turn Policy Cases and report decision accuracy, false positives, and scope rejections.", [], false, ["evaluation_id", "case_ids"]),
-  tool("craft_work_runtime_mode_configure", "Configure Console or model-agnostic Agent mode over existing Hosts; it grants no execution authority.", ["mode", "allowed_hosts"], false, ["profile_id", "default_host", "default_model"]),
-  tool("craft_work_runtime_mode_prepare", "Prepare a digest-pinned Console or Agent mode plan that references existing activation and context receipts, then hands off to the Verified Work Loop.", ["task_id", "profile_id"], false, ["plan_id", "host", "model", "activation_profile_id", "context_receipt_id"]),
-  tool("craft_work_runtime_mode_get", "Read one mode-neutral runtime plan.", ["plan_id"], true, ["version"]),
-  tool("craft_continual_harness_view_create", "Create a content-free, version-pinned projection of the Harness actually bound to one task.", ["task_id", "bindings"], false, ["view_id"]),
-  tool("craft_continual_harness_refine", "Propose a small evidence-backed Harness diff from completed work; this never edits an active global asset.", ["task_id", "view_id", "source_refs", "evidence_ids", "hypothesis", "changes"], false, ["refinement_id"]),
-  tool("craft_continual_harness_submit", "Activate a low-risk Session refinement with TTL or send a governed refinement to shadow evaluation.", ["refinement_id"], false, ["privacy_reviewed", "ttl_seconds"]),
-  tool("craft_continual_harness_shadow", "Bind an eligible shadow reliability assessment to a governed Harness refinement.", ["refinement_id", "assessment_id"]),
-  tool("craft_continual_harness_authorize_canary", "Start Canary only after exact-version Signoff for a shadow-evaluated Harness refinement.", ["refinement_id", "signoff_id"], false, ["canary_id"]),
-  tool("craft_continual_harness_observe_canary", "Record a Canary metric and either continue, activate, or restore the exact baseline snapshot.", ["canary_id", "metric", "baseline", "candidate"], false, ["threshold", "complete"]),
-  tool("craft_continual_harness_rollback", "Rollback an active Harness refinement to its exact before snapshot with Evidence.", ["refinement_id", "reason", "evidence_ids"]),
-  tool("craft_continual_harness_signals", "List content-free successful Outcome and failed Acceptance signals that may justify a human-reviewed refinement.", ["task_id"], true),
-  tool("craft_continual_harness_resolve", "Resolve the exact unexpired Session and governed Refinements that apply to the next Host turn.", ["view_id", "session_id"], false, ["receipt_id", "now"]),
-  tool("craft_continual_harness_get", "Read one Harness refinement and its lifecycle.", ["refinement_id"], true),
-  tool("craft_experience_ledger_observe", "Record one content-free Evidence-backed success, failure, or correction for later maintenance. Scope it to make it eligible for Context resolution.", ["source_ref", "kind", "scenario_key", "finding", "evidence_ids"], false, ["observation_id", "scope_kind", "scope_id"]),
-  tool("craft_experience_ledger_compile", "Compile independent observations into a diagnostic-only strategy or failure pattern; execution Hosts never receive it directly.", ["scenario_key", "observation_ids", "kind", "hypothesis", "applicability", "counterexample"], false, ["pattern_id"]),
-  tool("craft_experience_ledger_propose", "Propose a bounded intervention from diagnostic patterns. It cannot activate or edit a Skill, Workflow, or Profile.", ["pattern_ids", "subject_ref", "design_axes", "diff_summary", "hypothesis"], false, ["intervention_id"]),
-  tool("craft_experience_ledger_evaluate", "Attach a shadow reliability assessment to a draft Experience intervention.", ["intervention_id", "assessment_id"], false, ["retry_condition"]),
-  tool("craft_experience_ledger_decide", "Accept only after exact Signoff, or retain a rejected intervention with a retry condition. This never changes an active asset.", ["intervention_id", "decision", "reason"], false, ["signoff_id", "retry_condition"]),
-  tool("craft_experience_ledger_get", "Read one intervention and its version-pinned diagnostic patterns.", ["intervention_id"], true),
-  tool("craft_stateful_compute_host_register", "Register a generic stateful compute Host contract; registration grants no execution authority.", ["kind", "label"], false, ["host_id", "trust", "generated_code", "conformance_id", "capabilities"]),
-  tool("craft_stateful_compute_session_prepare", "Prepare a version-pinned persistent compute Session over a bounded context, root budget and workspace snapshot.", ["task_id", "host_id", "context_receipt_id", "environment_fingerprint", "workspace_snapshot_ref", "budget_ref"], false, ["session_id", "allowed_effect"]),
-  tool("craft_stateful_compute_dispatch", "Issue a digest-bound Host action for a persistent Session without executing it inside Craft.", ["session_id", "expected_revision", "operation"], false, ["dispatch_id", "input_refs"]),
-  tool("craft_stateful_compute_observe", "Consume a Host Receipt only after environment and monotonic state revision checks.", ["dispatch_id", "observed_revision", "environment_fingerprint", "state_digest", "status"], false, ["output_refs", "usage"]),
-  tool("craft_stateful_compute_delegate", "Issue one asynchronous read-only Sub-agent function call under the parent Session budget and context references.", ["session_id", "objective", "result_schema"], false, ["call_id", "role", "context_refs", "allocation"]),
-  tool("craft_stateful_compute_report", "Accept a structured Sub-agent result with hypotheses, counterexamples, Evidence and confidence.", ["call_id", "hypotheses", "counterexamples", "evidence_ids", "confidence", "next_action"], false, ["output_refs"]),
-  tool("craft_stateful_compute_cancel", "Cancel one non-terminal persistent Session and propagate cancellation to all outstanding Sub-agent calls.", ["session_id", "reason"]),
-  tool("craft_stateful_compute_session_get", "Read one persistent compute Session and its latest Receipt reference.", ["session_id"], true),
-  tool("craft_uncertainty_policy_save", "Save a layered, versioned uncertainty policy; specific scopes cannot grant execution authority.", ["scope"], false, ["policy_id", "scope_id", "mode", "on_uncertain", "fallback", "confidence_threshold", "consistency_threshold", "max_attempts", "escalations", "human_fallback"]),
-  tool("craft_uncertainty_resolve", "Resolve insufficient or conflicting evidence into collecting, human-required, abstained, unchanged, rejected, or blocked.", ["policy_ids", "subject_ref"], false, ["resolution_id", "confidence", "consistency", "evidence_confidences", "conflict", "safety_floor_violation", "attempt"]),
-  tool("craft_uncertainty_adjudicate", "Append a scoped human quality adjudication without deleting evidence or overriding the Core Safety Floor.", ["resolution_id", "decision", "actor", "reason", "scope", "valid_until", "evidence_ids"], false, ["adjudication_id"]),
-  tool("craft_action_gate_decide", "Decide the interaction level for one action. L1 (silent) requires an independent deterministic checker, R0, a recomputable receipt and auto-discoverable failure; a learned rule is bounded by its guard clauses.", ["action", "scope_kind", "scope_id", "risk_level", "checker", "receipt", "failure_auto_discoverable"], false, ["core_safety_floor", "learned_rule_id", "invariant_digest", "guard_values"]),
-  tool("craft_action_gate_record_approval", "Record one human approval of an action in a scope and report whether a learn-not-to-ask proposal is now due.", ["action", "scope_kind", "scope_id", "actor"], false, ["learn_threshold"]),
-  tool("craft_action_gate_accept_proposal", "Bind a learned approval rule to the guard clauses and invariant it was learned under; it never grants execution authority on its own.", ["action", "scope_kind", "scope_id", "actor", "invariant_digest"], false, ["guard", "learn_threshold"]),
-  tool("craft_action_gate_rule_get", "Read one learned approval rule.", ["rule_id"], true),
-  tool("craft_action_gate_rule_list", "List learned approval rules for one action and scope.", ["action", "scope_kind", "scope_id"], true),
-  tool("craft_authorization_acknowledge", "Record that a person saw a card. This authorizes no effect and is stored separately from an authorization.", ["card_id", "actor", "acknowledged_at"], false, ["acknowledgement_id"]),
-  tool("craft_authorization_authorize", "Authorize one specific effect, binding the approver, the time, the effect id and the receipt digest. R2 and above require this before the effect may proceed.", ["effect_id", "effect_kind", "actor", "authorized_at", "decision_reason", "risk_level"], false, ["effect", "receipt_digest", "authorization_id"]),
-  tool("craft_authorization_check", "Ask whether an effect may proceed. Below R2 no record is required; at R2 and above a missing, mismatched or consumed authorization refuses.", ["effect_id", "risk_level"], true, ["effect"]),
-  tool("craft_authorization_consume", "Mark an authorization used by one execution. A different execution reusing it is refused.", ["authorization_id", "execution_id", "consumed_at"], false),
-  tool("craft_authorization_revoke", "Revoke an unconsumed authorization.", ["authorization_id", "revoked_by", "revoked_at", "revocation_reason"], false),
-  tool("craft_authorization_get", "Read one effect authorization.", ["authorization_id"], true),
-  tool("craft_authorization_list", "List the authorization records for one effect, newest first.", ["effect_id"], true),
-  tool("craft_authorization_trail", "Report the authorization and acknowledgement trails for one effect separately, so seeing a card is never read as granting it.", ["effect_id"], true, ["card_id"]),
-  tool("craft_receipt_issue", "Record an evidence receipt. Both observed states must carry provenance; L1 eligibility is computed from whether any reading rests on an unconfirmed human transcription.", ["object_id", "action_executed", "risk_level", "pre_state", "post_state"], false, ["receipt_id", "check", "proofs", "cross_checks", "prev_receipt_digest"]),
-  tool("craft_receipt_get", "Read one evidence receipt.", ["receipt_id"], true),
-  tool("craft_receipt_list", "List evidence receipts for one object.", ["object_id"], true, ["limit"]),
-  tool("craft_receipt_assess", "Re-derive a receipt's conclusion from its stored raw values, reporting which metrics could not be compared.", ["receipt_id"], true),
-  tool("craft_receipt_trend", "Derive settled/catching_up/stuck for one metric from the receipt's two observations, with the remediation it calls for.", ["receipt_id", "metric"], true),
-  tool("craft_receipt_remediation", "List the remediation actions a verdict calls for.", ["verdict"], true),
-  tool("craft_subscription_drift_register", "Authorize a subscription against an upstream structure. The structural fingerprint and the event dedup key are stored separately and never derived from one another.", ["subscription_id", "structure", "now"], false, ["dormant_after_days"]),
-  tool("craft_subscription_drift_check", "Compare the current upstream structure against the authorized one; a difference suspends the subscription and never revokes it.", ["subscription_id", "structure"], true),
-  tool("craft_subscription_drift_ingest", "Decide whether one event dispatches: drift is checked before deduplication, and a duplicate is dropped without resetting the decay clock.", ["subscription_id", "event", "now"], false),
-  tool("craft_subscription_drift_reactivate", "Re-authorize a suspended or dormant subscription against a new structure; this is the human step.", ["subscription_id", "structure", "now"], false),
-  tool("craft_subscription_drift_sweep", "Move subscriptions with no activity inside their window into dormancy.", ["now"], false),
-  tool("craft_subscription_drift_get", "Read one subscription's drift state.", ["subscription_id"], true),
-  tool("craft_subscription_drift_list", "List subscriptions, optionally by state.", [], true, ["subscription_state"]),
-  tool("craft_prepared_state_prepare", "Record a prepared state and its digest over the submit payload, page identity and assertions. At least one liveness assertion is required so an expired session is detectable.", ["prepared_id", "page_identity", "submit_payload", "assertions"], false),
-  tool("craft_prepared_state_get", "Read one prepared state.", ["prepared_id"], true),
-  tool("craft_prepared_state_release", "Re-verify a prepared state and release it. A mismatch is refused with the reason and the recovery it needs; a failed liveness assertion needs re-authentication, not re-preparation.", ["prepared_id", "release_id", "approved_by", "released_at", "page_identity", "submit_payload", "observed"], false),
-  tool("craft_adjudication_enqueue", "Offer one item for adjudication. Re-offering an open item updates it rather than creating a second card.", ["item_id", "item_kind", "decision_kind", "priority", "summary"], false),
-  tool("craft_adjudication_view", "The current adjudication view: at most one focused card, the rest marked and waiting, plus any mergeable same-kind groups.", [], true, ["limit"]),
-  tool("craft_adjudication_resolve", "Resolve one adjudication. A batch is one action but not one signature: each effect needs its own authorization naming the approver, time and receipt digest.", ["item_ids", "decision", "decided_at", "authorizations"], false),
-  tool("craft_adjudication_authorizations", "Read the authorization records for one adjudication item.", ["item_id"], true),
-  tool("craft_hatch_session_open", "Open a free-expression session. It permits exactly one hatch and zero conversation turns.", ["session_id", "opened_at"], false),
-  tool("craft_hatch_session_get", "Read one hatch session.", ["session_id"], true),
-  tool("craft_hatch_object", "Hatch one work object from an expressed intention and close the session. The object records origin=human.", ["session_id", "intention", "object_kind", "hatched_at"], false, ["object_id"]),
-  tool("craft_hatch_object_get", "Read one hatched object.", ["object_id"], true),
-  tool("craft_hatch_object_list", "List hatched objects, optionally by kind or origin.", [], true, ["object_kind", "origin"]),
-  tool("craft_hatch_fields_request", "Request specific missing fields for a hatched object. This is the structured exit; it does not reopen free expression.", ["object_id", "fields"], false),
-  tool("craft_hatch_fields_complete", "Supply requested fields. A field that was not requested is refused rather than stored.", ["object_id", "values"], false),
-  tool("craft_reference_pilot_save", "Register a sanitized, content-free development or file-delivery Reference Pilot.", ["kind", "name", "case_ref", "primary_metric"], false, ["pilot_id", "host", "direction", "effect_threshold", "guardrail_names", "sanitized", "content_stored"]),
-  tool("craft_release_qualification_plan", "Create exactly five paired baseline and candidate slots under one environment and budget fingerprint.", ["pilot_id", "baseline_ref", "candidate_ref", "environment_fingerprint", "budget_fingerprint"], false, ["qualification_id", "input_fingerprint", "model_fingerprint", "acceptance_fingerprint"]),
-  tool("craft_release_qualification_record", "Record one content-free, evidence-backed Reference Pilot result.", ["slot_id", "primary_value", "guardrails", "evidence_ids", "environment_fingerprint", "budget_fingerprint"], false, ["mechanism_passed"]),
-  tool("craft_release_qualification_evaluate", "Evaluate completed paired Pilot slots as eligible, rejected, or inconclusive.", ["qualification_id"]),
-  tool("craft_platform_ideal_state_assess", "Assess Platform Ideal State v1 from one development and one file-delivery qualification.", ["development_qualification_id", "file_qualification_id"], true),
-  tool("craft_verification_plan", "Derive a content-free, risk-matched development verification plan. It plans checks only and never executes a Host or command.", ["change_ref", "change_kinds", "effects", "environment_fingerprint"], false, ["verification_id", "candidate_change", "requires_real_host", "requested_risk_level", "content_stored", "budget_fingerprint", "input_fingerprint", "model_fingerprint", "acceptance_fingerprint", "host"]),
-  tool("craft_verification_receipt_record", "Record one planned same-environment verification check with bounded Evidence; unplanned checks and raw content are rejected.", ["verification_id", "check_id", "status", "summary", "environment_fingerprint"], false, ["receipt_id", "evidence_ids"]),
-  tool("craft_verification_assess", "Assess a Verification Plan as eligible, rejected, or inconclusive. Candidate changes also require an eligible Release Qualification.", ["verification_id"], false, ["assessment_id", "release_qualification_id"]),
-  tool("craft_verification_get", "Read a Verification Plan, its planned checks, Evidence Receipts, and assessments.", ["verification_id"], true),
-  tool(
-    "craft_task_graph_create",
-    "Create a domain-neutral task dependency graph with optional exact Context Profile bindings; it does not dispatch Agents.",
-    ["name", "nodes"],
-    false,
-    ["graph_id", "task_id", "workspace_id"]
-  ),
-  tool("craft_task_graph_get", "Read one collaborative task graph.", ["graph_id"], true, ["version"]),
-  tool("craft_task_graph_list", "List task graphs.", [], true, ["limit", "query"]),
-  tool("craft_task_graph_advance", "Advance one task graph node after its dependencies are complete; blocked nodes propagate to pending descendants.", ["graph_id", "node_id", "status"]),
-  tool(
-    "craft_change_set_create",
-    "Create a durable field-level ActionPatch set against exact work-object versions.",
-    ["workspace_id", "summary", "author", "patches"],
-    false,
-    ["change_set_id", "intent"]
-  ),
-  tool("craft_change_set_preview", "Classify ChangeSet patches as auto-applicable or conflicting and preview transitive impact.", ["change_set_id"], true),
-  tool(
-    "craft_change_set_apply",
-    "Atomically apply a conflict-free ChangeSet and invalidate only dependent work objects.",
-    ["change_set_id"],
-    false,
-    ["expected_state_revision"]
-  ),
-  tool("craft_budget_open", "Create a first-class root or parent-funded resource budget for a task, subagent, plan, run, or background job.", ["owner_type", "owner_id", "limits"], false, ["budget_id", "parent_budget_id"]),
-  tool(
-    "craft_budget_reserve",
-    "Reserve resource capacity before exploration or parallel execution with an idempotent reservation ID.",
-    ["budget_id", "resources"],
-    false,
-    ["reservation_id", "purpose", "trial_id"]
-  ),
-  tool("craft_budget_settle", "Settle actual usage within a reservation and release its unused capacity.", ["reservation_id"], false, ["actual", "trial_id"]),
-  tool("craft_budget_close", "Close a budget after its reservations and child budgets finish; child actual usage is settled into its parent allocation.", ["budget_id"], false),
-  tool(
-    "craft_durable_wait_create",
-    "Persist an approval, event, or time wait so the execution environment can be released.",
-    ["task_id", "condition"],
-    false,
-    ["wait_id", "workspace_id", "event_key", "resume_after", "snapshot_refs", "policy_fingerprint", "trial_id"]
-  ),
-  tool(
-    "craft_durable_wait_resume",
-    "Resume a durable wait only after its signal, workspace revision, and policy are revalidated.",
-    ["wait_id", "signal"],
-    false,
-    ["now", "signal_key", "policy_fingerprint"]
-  ),
-  tool(
-    "craft_external_event_ingest",
-    "Idempotently store an untrusted external signal and resume only exact matching durable waits; it never grants execution authority.",
-    ["event_id", "event_key"],
-    false,
-    ["task_id", "source", "observed_at", "payload", "policy_fingerprint"]
-  ),
-  tool(
-    "craft_durable_wait_sweep",
-    "Resume due time waits in a bounded batch and revalidate each supplied current policy fingerprint.",
-    [],
-    false,
-    ["now", "limit", "policy_fingerprints"]
-  ),
-  tool(
-    "craft_fallback_contract_save",
-    "Attach explicit drift triggers and a bounded fallback strategy to an exact subject version.",
-    ["subject_type", "subject_id", "subject_version", "triggers", "strategy"],
-    false,
-    ["contract_id", "max_attempts", "budget_id", "estimated_resources"]
-  ),
-  tool(
-    "craft_fallback_evaluate",
-    "Evaluate a runtime drift signal, reserve fallback budget, or stop at the configured boundary.",
-    ["contract_id", "trigger"],
-    false,
-    ["event_id", "task_id", "trial_id", "start_trial", "case_id", "environment", "trial_budget", "observation"]
-  ),
-  tool(
-    "craft_fallback_complete",
-    "Close a running fallback with an immutable Trial Outcome, evidence references, and actual budget settlement.",
-    ["event_id", "verdict", "summary"],
-    false,
-    ["trial_id", "failure_type", "scores", "costs", "actual_resources", "evidence_ids", "source"]
-  ),
-  tool(
-    "craft_credential_handle_register",
-    "Register only a reference to a host-managed environment secret; Craft never reads or returns its value.",
-    ["provider", "secret_ref"],
-    false,
-    ["handle_id", "description", "header_name", "prefix"]
-  ),
-  tool("craft_enterprise_identity_provider_register", "Register an HTTPS OIDC or short-lived broker boundary without credentials.", ["provider_id", "kind", "issuer", "audience", "broker_ref", "organization_ref"], false),
-  tool("craft_enterprise_identity_provider_verify", "Verify short-lived token, audit-subject and revocation claims with confirmed Evidence.", ["provider_id", "evidence_ids", "observed_claims", "verified_by"], false, ["max_ttl_seconds"]),
-  tool("craft_enterprise_principal_bind", "Bind a task-scoped principal by SHA-256 subject digest; raw identity is not stored.", ["principal_id", "provider_id", "task_id", "subject_digest", "roles"], false, ["ttl_seconds", "now"]),
-  tool("craft_enterprise_adapter_bind", "Bind a verified published external Adapter to a verified identity provider without widening its effect.", ["binding_id", "provider_id", "contract_publication_id", "allowed_effects", "target_host"], false),
-  tool("craft_enterprise_access_ticket_issue", "Issue a short-lived enterprise access ticket from an exact principal, broker lease and Adapter binding.", ["ticket_id", "binding_id", "principal_id", "task_id", "credential_lease_id", "effect", "request_digest"], false, ["approval_ref", "autonomy_consumption_id", "now"]),
-  tool("craft_enterprise_access_ticket_consume", "Consume one exact enterprise access ticket; a deployment broker performs the real call.", ["ticket_id", "request_digest", "consumer_ref"], false, ["now"]),
-  tool("craft_enterprise_access_ticket_get", "Read a redacted enterprise access ticket.", ["ticket_id"], true),
-  tool(
-    "craft_credential_lease_issue",
-    "Issue a short-lived task-bound credential lease for exact HTTPS hosts and actions.",
-    ["task_id", "handle_id", "allowed_hosts", "allowed_actions"],
-    false,
-    ["lease_id", "approval_required_actions", "ttl_seconds", "now"]
-  ),
-  tool("craft_credential_lease_revoke", "Revoke a credential lease idempotently.", ["lease_id", "reason"], false),
-  tool(
-    "craft_egress_authorize",
-    "Authorize one exact outbound request without exposing its secret; the trusted broker performs injection.",
-    ["lease_id", "url", "action", "request_digest"],
-    false,
-    ["receipt_id", "approval_ref", "now", "untrusted_input"]
-  ),
-  tool(
-    "craft_egress_request_digest",
-    "Compute the canonical method, URL, caller-header, and body digest for an outbound request.",
-    ["method", "url"],
-    true,
-    ["headers", "body"]
-  ),
-  tool(
-    "craft_egress_execute",
-    "Execute one exact authorization through the trusted HTTPS broker; secrets are injected only at the pinned connection boundary.",
-    ["authorization_id", "method"],
-    false,
-    ["headers", "body", "timeout_ms", "output_limit"]
-  ),
-  tool(
-    "craft_sandbox_egress_deliver",
-    "Keep a Sandbox offline while the trusted broker delivers one sanitized, untrusted response into its private inbox.",
-    ["binding_id", "ticket_id", "authorization_id", "method"],
-    false,
-    ["headers", "body", "output_name", "timeout_ms", "output_limit"]
-  ),
-  tool(
-    "craft_external_effect_prepare",
-    "Prepare an approved external write with exact request, idempotency, and optional compensation contracts.",
-    ["task_id", "provider", "action", "target", "effect", "request_digest", "idempotency_key", "approval_ref"],
-    false,
-    ["effect_id", "trial_id", "compensation"]
-  ),
-  tool("craft_external_effect_start", "Start only a prepared external effect and return its exact host dispatch envelope; tasks with an active autonomy policy must consume an exact authorization.", ["effect_id", "approval_ref"], false, ["authorization_request_id", "notification_ref", "now"]),
-  tool(
-    "craft_external_effect_report",
-    "Record a succeeded, failed, or indeterminate remote effect result with Evidence.",
-    ["effect_id", "receipt_id", "status", "evidence_ids"],
-    false,
-    ["remote_operation_id", "response_digest"]
-  ),
-  tool(
-    "craft_external_effect_resolve",
-    "Resolve an indeterminate remote effect only through an evidence-backed human decision.",
-    ["effect_id", "resolution", "resolver_type", "approval_ref", "evidence_ids"],
-    false,
-    ["remote_operation_id"]
-  ),
-  tool(
-    "craft_effect_reconciliation_execute",
-    "Run one pre-authorized read-only GET and reconcile an ambiguous effect from an explicit HTTP-status contract.",
-    ["effect_id", "authorization_id", "succeeded_http_statuses", "failed_http_statuses"],
-    false,
-    ["reconciliation_id", "headers", "timeout_ms", "output_limit"]
-  ),
-  tool(
-    "craft_effect_compensation_issue",
-    "Issue the declared compensation for a succeeded external effect after explicit approval.",
-    ["effect_id", "approval_ref"],
-    false,
-    ["compensation_id"]
-  ),
-  tool(
-    "craft_effect_compensation_report",
-    "Record compensation success, failure, or ambiguity with Evidence.",
-    ["compensation_id", "status", "evidence_ids"],
-    false,
-    ["response_digest"]
-  ),
-  tool(
-    "craft_effect_compensation_execute",
-    "Execute an exact pre-authorized compensation and preserve definitive, failed, or ambiguous outcomes.",
-    ["effect_id", "compensation_id", "authorization_id", "approval_ref", "method", "succeeded_http_statuses", "failed_http_statuses"],
-    false,
-    ["headers", "body", "timeout_ms", "output_limit"]
-  ),
-  tool(
-    "craft_effect_saga_create",
-    "Bind ordered same-task external effects and derive forward or reverse compensation work.",
-    ["task_id", "effect_ids"],
-    false,
-    ["saga_id", "trial_id"]
-  ),
-  tool("craft_effect_saga_get", "Read a Saga's current effects, derived state, and next safe action.", ["saga_id"], true),
-  tool(
-    "craft_recovery_queue_refresh",
-    "Project durable waits and uncertain external effects into a bounded persistent recovery queue.",
-    [],
-    false,
-    ["now", "limit"]
-  ),
-  tool("craft_attention_refresh", "Project approvals, recovery work, degraded maintenance, and ready speculative results into one non-authoritative attention inbox.", [], false, ["now", "limit"]),
-  tool("craft_attention_list", "List prioritized actionable attention cards for a human, agent, or operator.", [], true, ["now", "limit", "audience"]),
-  tool("craft_attention_decide", "Acknowledge or defer an attention card without mutating its authoritative source.", ["item_id", "decision", "decided_by"], false, ["now", "deferred_until", "reason"]),
-  tool("craft_home_view", "Read a UI-safe Workbench Home projection across tasks, workspaces, active runs, budgets, outputs, health, and attention.", [], true, ["now", "limit"]),
-  tool("craft_home_task", "Read a UI-safe task detail with checkpoints, runs, trials, outcomes, evidence, artifacts, lineage, waits, and attention.", ["task_id"], true, ["limit"]),
-  tool(
-    "craft_recovery_work_claim",
-    "Lease the highest-priority compatible recovery item without executing it.",
-    ["worker_id", "actions"],
-    false,
-    ["now", "lease_seconds"]
-  ),
-  tool(
-    "craft_recovery_work_report",
-    "Close a leased recovery item with Evidence, rejecting stale source state.",
-    ["item_id", "lease_token", "outcome", "summary"],
-    false,
-    ["evidence_ids", "now"]
-  ),
-  tool("craft_recovery_lease_recover", "Return expired recovery leases to the open queue in a bounded sweep.", [], false, ["now", "limit"]),
-  tool(
-    "craft_trigger_subscription_save",
-    "Create or update a versioned signed-webhook subscription with exact filters, projection, throttle, and optional budget.",
-    ["subscription_id", "task_id", "name", "event_key", "handle_id"],
-    false,
-    ["filters", "allowed_fields", "max_age_seconds", "throttle_seconds", "budget_id", "per_event_resources", "status", "expected_version"]
-  ),
-  tool(
-    "craft_webhook_trigger_ingest",
-    "Verify and deduplicate one signed webhook without persisting its raw body, then deliver a zero-authority projected event.",
-    ["subscription_id", "event_id", "timestamp", "signature", "raw_body"],
-    false,
-    ["now"]
-  ),
-  tool(
-    "craft_speculative_policy_save",
-    "Version a read-only proactive preparation policy with a hard budget, TTL, and candidate cap.",
-    ["policy_id", "task_id", "name", "event_key", "operation", "budget_id", "estimated_resources"],
-    false,
-    ["ttl_seconds", "max_candidates", "status", "expected_version"]
-  ),
-  tool(
-    "craft_speculative_enqueue",
-    "Create an input-pinned, budget-reserved, disposable candidate from one delivered signed event.",
-    ["policy_id", "policy_version", "trigger_event_id"],
-    false,
-    ["now"]
-  ),
-  tool(
-    "craft_speculative_claim",
-    "Lease one compatible read-only speculative job; the dispatch has no external-write authority.",
-    ["worker_id", "operations"],
-    false,
-    ["lease_ttl_seconds", "now"]
-  ),
-  tool(
-    "craft_speculative_submit",
-    "Submit an evidence-backed candidate or failure and settle its reserved resources.",
-    ["candidate_id", "lease_id", "worker_id", "verdict", "summary"],
-    false,
-    ["artifact_ids", "evidence_ids", "actual_resources", "now"]
-  ),
-  tool(
-    "craft_speculative_decide",
-    "Accept or reject a ready candidate and capture human edits as an implicit preference signal.",
-    ["candidate_id", "decision", "reviewer"],
-    false,
-    ["final_artifact_ids", "correction", "now"]
-  ),
-  tool("craft_speculative_expire", "Expire stale disposable candidates in a bounded sweep.", [], false, ["now", "limit"]),
-  tool(
-    "craft_lineage_record",
-    "Record one immutable evidence-backed derivation between exact object, artifact, trial, memory, capability, or effect versions.",
-    ["workspace_id", "output", "sources", "actor_type", "evidence_ids", "summary"],
-    false,
-    ["lineage_id", "task_id", "transform"]
-  ),
-  tool(
-    "craft_lineage_trace",
-    "Traverse bounded upstream sources or downstream consumers from one exact entity version.",
-    ["workspace_id", "entity"],
-    true,
-    ["direction", "max_depth"]
-  ),
-  tool("craft_lineage_verify", "Verify that an immutable lineage statement still resolves and report newer referenced versions.", ["lineage_id"], true),
-  tool(
-    "craft_dehydration_capture",
-    "Freeze the minimal versioned task, workspace, wait, runtime, budget, and recovery references needed for a long-task handoff.",
-    ["task_id"],
-    false,
-    ["snapshot_id", "workspace_id", "wait_id", "runtime_run_id", "budget_ids", "recovery_item_ids", "ttl_seconds", "now"]
-  ),
-  tool("craft_hydration_inspect", "Revalidate a frozen long-task snapshot and classify it as still waiting, ready, or requiring replanning.", ["snapshot_id"], true),
-  tool(
-    "craft_hydration_claim",
-    "Lease one revalidated snapshot to a Host without exposing raw conversation context or credentials.",
-    ["snapshot_id", "state_fingerprint", "host_id", "claim_key"],
-    false,
-    ["lease_ttl_seconds", "now"]
-  ),
-  tool(
-    "craft_hydration_report",
-    "Complete or abandon an exact hydration lease; completion requires Evidence.",
-    ["snapshot_id", "lease_id", "host_id", "outcome", "summary"],
-    false,
-    ["evidence_ids", "now"]
-  ),
-  tool("craft_hydration_lease_recover", "Return expired hydration leases to the frozen pool in a bounded sweep.", [], false, ["now", "limit"]),
-  tool(
-    "craft_autonomy_policy_save",
-    "Version an exact-task autonomy policy for automatic, notify-only, human approval, or multi-signature execution.",
-    ["policy_id", "task_id", "name", "rules"],
-    false,
-    ["default_ttl_seconds", "status", "expected_version"]
-  ),
-  tool(
-    "craft_autonomy_request",
-    "Request a short-lived authorization bound to one policy version, task, action, target, and request digest.",
-    ["policy_id", "policy_version", "task_id", "action", "target", "request_digest", "requested_by"],
-    false,
-    ["request_id", "ttl_seconds", "now"]
-  ),
-  tool(
-    "craft_autonomy_decide",
-    "Record one unique human approval or denial against a pending authorization request.",
-    ["request_id", "actor", "decision", "approval_ref"],
-    false,
-    ["now"]
-  ),
-  tool(
-    "craft_autonomy_consume",
-    "Atomically consume an authorized request exactly once after matching its task, action, target, and digest.",
-    ["request_id", "task_id", "action", "target", "request_digest", "idempotency_key"],
-    false,
-    ["notification_ref", "now"]
-  ),
-  tool(
-    "craft_contract_observation_record",
-    "Record a schema-only, evidence-backed API, MCP, or Computer Use observation without raw payloads.",
-    ["task_id", "adapter_kind", "endpoint", "operation", "input_schema", "output_schema", "observed_effect", "outcome", "evidence_ids"],
-    false,
-    ["observation_id", "idempotency_observed", "compensation_observed", "credential_handles_required"]
-  ),
-  tool("craft_contract_candidate_infer", "Infer a non-executable contract candidate from at least two consistent successful observations.", ["observation_ids"], false, ["candidate_id"]),
-  tool(
-    "craft_contract_candidate_review",
-    "Accept, correct, or reject an exact inferred contract without granting execution authority.",
-    ["candidate_id", "decision", "reviewer", "review_ref"],
-    false,
-    ["corrected_contract"]
-  ),
-  tool(
-    "craft_contract_candidate_verify",
-    "Verify a reviewed contract against a verified Sandbox Profile and passed evidence-backed Trial; keep activation separate.",
-    ["candidate_id", "sandbox_profile_id", "sandbox_profile_version", "trial_id"]
-  ),
-  tool(
-    "craft_contract_diff",
-    "Compare exact reviewed Contract versions and classify equivalent, compatible, or breaking changes.",
-    ["baseline_id", "baseline_version", "candidate_id", "candidate_version"],
-    true
-  ),
-  tool(
-    "craft_contract_publish",
-    "Publish one exact verified Contract as a versioned Capability Adapter after independent human approval.",
-    ["candidate_id", "candidate_version", "asset_id", "name", "publisher", "approval_ref"],
-    false,
-    ["publication_id"]
-  ),
-  tool(
-    "craft_contract_publication_rollback",
-    "Retire only the capability version still owned by an active Contract publication.",
-    ["publication_id", "reason", "actor", "rollback_ref"]
-  ),
-  tool(
-    "craft_capability_canary_start",
-    "Start a bounded sticky baseline/candidate rollout for one active Contract publication.",
-    ["publication_id", "baseline_asset_id", "baseline_asset_version", "allocation_percent", "min_samples_per_arm", "thresholds"],
-    false,
-    ["canary_id"]
-  ),
-  tool("craft_capability_canary_route", "Deterministically route one stable key while a Capability Canary accepts candidate traffic.", ["canary_id", "routing_key"], true),
-  tool(
-    "craft_capability_canary_observe",
-    "Record one evidence-backed quality, cost, latency, and correction sample.",
-    ["canary_id", "sample_id", "arm", "outcome", "cost", "latency_ms", "evidence_ids"],
-    false,
-    ["corrected"]
-  ),
-  tool("craft_capability_canary_evaluate", "Evaluate only after both arms reach the minimum sample count; halt regressions and recommend rollback without executing it.", ["canary_id"]),
-  tool(
-    "craft_capability_bundle_propose",
-    "Propose an evidence-backed, secret-free bundle for personal, team, or organization sharing without copying raw trajectories.",
-    ["asset_id", "asset_version", "audience", "manifest", "evidence_ids"],
-    false,
-    ["bundle_id"]
-  ),
-  tool(
-    "craft_capability_bundle_review",
-    "Approve, redact, or reject an exact Capability bundle without granting execution authority.",
-    ["bundle_id", "decision", "reviewer", "review_ref"],
-    false,
-    ["reviewed_manifest"]
-  ),
-  tool(
-    "craft_capability_bundle_publish",
-    "Publish a reviewed bundle only after independent approval and pin its exact Capability Asset version.",
-    ["bundle_id", "bundle_version", "publisher", "approval_ref"],
-    false,
-    ["release_id"]
-  ),
-  tool(
-    "craft_capability_release_subscribe",
-    "Pin a consumer to one exact active Capability release; activation remains governed by normal policy.",
-    ["release_id", "release_version", "consumer"],
-    false,
-    ["subscription_id"]
-  ),
-  tool("craft_capability_subscription_resolve", "Resolve a pinned subscription only while its exact release remains active and unchanged.", ["subscription_id"], true),
-  tool(
-    "craft_capability_release_revoke",
-    "Revoke a shared Capability release and fail closed for every pinned consumer.",
-    ["release_id", "actor", "revocation_ref", "reason"]
-  ),
-  tool(
-    "craft_hub_source_register",
-    "Trust one HTTPS Capability Hub catalog source by an exact Ed25519 public key; no network request is performed.",
-    ["endpoint", "publisher", "public_key_pem"],
-    false,
-    ["source_id"]
-  ),
-  tool(
-    "craft_hub_catalog_ingest",
-    "Verify and atomically ingest one signed, monotonic catalog page of at most 1000 metadata-only entries.",
-    ["source_id", "revision", "previous_digest", "issued_at", "entries", "signature"],
-    false,
-    ["receipt_id"]
-  ),
-  tool("craft_hub_catalog_search", "Search the local signed Hub catalog without scanning or contacting remote Hubs.", ["query"], true, ["limit"]),
-  tool("craft_hub_source_disable", "Disable a trusted Hub source without deleting its audit history.", ["source_id", "reason"]),
-  tool(
-    "craft_capability_materialize_stage",
-    "Verify a selected Hub package digest and write bounded files into the local quarantine cache; never execute them.",
-    ["source_id", "entry_id", "files"],
-    false,
-    ["materialization_id"]
-  ),
-  tool(
-    "craft_capability_materialize_review",
-    "Approve or reject a quarantined package after findings review; high-risk packages require a security approval reference.",
-    ["materialization_id", "decision", "reviewer", "review_ref"],
-    false,
-    ["evidence_ids", "security_approval_ref"]
-  ),
-  tool(
-    "craft_capability_materialize_activate",
-    "Register an approved exact package only as a non-executable candidate Capability for later evaluation and promotion.",
-    ["materialization_id", "asset_id", "asset_type", "effect"],
-    false,
-    ["name"]
-  ),
-  tool(
-    "craft_capability_certification_assess",
-    "Certify one exact materialized candidate only after held-out Evaluation, per-Trial Sandbox receipts, evidence-backed program Grades, and Signoff.",
-    ["materialization_id", "materialization_version", "sandbox_profile_id", "sandbox_profile_version", "evaluation_run_id", "sandbox_receipts", "signoff_id", "certifier", "certification_ref"],
-    false,
-    ["certification_id"]
-  ),
-  tool(
-    "craft_capability_certification_promote",
-    "Atomically promote an unchanged certified candidate to verified after independent approval; this still grants no execution authority.",
-    ["certification_id", "certification_version", "promoter", "approval_ref"]
-  ),
-  tool(
-    "craft_supply_chain_advisory_record",
-    "Record an evidence-backed Hub security advisory against one catalog entry or Capability asset.",
-    ["source_id", "severity", "summary", "evidence_ids"],
-    false,
-    ["advisory_id", "entry_id", "asset_id"]
-  ),
-  tool(
-    "craft_supply_chain_advisory_resolve",
-    "Resolve an advisory with new Evidence without erasing its audit history.",
-    ["advisory_id", "resolution", "resolver", "evidence_ids"]
-  ),
-  tool(
-    "craft_supply_chain_reconcile",
-    "Propagate source disablement, withdrawal, digest drift, and security advisories into blocked assets, invalid Activation Profiles, and recoverable recertification work.",
-    ["source_id"]
-  ),
-  tool("craft_supply_chain_publisher_register", "Register one public-key publisher identity for provenance verification; it does not install assets.", ["publisher_id", "public_key_pem", "identity_ref"]),
-  tool("craft_supply_chain_attest", "Verify a signed digest attestation for a Capability, MCP registry entry, or Hub catalog entry.", ["publisher_id", "subject_kind", "subject_id", "subject_digest", "signature"], false, ["attestation_id"]),
-  tool("craft_supply_chain_attestation_assert", "Check that a verified attestation still pins the current subject digest; it never activates an asset.", ["attestation_id", "current_subject_digest"], true),
-  tool("craft_supply_chain_attestation_revoke", "Revoke a provenance attestation without deleting its audit record.", ["attestation_id", "reason"]),
-  tool(
-    "craft_untrusted_content_register",
-    "Register external content by locator and digest without copying its raw body into Craft.",
-    ["task_id", "source_type", "locator", "content_digest"],
-    false,
-    ["content_id", "media_type"]
-  ),
-  tool(
-    "craft_untrusted_extraction_record",
-    "Store data-only structured extraction from an execution-isolated parser and quarantine detected instructions.",
-    ["content_id", "extractor", "schema_id", "structured_data"],
-    false,
-    ["extraction_id", "detected_instructions", "citations", "field_sources"]
-  ),
-  tool(
-    "craft_decision_projection_release",
-    "Release only reviewed top-level fields into decision context; projections never carry execution authority.",
-    ["extraction_id", "reviewer_type", "reviewer_id", "verdict", "allowed_fields"],
-    false,
-    ["projection_id", "approval_ref"]
-  ),
-  tool(
-    "craft_decision_projection_explain",
-    "Explain field-level source, parser, review, and content-digest lineage without exposing unreleased fields.",
-    ["projection_id"],
-    true,
-    ["field"]
-  ),
-  tool(
-    "craft_untrusted_content_parse",
-    "Verify and parse registered JSON or text in memory with deterministic selectors; raw content is never persisted.",
-    ["content_id", "raw_content", "format", "schema_id", "selectors"],
-    false,
-    ["extraction_id"]
-  ),
-  tool(
-    "craft_parser_security_evaluate",
-    "Run a bounded ephemeral parser security suite and persist only digests, labels, metrics, and results.",
-    ["evaluation_id", "suite_id", "suite_version", "cases"]
-  ),
-  tool(
-    "craft_untrusted_content_parse_process",
-    "Parse registered JSON or text in a memory-limited, environment-scrubbed child process with timeout and a durable receipt.",
-    ["content_id", "raw_content", "format", "schema_id", "selectors"],
-    false,
-    ["extraction_id", "receipt_id", "timeout_ms"]
-  ),
-  tool(
-    "craft_sandbox_profile_save",
-    "Declare a versioned Sandbox Adapter contract without claiming it is verified.",
-    ["name", "backend", "adapter_id", "capabilities"],
-    false,
-    ["profile_id"]
-  ),
-  tool(
-    "craft_sandbox_profile_verify",
-    "Verify one exact Sandbox Profile against observed capabilities and Evidence.",
-    ["profile_id", "profile_version", "observed_capabilities", "evidence_ids", "verifier"],
-    false,
-    ["assessment_id"]
-  ),
-  tool(
-    "craft_sandbox_plan",
-    "Issue an exact-version execution ticket only when a verified Sandbox Profile satisfies every requirement.",
-    ["task_id", "profile_id", "requirements", "request_digest"],
-    false,
-    ["profile_version", "ticket_id"]
-  ),
-  tool(
-    "craft_sandbox_receipt",
-    "Close a Sandbox ticket with exact adapter, profile, observed-boundary, and Evidence checks.",
-    ["ticket_id", "receipt_id", "adapter_id", "profile_version", "status", "observed_capabilities", "evidence_ids"]
-  ),
-  tool(
-    "craft_docker_sandbox_request_digest",
-    "Compute the canonical request digest required before issuing a Docker Sandbox ticket.",
-    ["image", "argv"],
-    true
-  ),
-  tool(
-    "craft_docker_sandbox_probe",
-    "Diagnose Docker availability, image presence, and hardened startup without verifying the declared Profile.",
-    ["profile_id", "profile_version", "image"]
-  ),
-  tool(
-    "craft_docker_sandbox_conformance",
-    "Run black-box Docker boundary checks; only a passing suite can verify a declared Profile.",
-    ["profile_id", "profile_version", "image"],
-    false,
-    ["probe_id"]
-  ),
-  tool(
-    "craft_docker_sandbox_execute",
-    "Execute one exact Docker Sandbox ticket with no shell, denied network, bounded resources, and a verified receipt.",
-    ["ticket_id", "receipt_id", "image", "argv"]
-  ),
-  tool("craft_workspace_transaction_begin", "Create a reversible local-write transaction from an exact workspace baseline.", ["workspace_id", "label"], false, ["transaction_id", "effect"]),
-  tool("craft_workspace_transaction_commit", "Commit a prepared transaction to one exact workspace checkpoint.", ["transaction_id", "checkpoint_id"]),
-  tool("craft_workspace_transaction_rollback", "Restore a transaction baseline only after explicit approval.", ["transaction_id", "approved"]),
-  tool("craft_workspace_transaction_get", "Read one local workspace transaction.", ["transaction_id"], true),
-  tool("craft_trajectory_script_compile", "Compile passed same-task trajectories into a deterministic TypeScript proposal; arbitrary source is never accepted.", ["task_id", "name", "trial_ids", "operations"], false, ["proposal_id"]),
-  tool("craft_trajectory_script_authorize", "Mark a compiled script verified only after an exact passed Signoff.", ["proposal_id", "signoff_id"]),
-  tool("craft_trajectory_script_get", "Read one trajectory script proposal.", ["proposal_id"], true, ["version"]),
-  tool("craft_trajectory_script_list", "List trajectory script proposals.", [], true, ["limit", "query"]),
-  tool("craft_verified_script_issue", "Bind one verified script proposal to its prepared Workspace transaction and issue exact Host operations.", ["proposal_id", "workspace_id", "transaction_id"], false, ["run_id"]),
-  tool("craft_verified_script_receipt", "Record one exact Host receipt set for an issued verified script run.", ["run_id", "host_adapter_id", "receipts"]),
-  tool("craft_verified_script_run_get", "Read a verified script run and its Host receipts.", ["run_id"], true),
-  tool("craft_feedback_record", "Record an explicit scoped correction or preference.", ["corrected"], false, ["kind", "scope", "task_id", "original", "applies_to", "source"]),
-  tool("craft_artifact_register", "Register a portable artifact reference.", ["kind", "name", "uri"], false, ["artifact_id", "media_type", "digest", "size_bytes", "producer_type", "producer_id", "metadata"]),
-  tool("craft_artifact_get", "Read an artifact reference.", ["artifact_id"], true),
-  tool("craft_artifact_list", "List artifact references.", [], true, ["limit", "query"]),
-  tool("craft_evidence_record", "Record a claim with source and confidence.", ["source_type", "claim"], false, ["evidence_id", "confidence", "artifact_id", "locator", "observed_at", "metadata"]),
-  tool("craft_evidence_get", "Read an evidence record.", ["evidence_id"], true),
-  tool("craft_evidence_list", "List evidence records.", [], true, ["limit", "query"]),
-  tool("craft_workflow_save", "Save a new draft workflow version.", ["name"], false, ["workflow_id", "inputs", "steps", "description"]),
-  tool("craft_workflow_get", "Read a workflow version.", ["workflow_id"], true, ["version"]),
-  tool("craft_workflow_search", "Search reusable workflows.", [], true, ["limit", "query"]),
-  tool("craft_workflow_plan", "Resolve inputs and side-effect approvals without executing.", ["workflow_id"], true, ["version", "inputs", "allow_execution", "approved_side_effects"]),
-  tool("craft_workflow_run", "Execute deterministic Workflow steps with explicit side-effect approval.", ["workflow_id", "project_root"], false, ["version", "inputs", "allow_execution", "approved_side_effects"]),
-  tool(
-    "craft_workflow_trial_run",
-    "Execute a Workflow and automatically capture its Trial, Trace, Artifact, Evidence, and Outcome.",
-    ["task_id", "workflow_id", "project_root"],
-    false,
-    [
-      "trial_id",
-      "case_id",
-      "version",
-      "inputs",
-      "allow_execution",
-      "approved_side_effects",
-      "harness_configuration_id",
-      "harness_configuration_version",
-      "environment",
-      "budget"
-    ]
-  ),
-  tool("craft_workflow_run_get", "Read a durable Workflow execution receipt.", ["run_id"], true),
-  tool(
-    "craft_workflow_transition",
-    "Move a workflow through draft, candidate, verified, or deprecated with evidence gates.",
-    ["workflow_id", "target", "reason"],
-    false,
-    ["evaluation_run_id", "signoff_id", "promotion_id"]
-  ),
-  tool(
-    "craft_workflow_rollback",
-    "Restore a previously verified workflow version as the latest version.",
-    ["workflow_id", "target_version", "reason"]
-  ),
-  tool("craft_graph_compile", "Compile a validated Graph into an analysis-only Plan for VerifiedWorkLoop; it never calls a Host or creates a second executor.", ["nodes"], true, ["plan_id", "edges", "inputs", "outputs", "checkpoint_policy"]),
-  tool("craft_workflow_checkpoint", "Capture a step-level Workflow checkpoint with graph/state fingerprints.", ["run_id", "workflow_id"], false, ["completed", "pending", "active", "state_digest", "workspace_snapshot", "budget_fingerprint", "environment_fingerprint"]),
-  tool("craft_workflow_resume", "Resume a Workflow checkpoint or return needs_replan on drift.", ["checkpoint_id"], true, ["graph_digest", "state_digest"]),
-  tool("craft_workflow_run_cancel", "Cancel a Workflow run with an auditable reason.", ["run_id", "reason"]),
-  tool("craft_workflow_replan", "Mark a Workflow checkpoint for explicit replanning.", ["checkpoint_id", "reason"]),
-  tool("craft_workflow_export", "Export one exact Workflow DAG JSON document with digest.", ["workflow_id"], true, ["version"]),
-  tool("craft_workflow_import", "Validate and import a Workflow DAG JSON document as a draft.", ["document"], false, ["workflow_id"]),
-  tool("craft_task_state_transition", "Append one idempotent, versioned Task state event and update its projection.", ["task_id", "state", "actor"], false, ["reason", "evidence_ids", "expected_revision"]),
-  tool("craft_task_state_get", "Read a Task state projection and replayable event stream.", ["task_id"], true),
-  tool("craft_task_state_replay", "Replay Task state events into a deterministic projection.", ["task_id"], true),
-  tool(
-    "craft_experience_pattern_create",
-    "Derive a reusable experience pattern from at least two completed Trials and their Evidence references.",
-    ["task_id", "summary", "success_strategy", "applicability", "trial_ids", "evidence_ids", "failure_modes"],
-    false,
-    ["pattern_id"]
-  ),
-  tool("craft_experience_pattern_get", "Read an experience pattern.", ["pattern_id"], true, ["version"]),
-  tool("craft_experience_pattern_list", "List reusable experience patterns.", [], true, ["limit", "query"]),
-  tool("craft_experience_candidate_list", "List automatic Experience Pattern candidates backed by at least two completed Trials with Evidence.", [], true),
-  tool(
-    "craft_experience_mine",
-    "Extract repeated evidence-backed success strategies and failure modes as proposal-only candidates; it never publishes changes.",
-    ["subject_type", "subject_id", "subject_version"]
-  ),
-  tool(
-    "craft_experience_shadow_experiment_create",
-    "Create a shadow-only experiment from a mined proposal candidate; it cannot publish a change.",
-    ["task_id", "mining_candidate_id"],
-    false,
-    ["experiment_id"]
-  ),
-  tool(
-    "craft_experience_shadow_experiment_evaluate",
-    "Run a planned mining candidate only through read-only held-out Workflow evaluation and Promotion; it prepares, but never grants, Signoff or publication.",
-    ["experiment_id", "suite_id", "project_root", "baseline_workflow_id", "baseline_workflow_version", "candidate_workflow_id", "candidate_workflow_version", "signoff_policy_id", "signoff_policy_version"],
-    false,
-    ["shadow_evaluation_id", "suite_version", "trials_per_case", "environment", "budget", "min_trials", "min_pass_rate_delta", "cost_metric", "max_cost_regression_ratio", "max_duration_regression_ratio"]
-  ),
-  tool("craft_experience_procedure_projection_draft", "Create an Experience Procedure candidate from a bounded proposal: Workflow/Graph use checked JSON definitions plus Markdown review views; Prompt uses Markdown. It is not routeable or installed.", ["proposal_id"], false, ["procedure_id", "procedure_kind", "scenario_signature", "trigger", "preconditions", "allowed_effects", "acceptance_ref", "failure_disposition", "evidence_ids", "title", "description"]),
-  tool("craft_experience_procedure_gate", "Record one ordered Shadow, Held-out, Signoff, or Canary gate for a Procedure. A failed Canary rolls it back.", ["procedure_id", "stage", "evidence_ids"], false, ["gate_id", "passed", "verdict", "expected_version", "release_channel"]),
-  tool("craft_experience_procedure_projection_get", "Read one Experience Procedure projection and its checked JSON definition reference when applicable.", ["procedure_id"], true, ["release_channel", "version"]),
-  tool("craft_experience_procedure_projection_list", "List scoped Experience Procedure projections.", [], true, ["scope", "limit"]),
-  tool("craft_experience_procedure_skill_export", "Export only a routeable Procedure as a disabled SKILL.md draft under Craft artifacts.", ["procedure_id"], false, ["export_id", "skill_name"]),
-  // Short daily names. The longer `experience_procedure_projection_*` names remain advanced
-  // compatibility aliases while clients migrate; new product docs and component surfaces use these.
-  tool("craft_procedure_create", "Create one Craft Experience Procedure candidate: Workflow/Graph use checked JSON definitions plus Markdown review views; Prompt uses Markdown. It is not routeable or installed.", ["proposal_id"], false, ["procedure_id", "procedure_kind", "scenario_signature", "trigger", "preconditions", "allowed_effects", "acceptance_ref", "failure_disposition", "evidence_ids", "title", "description", "scope_envelope"]),
-  tool("craft_procedure_gate", "Record one ordered quality gate for a Craft Experience Procedure.", ["procedure_id", "stage", "evidence_ids"], false, ["gate_id", "passed", "verdict", "expected_version", "release_channel"]),
-  tool("craft_procedure_configuration_save", "Save one user-authored scenario configuration as a versioned candidate. Clears prior gates; never invents observations or authorizes execution.", ["procedure_id", "scope", "title", "procedure_kind", "definition"], false, ["expected_version", "scenario_id", "scope_envelope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_experience_graph_inspect", "Inspect scoped Experience Graph assets: list by scenario, read a pinned record version, get a read-only template, inspect draft, validate JSON or preview diff and affected subscenarios. Action=evaluate_applicability runs labelled route matches and reports outside-scenario false activation. Inspection never activates a draft.", ["action"], true, ["graph_id", "scope", "scenario_id", "version", "limit", "template_id", "configuration", "json", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "query", "input_keys", "release_channel", "cases"]),
-  tool("craft_experience_graph_edit", "Save a scoped Graph draft with CAS, submit its exact digest as a new candidate, or copy legacy versions into the unified graph directory while preserving old references. Actions: save, submit, migrate, improvement_propose, improvement_save, improvement_submit. Improvement actions bind public Invocation failures and reviewed proposal/draft digests; never grant execution authority.", ["action", "graph_id", "scope"], false, ["configuration", "json", "template_id", "expected_version", "expected_draft_digest", "before_version", "scope_envelope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "outcome_id", "proposal_id", "reviewer", "expected_proposal_digest"]),
-  tool("craft_knowledge_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_knowledge_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_memory_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_memory_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_experience_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_experience_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_codebase_asset_inspect", "Inspect scoped asset history, exact revision, diff or provenance with action=history/read/diff/explain. Record versions and content revisions are distinct.", ["asset_id", "scope_kind", "scope_id"], true, ["kind", "action", "version", "target_version", "target_asset_id", "before_version", "limit", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_codebase_asset_restore", "Restore reviewed historical content through existing governance as a new candidate; Codebase only rebuilds the current checkpoint. Requires current revision and idempotency key.", ["asset_id", "scope_kind", "scope_id", "version", "expected_version", "request_id", "reason"], false, ["kind", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_host_control", "Prepare an embedded Host Work Loop without starting a child Host, or record scoped snapshots and dispatch-bound Host/program observations. It grants no execution authority.", ["action", "input"], false, ["invocation_id", "scope", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_decision_evaluate", "Evaluate declared graph guards using current accepted program/human fact Evidence and advance only one matching edge. Unknown, ambiguous, stale or unsafe decisions block; it never executes the Host.", ["invocation_id", "scope", "expected_version", "decision_id", "receipt_id", "snapshot_id", "fact_evidence_id"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_invocation_bind", "Bind selected Procedure calls to an existing Verified Work Loop and durable items; no Host execution authority.", ["invocation_id", "work_loop_id", "procedure_id", "procedure_version", "scope", "entry_id", "exit_id", "input_refs", "allowed_effects", "host_id", "model_fingerprint", "budget_fingerprint", "max_dispatches", "ttl_ms"], false, ["subscenario_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "release_channel", "test_workspace_id", "baseline_workspace_id"]),
-  tool("craft_procedure_invocation_dispatch", "Prepare one ready item and bind call-specific fresh preconditions; never executes the Host.", ["invocation_id", "scope", "expected_version", "snapshot_id", "item_key"], false, ["precondition_evidence", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_invocation_report", "Accept an independent terminal Host observation for the exact item, outputs and snapshot; retries are idempotent.", ["invocation_id", "scope", "expected_version", "dispatch_id", "host_session_id", "observation_id", "snapshot_id", "output_refs", "acceptance_evidence_ids"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_invocation_resume", "Resume from durable receipts; pending dispatches require reconciliation, never replay.", ["invocation_id", "scope", "expected_version", "snapshot_id"], false, ["recovery_evidence_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_invocation_transition", "Apply one evidenced graph branch or bounded rework to the existing Invocation; invalidates dependent acceptance and never executes a Host.", ["invocation_id", "scope", "expected_version", "transition_id", "edge_id", "receipt_id", "snapshot_id", "evidence_id"], false, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_invocation_get", "Read scoped invocation, durable items, dispatches, receipts and per-call outcomes.", ["invocation_id", "scope"], true, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_invocation_evaluate", "Compare 3 to 100 independent paired terminal invocations under matching inputs, Host, model and budget; does not promote.", ["scope", "baseline_ids", "candidate_ids"], true, ["principal_id", "principal_ids", "tenant_id", "cognitive_purpose"]),
-  tool("craft_procedure_plan", "Compile a routeable Workflow Procedure Entry/Exit into a bounded Host plan with exact child versions and contracts. Reads only; does not authorize, execute, or accept work.", ["procedure_id", "procedure_version", "scope", "entry_id", "exit_id", "input_refs", "allowed_effects"], true, ["subscenario_id", "precondition_evidence", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "release_channel", "test_workspace_id", "baseline_workspace_id"]),
-  tool("craft_procedure_get", "Read one Craft Experience Procedure with its Markdown view and checked JSON definition reference when applicable.", ["procedure_id"], true, ["release_channel", "version"]),
-  tool("craft_procedure_list", "List scoped Craft Experience Procedures.", [], true, ["scope", "limit"]),
-  tool("craft_procedure_export_skill", "Export only a routeable Procedure as a disabled SKILL.md draft within the Experience data domain.", ["procedure_id"], false, ["export_id", "skill_name"]),
-  tool(
-    "craft_operational_signal_record",
-    "Record one observed online metric without storing raw payloads.",
-    ["subject_type", "subject_id", "metric", "value"],
-    false,
-    ["signal_id", "task_id"]
-  ),
-  tool(
-    "craft_operational_drift_evaluate",
-    "Evaluate recent operational metric drift and record only a bounded alert.",
-    ["subject_type", "subject_id", "metric", "direction", "threshold"],
-    false,
-    ["window_size", "alert_id"]
-  ),
-  tool(
-    "craft_skill_proposal_create",
-    "Save a versioned SKILL.md candidate derived from Experience Patterns; this does not change any source file.",
-    ["name", "summary", "skill_markdown", "pattern_ids"],
-    false,
-    ["proposal_id"]
-  ),
-  tool("craft_skill_proposal_get", "Read a versioned Skill candidate.", ["proposal_id"], true, ["version"]),
-  tool("craft_skill_proposal_list", "List Skill candidates.", [], true, ["limit", "query"]),
-  tool(
-    "craft_skill_proposal_transition",
-    "Move a Skill candidate through the existing held-out Evaluation and Signoff Gate.",
-    ["proposal_id", "target", "reason"],
-    false,
-    ["evaluation_run_id", "signoff_id"]
-  ),
-  tool(
-    "craft_skill_proposal_rollback",
-    "Restore a previously verified Skill candidate version as the latest version.",
-    ["proposal_id", "target_version", "reason"]
-  ),
-  tool(
-    "craft_skill_proposal_publish",
-    "Write only a verified Skill candidate to an existing SKILL.md with explicit authorization, digest protection, and backup.",
-    ["proposal_id", "source_id", "target_path", "expected_digest", "allow_external_write"],
-    false,
-    ["publication_id"]
-  ),
-  tool("craft_skill_publication_get", "Read a Skill publication receipt.", ["publication_id"], true, ["version"]),
-  tool("craft_skill_publication_list", "List Skill publication receipts.", [], true, ["limit", "query"]),
-  tool(
-    "craft_skill_publication_rollback",
-    "Restore a published SKILL.md only when its digest still matches the published candidate.",
-    ["publication_id", "expected_digest", "allow_external_write"]
-  ),
-  tool("craft_eval_suite_save", "Save an immutable evaluation suite.", ["name"], false, ["suite_id", "cases", "description", "scope"]),
-  tool("craft_eval_suite_get", "Read an evaluation suite.", ["suite_id"], true, ["version"]),
-  tool("craft_eval_suite_list", "Search evaluation suites.", [], true, ["limit", "query"]),
-  tool(
-    "craft_harness_configuration_save",
-    "Save a versioned six-dimensional harness configuration.",
-    ["name", "dimensions"],
-    false,
-    ["configuration_id", "description"]
-  ),
-  tool(
-    "craft_harness_configuration_get",
-    "Read a harness configuration version.",
-    ["configuration_id"],
-    true,
-    ["version"]
-  ),
-  tool("craft_harness_configuration_list", "List harness configurations.", [], true, ["limit", "query"]),
-  tool(
-    "craft_harness_select",
-    "Select the smallest risk- and budget-appropriate Harness and persist the decision.",
-    ["task_id", "risk"],
-    false,
-    ["budget", "requires_external_effect", "harness_id", "strategy_id"]
-  ),
-  tool(
-    "craft_agent_ir_compile",
-    "Compile host-neutral operations and constraints into a versioned Agent IR.",
-    ["task_id", "harness_id", "goal", "operations"],
-    false,
-    ["harness_version", "ir_id"]
-  ),
-  tool(
-    "craft_agent_ir_lower",
-    "Lower a versioned Agent IR into one controlled Runtime Run.",
-    ["ir_id", "policy_id", "environment"],
-    false,
-    ["ir_version", "policy_version", "run_id", "trial_id"]
-  ),
-  tool(
-    "craft_trial_start",
-    "Create an immutable execution trial linked to a task and exact subject version.",
-    ["task_id", "subject_type", "subject_id", "subject_version"],
-    false,
-    ["trial_id", "case_id", "harness_configuration_id", "harness_configuration_version", "environment", "budget"]
-  ),
-  tool(
-    "craft_trial_trace_append",
-    "Append an immutable trace event to a trial.",
-    ["trial_id", "event_type"],
-    false,
-    ["source", "data", "artifact_ids", "evidence_ids"]
-  ),
-  tool("craft_trial_get", "Read a trial with its trace and outcome.", ["trial_id"], true),
-  tool("craft_trial_list", "List immutable trials.", [], true, ["limit", "query"]),
-  tool("craft_trace_start", "Start one canonical, host-neutral Trace with exact task, run, model, policy, capability, and environment fingerprints.", ["task_id"], false, ["trace_id", "launch_id", "run_id", "trial_id", "attempt_id", "operation_id", "model_fingerprint", "environment_fingerprint", "capability_fingerprint", "policy_fingerprint", "metadata"]),
-  tool("craft_trace_append", "Append one contiguous, content-bounded canonical Trace Event with state, action, receipt, provenance, cost, and evidence references.", ["trace_id", "event_kind"], false, ["event_id", "sequence", "span_id", "parent_span_id", "operation_id", "actor", "source", "trust", "data", "action_contract", "state_before", "state_after", "input_refs", "output_refs", "capability_revision", "policy_revision", "model_fingerprint", "environment_fingerprint", "workspace_before", "workspace_after", "usage", "cost_usd", "duration_ms", "error_class", "status", "summary"]),
-  tool("craft_trace_observe", "Append an externally observed state transition to a Trace; observation is distinct from model self-report.", ["trace_id"], false, ["event_id", "state_before", "state_after", "workspace_before", "workspace_after", "summary", "source", "actor", "data"]),
-  tool("craft_trace_feedback", "Record a human or reviewer feedback signal and attach it to the canonical Trace.", ["trace_id", "signal", "summary"], false, ["feedback_id", "actor", "value", "evidence_ids", "outcome"]),
-  tool("craft_trace_finalize", "Close a Trace with a verified terminal status and optional Evidence references.", ["trace_id", "status", "summary"], false, ["verdict", "evidence_ids"]),
-  tool("craft_trace_get", "Read a Trace, canonical events, feedback signals, and content-free replay facts.", ["trace_id"], true),
-  tool("craft_trace_query", "Query canonical Trace Events by Trace, Task, or event kind without returning raw prompt content.", [], true, ["trace_id", "task_id", "event_kind", "limit"]),
-  tool("craft_trace_replay_bundle", "Build a digest-only replay bundle and report whether the Trace has enough fingerprints for reproducible replay.", ["trace_id"], true),
-  tool("craft_trace_case_compile", "Compile one terminal Trace into a sanitized development or approved held-out evolution Case.", ["trace_id", "summary"], false, ["case_id", "partition", "acceptance_contract_ref", "approved_by", "contamination_flags"]),
-  tool("craft_trace_retention_plan", "Save or explicitly replace the default digest-only Trace retention policy. The default is seven hot days; archival precedes terminal-record removal.", [], false, ["policy_id", "max_days", "max_events", "pii_mode", "replace", "updated_by"]),
-  tool("craft_trace_retention_sweep", "Archive and remove terminal Trace records using the saved default policy, or a one-call max_days override; running traces are preserved.", [], false, ["now", "policy_id", "max_days", "limit"]),
-  tool("craft_trace_archive_storage_register", "Register a Trace archive storage plugin configuration. It stores only a credential/configuration reference and never a secret; registration does not load code.", ["storage_id", "backend_id"], false, ["credential_ref", "configuration_ref", "replace"]),
-  tool("craft_trace_archive_storage_list", "List the built-in local archive store and registered storage plugin configurations with runtime availability.", [], true, ["limit"]),
-  tool("craft_trace_archive_storage_activate", "Activate one registered Trace archive storage plugin only when its trusted runtime backend is available.", ["storage_id"], false),
-  tool("craft_host_session_open", "Open one Host-neutral, content-free session bound to the canonical Trace. It does not start a Host process.", ["task_id", "host_id", "environment_fingerprint", "policy_fingerprint", "capability_fingerprint"], false, ["session_id", "trace_id", "model_fingerprint", "budget_fingerprint"]),
-  tool("craft_host_session_append", "Append one contiguous Host Session fact. Raw prompt and chat content are rejected; use artifact, evidence and state references.", ["session_id", "kind"], false, ["event_id", "sequence", "action_contract_ref", "state_before_ref", "state_after_ref", "artifact_refs", "evidence_refs", "summary_digest"]),
-  tool("craft_host_session_resume", "Resume only a paused Host Session with a digest-only reason and append a canonical resume fact.", ["session_id", "actor", "reason_digest"], false),
-  tool("craft_host_session_get", "Read one Host Session, its protocol events and canonical Trace.", ["session_id"], true),
-  tool("craft_outcome_observer_observe", "Record an independent, content-free observation of actual state. It is evidence only and never promotes a candidate by itself.", ["trace_id", "host_id", "observer_id", "observer_kind", "environment_fingerprint", "verdict", "state_snapshot_ref"], false, ["observation_id", "evidence_ids"]),
-  tool("craft_outcome_observer_get", "Read one independent Outcome Observation and its canonical Trace event.", ["observation_id"], true),
-  tool(
-    "craft_outcome_record",
-    "Record the single immutable outcome for a trial.",
-    ["trial_id", "verdict", "summary"],
-    false,
-    ["failure_type", "scores", "costs", "evidence_ids", "source"]
-  ),
-  tool(
-    "craft_evaluation_run_record",
-    "Record a reproducible evaluation from completed trials in one suite partition.",
-    ["suite_id", "split", "subject_type", "subject_id", "subject_version", "trial_ids"],
-    false,
-    ["run_id", "suite_version", "metrics"]
-  ),
-  tool("craft_evaluation_run_get", "Read an immutable evaluation run.", ["run_id"], true),
-  tool("craft_evaluation_run_list", "List evaluation runs.", [], true, ["limit", "query"]),
-  tool("craft_evaluation_run_aggregate", "Compute reproducible quality, score, cost, duration, and failure aggregates for an evaluation run.", ["run_id"], true),
-  tool(
-    "craft_evaluation_compare",
-    "Compare two runs only when suite version, split, subject type, and case set match.",
-    ["baseline_run_id", "candidate_run_id"],
-    false,
-    ["comparison_id"]
-  ),
-  tool(
-    "craft_evaluation_runner_run",
-    "Execute comparable held-out deterministic Workflow trials and record Evaluation Runs.",
-    ["task_id", "suite_id", "split", "project_root", "subjects"],
-    false,
-    ["runner_id", "suite_version", "trials_per_case", "environment", "budget"]
-  ),
-  tool(
-    "craft_evaluation_program_grade",
-    "Run a versioned deterministic program grader across every Trial of an Evaluation Run.",
-    ["evaluation_run_id", "grader_id"],
-    false,
-    ["grader_version"]
-  ),
-  tool(
-    "craft_evaluation_promotion_assess",
-    "Apply held-out repeated-trial, paired comparison, cost, and duration regression thresholds before promotion.",
-    ["comparison_id"],
-    false,
-    ["promotion_id", "min_trials", "min_pass_rate_delta", "cost_metric", "max_cost_regression_ratio", "max_duration_regression_ratio"]
-  ),
-  tool("craft_evaluation_comparison_get", "Read an immutable evaluation comparison.", ["comparison_id"], true),
-  tool("craft_evaluation_comparison_list", "List immutable evaluation comparisons.", [], true, ["limit", "query"]),
-  tool(
-    "craft_grader_save",
-    "Save a versioned program, model, human, or operational grader.",
-    ["name", "grader_type"],
-    false,
-    ["grader_id", "description", "configuration", "rules"]
-  ),
-  tool("craft_grader_get", "Read an exact grader version.", ["grader_id"], true, ["version"]),
-  tool("craft_grader_list", "List graders.", [], true, ["limit", "query"]),
-  tool(
-    "craft_grade_record",
-    "Record one immutable grade for a Trial and exact Grader version.",
-    ["trial_id", "grader_id", "grader_version", "verdict", "summary"],
-    false,
-    ["score", "evidence_ids", "metadata"]
-  ),
-  tool("craft_grade_get", "Read an immutable grade.", ["grade_id"], true),
-  tool("craft_grade_list", "List grades.", [], true, ["limit", "query"]),
-  tool(
-    "craft_signoff_policy_save",
-    "Save a versioned policy for evaluation and grader requirements.",
-    ["name"],
-    false,
-    ["policy_id", "description", "requirements", "require_held_out", "require_outcome_passed"]
-  ),
-  tool("craft_signoff_policy_get", "Read a signoff policy version.", ["policy_id"], true, ["version"]),
-  tool("craft_signoff_policy_list", "List signoff policies.", [], true, ["limit", "query"]),
-  tool(
-    "craft_signoff_evaluate",
-    "Evaluate an immutable signoff decision from an Evaluation Run and explicit Grades.",
-    ["policy_id", "evaluation_run_id"],
-    false,
-    ["signoff_id", "policy_version", "grade_ids"]
-  ),
-  tool("craft_signoff_get", "Read an immutable signoff decision.", ["signoff_id"], true),
-  tool("craft_signoff_list", "List signoff decisions.", [], true, ["limit", "query"]),
-  tool("craft_agent_profile_save", "Save a versioned cross-host agent profile.", ["name", "role", "host", "model"], false, ["profile_id", "provider", "reasoning_effort", "capabilities", "allowed_side_effects", "metadata"]),
-  tool("craft_agent_profile_get", "Read an agent profile.", ["profile_id"], true, ["version"]),
-  tool("craft_agent_profile_list", "List agent profiles.", [], true, ["limit", "query"]),
-  tool("craft_orchestration_plan_create", "Create a dependency-aware multi-Agent plan with pinned Agent Profile versions.", ["goal", "nodes"], false, ["plan_id", "task_id", "max_concurrency", "lease_ttl_seconds", "budget", "policy"]),
-  tool(
-    "craft_orchestration_trial_start",
-    "Create an orchestration plan and automatically capture its Trial lifecycle.",
-    ["task_id", "goal", "nodes"],
-    false,
-    [
-      "plan_id",
-      "trial_id",
-      "case_id",
-      "max_concurrency",
-      "lease_ttl_seconds",
-      "policy",
-      "harness_configuration_id",
-      "harness_configuration_version",
-      "environment",
-      "budget"
-    ]
-  ),
-  tool("craft_orchestration_plan_get", "Read a multi-Agent plan and node states.", ["plan_id"], true),
-  tool("craft_orchestration_plan_list", "List multi-Agent plans.", [], true, ["limit", "query"]),
-  tool("craft_orchestration_dispatch", "Lease ready nodes to a host within concurrency limits.", ["plan_id", "claimed_by"], false, ["capacity"]),
-  tool(
-    "craft_orchestration_renew",
-    "Renew an owned orchestration lease before its TTL expires.",
-    ["plan_id", "lease_id", "claimed_by"]
-  ),
-  tool(
-    "craft_orchestration_submit",
-    "Submit a leased node result; trial-backed plans capture trace, cost, evidence, and terminal outcome automatically.",
-    ["plan_id", "lease_id", "verdict"],
-    false,
-    ["provenance", "claimed_by", "summary", "costs", "artifact_ids", "evidence_ids", "idempotency_key"]
-  ),
-  tool(
-    "craft_orchestration_trial_finalize",
-    "Idempotently reconcile a terminal trial-backed plan into its receipt, evidence, and outcome.",
-    ["plan_id"],
-    false
-  ),
-  tool(
-    "craft_capability_asset_save",
-    "Register a versioned, trusted capability asset without activating it.",
-    ["name", "asset_type", "source_uri", "effect"],
-    false,
-    ["asset_id", "trust", "health", "dependencies", "aliases", "requires_credential", "cost_hint", "source_digest"]
-  ),
-  tool("craft_capability_access_plan", "Recommend the minimal trusted activation profile and persist its selection receipt.", ["task_id", "goal"], false, ["allowed_effects", "receipt_id"]),
-  tool("craft_capability_call_issue", "Issue one expiring, profile-bound capability call token.", ["profile_id", "asset_id", "operation"], false, ["call_id", "expires_at"]),
-  tool("craft_capability_call_consume", "Consume an issued capability call only for its original profile.", ["call_id", "profile_id"], false),
-  tool("craft_capability_kit_install", "Install one declarative Capability Kit after validating its exact manifest and installed dependency versions. Installation never loads code or grants execution authority.", ["manifest"], false, ["origin", "builtin"]),
-  tool("craft_capability_kit_install_builtins", "Install the reviewed Serena project-knowledge and local-workspace sample Capability Kits."),
-  tool("craft_capability_kit_get", "Read one exact installed Capability Kit revision.", ["kit_id"], true, ["version"]),
-  tool("craft_capability_kit_list", "List local Capability Kits and their lifecycle state.", [], true, ["limit"]),
-  tool("craft_capability_kit_activate", "Bind one conformance-passing Capability Kit to a Task. It returns blocked rather than granting execution when Task, dependency or conformance facts are missing.", ["kit_id", "task_id"], false, ["activation_id", "activation_profile_id"]),
-  tool("craft_capability_kit_contribution_record", "Record a digest-only Proposal or Receipt from one declared Kit phase; the Kit cannot write Craft facts directly.", ["kit_id", "activation_id", "phase", "proposal"], false, ["contribution_id", "evidence_ids"]),
-  tool("craft_capability_kit_set_state", "Disable or revoke one Capability Kit and invalidate dependent active Kit activations.", ["kit_id", "state", "actor", "reason"], false),
-  tool("craft_capability_kit_conformance", "Run deterministic manifest and dependency Conformance checks. Passing only proves the mechanism, not business quality or production safety.", ["kit_id"], false, ["report_id"]),
-  tool("craft_capability_kit_distribution", "Describe the shared Skill, MCP, CLI and plugin presentation for one Kit without generating code or enabling it.", ["kit_id"], true),
-  tool("craft_engineering_quality_profile_install", "Explicitly install the version-pinned Engineering Quality sample Kit. It neither changes Host configuration nor grants execution authority."),
-  tool("craft_engineering_quality_profile_case_save", "Freeze one sanitized bug-fix-shared-caller Case as digest-only inputs, workspace scope and deterministic acceptance assertions.", ["case_id", "case_kind", "frozen_input_digest", "allowed_workspace_ref", "acceptance_command_digest", "sibling_caller_assertion_digest", "sanitized"], false),
-  tool("craft_engineering_quality_profile_activate", "Bind the Engineering Quality sample to one Task after generic Kit Conformance has passed.", ["task_id"], false, ["activation_id"]),
-  tool("craft_engineering_quality_profile_trial_context", "Read the fixed-version, no-authority Profile descriptor for a controlled external Host trial.", ["activation_id"], true),
-  tool("craft_engineering_quality_profile_contribution", "Record one evidence-bound, digest-only engineering rule contribution; it cannot bypass Acceptance.", ["activation_id", "rule_id", "proposal", "evidence_ids"], false, ["contribution_id", "review_id"]),
-  tool("craft_engineering_quality_profile_review_aggregate", "Aggregate isolated Standards and Spec review receipts only when they share a baseline and program-reproducible Evidence.", ["activation_id", "reproduction_evidence_ids"], false, ["aggregate_id"]),
-  tool("craft_engineering_quality_profile_evaluation_plan", "Define a 12-20 Case, exactly five-paired-trial Profile evaluation without executing a Host.", ["activation_id", "host_id", "case_ids", "model_fingerprint", "environment_fingerprint", "budget_fingerprint", "trials_per_pair"], false, ["plan_id", "observer_kind"]),
-  tool("craft_engineering_quality_profile_evaluation_record", "Record a legacy unverified Profile trial for revalidation only; it can never promote a Profile.", ["plan_id", "case_id", "trial_index", "arm"], false, ["record_id"]),
-  tool("craft_engineering_quality_profile_evaluation_evaluate", "Summarize complete pairs only; only non-regressing, blocker-free results become Shadow candidates.", ["plan_id"], false, ["evaluation_id"]),
-  tool("craft_engineering_quality_profile_evaluation_get", "Read sanitized Engineering Quality evaluation records, result and rejection receipt.", ["plan_id"], true),
-  tool("craft_capability_connector_register", "Register one user-approved built-in, Skill-source, or MCP connector without storing credentials or starting it.", ["kind", "name"], false, ["connector_id", "endpoint", "approved", "approval_ref", "metadata", "allowed_operations"]),
-  tool("craft_capability_connector_discover", "Record host-discovered, content-free metadata from one configured connector; Craft never fetches or installs it itself.", ["connector_id", "assets"], false),
-  tool("craft_capability_connector_update", "Enable or disable one Connector; disabling it invalidates future ticket consumption.", ["connector_id", "active"], false),
-  tool("craft_capability_connector_health_record", "Record a content-free health receipt pinned to the Connector metadata digest. Only a current healthy receipt enables external invocation.", ["connector_id", "status", "source_digest", "observed_by"], false, ["health_id", "evidence_ids"]),
-  tool("craft_capability_connector_revoke", "Irreversibly revoke one Connector so issued tickets cannot be consumed.", ["connector_id", "reason"], false, ["revocation_id"]),
-  tool("craft_capability_connector_approve", "Approve one discovered connector asset and publish a provenance-pinned Capability Asset; write-capable assets remain non-activatable.", ["connector_asset_id", "approval_ref"], false, ["asset_id"]),
-  tool("craft_capability_connector_list", "List registered connectors and content-free discovered assets.", [], true, ["limit"]),
-  tool("craft_capability_connector_ticket_issue", "Issue one expiring capability ticket pinned to an Activation Profile, connector asset, and source digest.", ["profile_id", "connector_asset_id", "operation"], false, ["ticket_id", "call_id", "expires_at"]),
-  tool("craft_capability_connector_ticket_consume", "Consume a connector ticket exactly once after rechecking connector state and source version.", ["ticket_id", "profile_id"], false),
-  tool("craft_expert_profile_save", "Save the only supported read-only diagnostic research Expert profile.", ["name", "expert_type", "allowed_effects", "output_contract"], false, ["expert_id"]),
-  tool("craft_context_capsule_create", "Create a bounded reference-only Context Capsule for a diagnostic Expert.", ["task_id", "profile_id", "input_boundary"], false, ["capsule_id", "artifact_ids", "evidence_ids"]),
-  tool("craft_expert_subagent_create", "Create one bounded read-only diagnostic Sub-agent Run.", ["run_id", "parent_operation_id", "expert_id", "capsule_id", "objective"], false, ["operation_id"]),
-  tool("craft_expert_subagent_run", "Run one leased read-only diagnostic Sub-agent as a real child loop with its own context window and a budget carved out of the delegating dispatch. It never inherits write authority.", ["operation_id", "parent_dispatch_id"], false),
-  tool("craft_expert_subagent_report", "Submit a structured diagnostic Expert result with Evidence references.", ["operation_id", "lease_id", "claimed_by", "verdict", "report"], false, ["costs"]),
-  tool("craft_evaluation_reliability_assess", "Assess repeated paired evaluation reliability; it can return inconclusive.", ["comparison_id"], false, ["assessment_id", "min_trials", "max_budget_ratio"]),
-  tool("craft_judge_adapter_save", "Save a model or human Judge adapter; it is advisory until calibrated.", ["name", "grader_type"], false, ["judge_id"]),
-  tool("craft_judge_calibration_record", "Record blind human agreement for a Judge adapter.", ["judge_id", "total", "agreed"], false, ["calibration_id", "minimum_agreement"]),
-  tool("craft_judge_promotion_eligible", "Check whether a Judge has passed calibration.", ["judge_id"], true),
-  tool("craft_evaluation_judge_gate", "Bind an eligible reliability assessment to a calibrated Judge before using Judge output as a promotion input.", ["assessment_id", "judge_id"], false, ["gate_id", "evidence_ids"]),
-  tool("craft_adaptation_candidate_create", "Create only a draft candidate with at most two Harness design-axis changes.", ["task_id", "trial_ids", "evidence_ids", "hypothesis", "applicability", "design_axes"], false, ["candidate_id"]),
-  tool("craft_adaptation_candidate_authorize_canary", "Authorize a candidate only after eligible paired reliability and exact passed Signoff.", ["candidate_id", "assessment_id", "signoff_id"]),
-  tool("craft_feedback_intake_create", "Receive a redacted online feedback reference for human review.", ["task_id", "source_uri", "summary"], false, ["intake_id", "metric"]),
-  tool("craft_feedback_case_approve", "Approve reviewed feedback only into an immutable development case.", ["intake_id", "split", "reviewer"], false, ["case_id"]),
-  tool("craft_canary_start", "Start a gated candidate canary with an exact baseline and environment.", ["candidate_id", "baseline_id", "environment"], false, ["canary_id"]),
-  tool("craft_canary_observe", "Observe a canary metric and roll back on a configured regression.", ["canary_id", "metric", "baseline", "candidate", "threshold"], false),
-  tool("craft_host_profile_list", "List all host profiles including built-ins and user-declared model CLIs.", [], true),
-  tool("craft_host_profile_resolve", "Resolve one host profile by exact name.", ["host"], true),
-  tool("craft_workflow_registry_scan", "Discover workflow definitions from a project directory.", ["project_root"], true, ["limit"]),
-  tool("craft_workflow_retirement_plan", "Propose retirement or deprecation for workflows based on usage statistics.", [], true, ["workflow_ids", "policy", "now"]),
-  tool("craft_knowledge_index_sync", "Sync a Markdown knowledge base into the rebuildable FTS5 projection.", ["project_root"], false, ["limit"]),
-  tool("craft_knowledge_search", "Search reviewed Knowledge in an explicit scope. Candidate inspection is opt-in; a missing scope returns no content.", ["query"], true, ["limit", "scope_kind", "scope_id", "include_candidates", "include_global", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "scope"]),
-  tool("craft_execution_budget_plan", "Estimate tokens, check budget, classify complexity, and route to a model tier.", ["host", "limit", "texts"], true, ["reserve", "steps", "distinct_paths", "requires_external_write", "requires_multi_step_reasoning", "tiers", "max_result_tokens"]),
-  tool("craft_hook_catalog", "List hooks planned for one lifecycle point.", ["point"], true, ["hooks"]),
-  tool("craft_hook_run", "Run hooks for one lifecycle point and return outcomes.", ["point", "hooks"], false, ["payload"]),
-  tool("craft_knowledge_scope_set", "Declare a knowledge document's scope (user/project/task) and an optional expiry in days.", ["entries"], false),
-  tool("craft_knowledge_scope_list", "List knowledge scopes and the documents whose expiry has passed.", [], true, ["scope"]),
-  tool("craft_knowledge_scope_forget", "Drop expired documents from the rebuildable projection; Markdown sources are untouched.", [], false),
-  tool("craft_metrics_report", "Aggregate host runs and outcomes into success rate and cost per successful outcome.", [], true, ["host"]),
-  tool("craft_usage_report", "Aggregate observed input/output tokens by day, ISO week, month, year, and host. No prompt content is retained.", [], true, ["from", "to"]),
-  tool("craft_settings_get", "Read the redacted Workbench settings and active data directory.", [], true),
-  tool("craft_settings_update", "Update non-secret Workbench settings; changing dataRoot takes effect after restart.", [], false, ["locale", "theme", "dataRoot", "workbench", "runtime", "privacy"]),
-  tool("craft_settings_reset", "Reset Workbench settings to safe defaults without deleting project data.", [], false),
-  tool("craft_launch_gate", "Evaluate the before-effect launch gates for a payload and report whether they block it.", [], true, ["hooks", "payload"]),
-  tool("craft_model_provider_list", "List the declared model providers with their credential environment variable and whether it is set.", [], true),
-  tool("craft_model_provider_get", "Describe one model provider and, optionally, the model a tier selects.", ["provider"], true, ["tier"]),
-  tool("craft_agent_loop_plan", "Show the circuit-breaker limits a self-hosted loop would run under, without starting one.", [], true, ["limits"]),
-  tool("craft_asset_route", "Select the smallest credible set of declared assets for one task, with the reason for every rejection.", ["signals", "assets"], true),
-  tool("craft_model_independence_compare", "Check whether a subject's declared invariants hold across every model it was tried on.", ["trials", "invariants"], true),
-  tool("craft_autonomous_runtime_prepare", "Prepare a provider-neutral autonomous run with explicit step and token limits.", ["task_id", "goal", "model"], false, ["run_id", "limits"]),
-  tool("craft_autonomous_runtime_run", "Run a bounded autonomous loop from explicit model turns and record every action, checkpoint, and terminal result.", ["task_id", "goal", "model", "turns"], false, ["run_id", "limits", "action_results"]),
-  tool("craft_autonomous_runtime_checkpoint", "Persist a content-bounded autonomous checkpoint without granting new authority.", ["run_id", "state"], false, ["checkpoint_id", "reason"]),
-  tool("craft_autonomous_runtime_resume", "Resume an autonomous run from its exact latest checkpoint.", ["run_id"], false, ["checkpoint_id"]),
-  tool("craft_autonomous_runtime_cancel", "Cancel an autonomous run with an explicit reason.", ["run_id"], false, ["reason"]),
-  tool("craft_autonomous_runtime_get", "Read an autonomous run, turns, and checkpoints.", ["run_id"], true),
-  tool("craft_capability_lifecycle_register", "Register a versioned capability in the unified install/activate/rollback lifecycle.", ["capability_id", "name", "source"], false, ["source_version", "effect", "dependencies", "permissions"]),
-  tool("craft_capability_lifecycle_install", "Install a registered capability without activating it.", ["capability_id"]),
-  tool("craft_capability_lifecycle_activate", "Activate an installed capability after lifecycle checks.", ["capability_id"]),
-  tool("craft_capability_lifecycle_disable", "Disable a capability and retain the reason for audit.", ["capability_id"], false, ["reason"]),
-  tool("craft_capability_lifecycle_upgrade", "Upgrade a capability only when its exact source version and digest are declared.", ["capability_id", "source_version", "source_digest"]),
-  tool("craft_capability_lifecycle_retire", "Retire a capability so it can never be activated again.", ["capability_id"], false, ["reason"]),
-  tool("craft_capability_lifecycle_resolve", "Resolve one active capability name without silently choosing an ambiguous source.", ["name"], true),
-  tool("craft_capability_lifecycle_list", "List unified capability lifecycle records.", [], true),
-  tool("craft_capability_intake_discover", "Record a digest-pinned Capability Source manifest; discovered does not mean executable or trusted.", ["name", "source", "content_digest"], false, ["capability_id", "publisher", "version", "effect", "dependencies", "permissions", "hosts"]),
-  tool("craft_capability_intake_scan", "Run or record a content-free supply-chain scan for a Capability manifest.", ["capability_id"], false, ["scanner", "evidence"]),
-  tool("craft_capability_intake_conformance", "Record capability conformance checks before approval; failed checks cannot be activated.", ["capability_id", "checks"], false),
-  tool("craft_capability_intake_approve", "Approve a conformance-passed capability without activating it.", ["capability_id", "approved_by"]),
-  tool("craft_capability_intake_activate", "Activate an approved capability after the intake gates pass.", ["capability_id"]),
-  tool("craft_capability_intake_revoke", "Revoke a capability and prevent future routing.", ["capability_id", "reason"]),
-  tool("craft_capability_intake_upgrade_plan", "Create a preflight-to-rollback upgrade plan for a capability; it does not publish or activate it.", ["capability_id", "next_version", "next_digest"], false, ["plan_id"]),
-  tool("craft_capability_intake_get", "Read one capability intake record.", ["capability_id"], true),
-  tool("craft_capability_intake_list", "List capability intake records by state.", [], true, ["state", "limit"]),
-  tool("craft_memory_remember_episode", "Store one redacted episodic memory for later consolidation.", ["content"], false, ["memory_id", "scope", "source", "task_id", "confidence"]),
-  tool("craft_memory_consolidate", "Create a content-free consolidation candidate from approved Ledger memories; it is not auto-published.", ["candidate_ids", "summary"], false, ["consolidation_id"]),
-  tool("craft_memory_maintenance_signal", "Record one bounded usage signal for an episodic memory without changing its status.", ["memory_id", "kind"], false, ["value", "signal_id"]),
-  tool("craft_memory_maintenance_run", "Run proposal-only Light, Review or Deep maintenance over accessible Memory records; it never deletes or publishes. Omitting scope never bypasses access restrictions.", [], false, ["stage", "now", "maintenance_id", "scope_kind", "scope_id", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "allow_restricted"]),
-  tool("craft_memory_maintenance_cycle", "Consume terminal Trace records in a resumable bounded batch and create content-free learning observations; it never publishes a Memory or Workflow.", [], false, ["cursor", "limit", "cycle_id"]),
-  tool("craft_memory_maintenance_get", "Read one Memory maintenance run and its optional candidate.", ["maintenance_id"], true),
-  tool("craft_memory_resolve", "Resolve a semantic memory as active, superseded, or rejected.", ["semantic_id", "status"], false, ["resolution"]),
-  tool("craft_memory_search", "Search active semantic memories by scope and bounded text match.", ["query"], true, ["scope"]),
-  tool("craft_remote_interop_prepare", "Prepare an HTTPS-only remote Agent/MCP request with no execution authority.", ["endpoint", "agent", "operation", "task_id", "input_digest"], false, ["request_id"]),
-  tool("craft_remote_interop_dispatch", "Dispatch one prepared remote request through an approved Host transport and persist the receipt.", ["request_id"], false, ["status", "remote_id", "result_digest"]),
-  tool("craft_remote_interop_report", "Record a remote terminal status without accepting raw remote context as trusted.", ["request_id", "status"], false, ["result_digest"]),
-  tool("craft_remote_interop_get", "Read a remote request and its receipts.", ["request_id"], true),
-  tool("craft_platform_member_save", "Register a local team identity and roles without storing credentials.", ["name"], false, ["member_id", "roles"]),
-  tool("craft_platform_authorize", "Evaluate one action against a member role and persist the decision.", ["member_id", "action"], false, ["authorization_id", "required_role"]),
-  tool("craft_platform_observe", "Record a content-bounded operational observation.", ["event"], false, ["observation_id", "status", "run_id", "metric", "value"]),
-  tool("craft_platform_observability_export", "Export standard content-free observability records for external OTel/log adapters.", [], true, ["limit"]),
-  tool("craft_runtime_truth_standardize", "Normalize a legacy or current Trace into the versionless craft.trace envelope.", ["trace"], true, ["export_id"]),
-  tool("craft_runtime_truth_otlp", "Map a content-free craft.trace record and events to OTLP/HTTP JSON without exporting it.", ["trace"], true, ["events"]),
-  tool("craft_runtime_truth_export", "Export a content-free craft.trace projection to an OTLP/HTTP endpoint and persist only the receipt.", ["endpoint", "trace"], false, ["events", "export_id"]),
-  tool("craft_runtime_truth_compact", "Compact a resumable model conversation while preserving system constraints and the latest work.", ["messages"], false, ["session_id", "max_chars"]),
-  tool("craft_runtime_truth_compaction_get", "Read back the compacted window stored for one session, so a resuming Host does not have to re-derive it.", ["session_id"], true, ["version"]),
-  tool("craft_runtime_truth_compaction_list", "List stored compactions so a Host can find a session it did not name.", [], true, ["limit"]),
-  tool("craft_runtime_truth_work_note", "Persist a structured, digest-backed work note for long-running Agent sessions.", ["goal"], false, ["note_id", "decisions", "constraints", "open_questions", "artifacts"]),
-  tool("craft_runtime_truth_work_note_get", "Read back one persisted work note, which is what a resuming long-running session starts from.", ["note_id"], true, ["version"]),
-  tool("craft_runtime_attempt_prepare", "Create a content-free, idempotent Runtime Execution Attempt bound to Task, Run, Host, Environment and effect.", ["task_id", "work_loop_id", "run_id", "host_id", "environment_digest", "idempotency_key"], false, ["attempt_id", "effect_class"]),
-  tool("craft_runtime_attempt_dispatch", "Record Host dispatch only; Host completion is not an Outcome.", ["attempt_id", "dispatch_ref"]),
-  tool("craft_runtime_attempt_receipt_pending", "Move an attempt to receipt_pending while waiting for a Host receipt.", ["attempt_id"], false, ["receipt_id"]),
-  tool("craft_runtime_attempt_record_receipt", "Bind a content-free Host receipt to the exact Task, Run, Attempt and idempotency key.", ["attempt_id", "result_digest"], false, ["receipt_id"]),
-  tool("craft_runtime_attempt_observe", "Record a fresh observation and make effect_unknown explicit when the external result is uncertain.", ["attempt_id"], false, ["observation_id", "observed_status", "evidence_digest"]),
-  tool("craft_runtime_attempt_resolve_effect", "Resolve an unknown external effect; confirmed success is accepted only as a runtime fact, not a business Outcome.", ["attempt_id", "resolution"], false, ["receipt_id"]),
-  tool("craft_runtime_attempt_recover", "Reconcile an existing idempotency key after interruption; it never automatically replays an unknown effect.", ["attempt_id"], false, ["reason"]),
-  tool("craft_runtime_attempt_cancel", "Cancel a non-terminal Runtime Execution Attempt with a digest-only reason.", ["attempt_id"], false, ["reason"]),
-  tool("craft_runtime_attempt_get", "Read one Runtime Execution Attempt and its current recovery status.", ["attempt_id"], true),
-  tool("craft_os_security_plan", "Plan a platform-specific fail-closed execution boundary with filesystem, network, and secret-broker constraints.", ["workspace"], false, ["plan_id", "platform", "network", "filesystem", "egress_allowlist", "secret_broker"]),
-  tool("craft_os_security_verify", "Verify observed platform-boundary evidence before allowing a governed execution.", ["plan_id", "observed", "evidence_ids"], false, ["receipt_id", "verified_by"]),
-  tool("craft_mcp_registry_source_register", "Register an HTTPS MCP Registry source with an explicit trust class; no network request is performed.", ["endpoint"], false, ["source_id", "trust", "key_digest"]),
-  tool("craft_mcp_registry_server_ingest", "Ingest one digest-pinned MCP server metadata record from a trusted registry source.", ["source_id", "name", "version", "endpoint", "digest"], false, ["server_id", "capabilities"]),
-  tool("craft_mcp_registry_health_record", "Record an MCP server health result without treating health as a trust decision.", ["server_id"], false, ["health_id", "status", "checked_at", "evidence_digest"]),
-  tool("craft_mcp_registry_sync", "Fetch one registry page through an HTTPS adapter and ingest digest-pinned server metadata; it never activates a server.", ["source_id"], false, ["list_url"]),
-  tool("craft_mcp_registry_revoke", "Revoke one MCP registry server version and preserve the audit record.", ["server_id", "reason"]),
-  tool("craft_a2a_transport_dispatch", "Dispatch a digest-only HTTPS A2A envelope and return a bounded remote receipt.", ["endpoint", "request_id", "agent", "operation", "input_digest"]),
-  tool("craft_a2a_transport_task_get", "Read a remote A2A task status and Artifact references without importing raw content.", ["endpoint", "task_id"]),
-  tool("craft_a2a_transport_task_cancel", "Request cancellation of one remote A2A task with a digest-only reason.", ["endpoint", "task_id"], false, ["reason"]),
-  tool("craft_a2a_v1_discover", "Discover an HTTPS A2A v1 Agent Card as untrusted metadata; discovery grants no execution authority.", ["endpoint"], false, ["observation_id"]),
-  tool("craft_a2a_v1_submit", "Submit a digest-only A2A v1 message using an already consumed read-only Federated Grant.", ["grant_id", "card_observation_id", "request_id", "input_digest"], false, ["task_id"]),
-  tool("craft_a2a_v1_task_get", "Poll one A2A v1 task with an idempotency key; no remote Artifact content is imported.", ["task_id", "request_id"], false),
-  tool("craft_a2a_v1_cancel", "Request cancellation of one A2A v1 task with a digest-only reason.", ["task_id", "request_id", "reason_digest"], false),
-  tool("craft_remote_tenant_register", "Register an isolated remote tenant data space. Key and raw tenant data never enter Craft.", ["tenant_id", "data_space_id", "key_envelope_ref", "retention_policy_ref", "deletion_policy_ref"]),
-  tool("craft_remote_task_bind", "Issue a one-time opaque handle that binds one remote principal, tenant, task, scope and expiry.", ["task_id", "tenant_id", "principal_digest", "access_receipt_digest", "audience", "scopes", "expires_at"], false, ["binding_id", "now"]),
-  tool("craft_remote_task_authorize", "Authorize one remote get/result/cancel/stream operation against its exact opaque task binding.", ["binding_id", "handle", "tenant_id", "principal_digest", "access_receipt_digest", "audience", "scopes", "operation"], false, ["receipt_id", "now"]),
-  tool("craft_remote_task_revoke", "Revoke one active remote task handle; subsequent remote task operations fail closed.", ["binding_id", "reason"], false, ["now"]),
-  tool("craft_remote_task_get", "Read one remote task binding and content-free authorization receipts.", ["binding_id"], true),
-  tool("craft_org_sync_prepare", "Prepare an encrypted-adapter organization sync manifest with conflict and deletion-tombstone semantics.", ["workspace_id"], false, ["sync_id", "member_ids", "record_refs"]),
-  tool("craft_org_sync_apply", "Apply an organization sync manifest only when the base digest still matches.", ["sync_id", "base_digest"], false, ["current_digest", "tombstones"]),
-  tool("craft_project_brain_open", "Open the durable user-facing Project Brain that joins goals, materials, tasks, decisions, outcomes, and reusable experience.", ["project_id"], false, ["brain_id", "name", "description"]),
-  tool("craft_project_brain_get", "Read a content-free Project Brain snapshot and its next safe action.", ["project_id"], true, ["limit"]),
-  tool("craft_project_brain_refresh", "Refresh the Project Brain projection from current tasks, sessions, outcomes, and experience.", ["project_id"], true, ["limit"]),
-  tool("craft_project_goal_save", "Save a versioned project goal with constraint digests and a measurable metric.", ["project_id", "title"], false, ["goal_id", "status", "constraint_digests", "metric"]),
-  tool("craft_project_decision_save", "Record why a capability, Workflow, or other option was chosen and what was excluded.", ["project_id", "title", "rationale", "chosen_ref"], false, ["decision_id", "excluded_refs", "status"]),
-  tool("craft_project_material_bind", "Bind a digest-pinned project material without copying raw business content into the control plane.", ["project_id", "name", "uri", "content_digest"], false, ["material_id", "source_type", "scope"]),
-  tool("craft_project_outcome_record", "Record an evidence-backed project result and attach it to the Project Brain.", ["project_id", "verdict", "summary"], false, ["outcome_id", "task_id", "session_id", "evidence_ids", "artifact_ids"]),
-  tool("craft_project_experience_record", "Create a candidate reusable experience from an observed project outcome; publication remains governed.", ["project_id", "name", "pattern"], false, ["experience_id", "source_outcome_id"]),
-  tool("craft_work_session_prepare", "Bind one task to its exact Project Brain, knowledge, capability, Workflow, model, Host, and acceptance context without starting execution.", ["project_id", "task_id"], false, ["session_id", "goal", "knowledge_refs", "capability_refs", "workflow_refs", "excluded_refs", "selection_rationale", "model", "host", "acceptance_ref"]),
-  tool("craft_work_session_get", "Read a content-free Work Session context plan and selection rationale.", ["session_id"], true),
-  tool("craft_work_session_refresh", "Re-observe a Work Session and fail closed on task or Project Brain drift.", ["session_id"], false),
-  tool("craft_work_session_bind_launch", "Bind one exact Work Launch to the prepared Work Session.", ["session_id", "launch_id"], false),
-  tool("craft_work_session_bind_dispatch", "Bind one exact standalone internal Host dispatch to the prepared Work Session.", ["session_id", "dispatch_id"], false),
-  tool("craft_work_session_complete", "Close a Work Session with an independently observed result summary digest.", ["session_id", "summary"], false, ["status", "outcome_id"]),
-  tool("craft_workbench_experience_query", "Read the Workbench project/task/session projection: trace timeline, launches, outcomes, artifacts, and next action.", [], true, ["project_id", "task_id", "session_id", "limit"]),
-  tool("craft_workbench_experience_get", "Read one Work Session-centered Workbench projection.", ["session_id"], true, ["limit"]),
-  tool("craft_workbench_experience_review", "Generate a content-free review report with evidence requirements and the next safe action.", [], true, ["project_id", "task_id", "session_id", "limit"]),
-  tool("craft_workbench_trace_replay_plan", "Build a revalidation-required replay plan from a canonical Trace; it never executes actions.", ["trace_id"], true),
-  tool("craft_workbench_command_execute", "Apply one versioned human Workbench command through Craft's service facade; it never writes the Store directly from the UI.", ["task_id", "command", "actor", "decision", "expected_version", "reason_digest"], false, ["command_id"]),
-  tool("craft_workbench_command_get", "Read one Workbench command receipt.", ["command_id"], true),
-  tool("craft_workbench_command_list", "List versioned Workbench command receipts for a task.", [], true, ["task_id", "limit"]),
-  tool("craft_long_task_suspend", "Persist a durable long-task checkpoint, release the Host, and retain only resumable references and digests.", ["session_id", "wait_condition"], false, ["checkpoint_id", "task_run_id", "host_run_id", "resume_action", "now"]),
-  tool("craft_long_task_wake", "Wake a suspended long task from an external event or human signal.", ["checkpoint_id", "signal"], false, ["reason", "now"]),
-  tool("craft_long_task_resume", "Revalidate a woken long task and return a fresh Host dispatch plan or a fail-closed replan.", ["checkpoint_id"], false, ["now"]),
-  tool("craft_long_task_get", "Read one long-task checkpoint and its current state.", ["checkpoint_id"], true),
-  tool("craft_long_task_list", "List durable long-task checkpoints for the Workbench recovery view.", [], true, ["session_id", "limit"]),
-  tool("craft_long_task_tick", "Run one bounded background-worker tick for expired or externally woken checkpoints.", [], false, ["now"]),
-  tool("craft_context_manifest_save", "Pin one unified Context Manifest joining knowledge, capabilities, Workflow, model, Host and acceptance references.", ["project_id", "task_id"], false, ["manifest_id", "knowledge_refs", "capability_refs", "workflow_refs", "excluded_refs", "model", "host", "acceptance_ref", "selection_rationale"]),
-  tool("craft_context_manifest_get", "Read one digest-pinned unified Context Manifest.", ["manifest_id"], true),
-  tool("craft_context_manifest_audit", "Revalidate a Context Manifest and fail closed on digest drift.", ["manifest_id"], false, ["expected_digest"]),
-  tool("craft_replay_runner_prepare", "Prepare a revalidation-gated replay run from a terminal Trace; it never replays stale actions.", ["trace_id", "approval_ref", "workspace_digest"], false, ["replay_id"]),
-  tool("craft_replay_runner_execute", "Execute an approved replay through the registered runtime executor; without an executor it records a dry-run receipt.", ["replay_id"], false, ["approval_ref"]),
-  tool("craft_replay_runner_get", "Read a controlled replay run and its step receipts.", ["replay_id"], true),
-  tool("craft_local_service_configure", "Configure the persistent local Craft runtime service for tray, cron, or startup integration.", [], false, ["service_id", "schedule", "startup", "notification", "crash_recovery"]),
-  tool("craft_local_service_start", "Start the persistent local Craft runtime service.", [], false, ["service_id"]),
-  tool("craft_local_service_stop", "Stop the persistent local Craft runtime service.", [], false, ["service_id"]),
-  tool("craft_local_service_tick", "Run one bounded local runtime tick and dispatch pending wake records.", [], false, ["service_id", "now"]),
-  tool("craft_local_service_get", "Read local runtime service state.", [], true, ["service_id"]),
-  tool("craft_automation_job_save", "Register a routeable Experience Workflow as a bounded manual or interval Job. It never installs cron, executes Graph/Prompt Procedures, or permits external effects. Result admission requires an explicit task_id and activation_id.", ["procedure_id", "workspace", "verifier_step_id"], false, ["task_id", "activation_id", "job_id", "trigger", "interval_seconds", "inputs", "allow_local_write", "max_attempts", "max_no_progress", "quota_slots", "quota_window_seconds", "retry_delay_seconds", "notification", "next_run_at", "now"]),
-  tool("craft_automation_job_pause", "Pause or resume one Procedure Automation Job without deleting its receipts or handoffs.", ["job_id"], false, ["paused", "now"]),
-  tool("craft_automation_job_run", "Prepare one active Procedure Automation dispatch for an external Host. Craft never executes the Workflow.", ["job_id"], false, ["run_id", "now"]),
-  tool("craft_automation_job_receipt_record", "Record an external terminal Host receipt and independent acceptance Observation for a prepared automation dispatch.", ["run_id", "host_session_id", "observation_id", "acceptance_evidence_ids"], false, ["observed_at"]),
-  tool("craft_automation_job_tick", "Advance due interval Jobs only when the named local service is running. A host cron, tray process or CI runner must invoke this tool explicitly.", [], false, ["service_id", "now", "limit"]),
-  tool("craft_automation_job_get", "Read one Procedure Automation Job, its bounded run history and pending record-only notices.", ["job_id"], true, ["limit"]),
-  tool("craft_automation_job_eligibility", "Decide whether one Procedure Automation Job has useful, budgeted work before a Host spends a model or execution slot.", ["job_id"], true, ["now"]),
-  tool("craft_ticket_dispatch_scan", "Classify host-observed tickets into ready, blocked or needs_human using only supplied read-only repository facts. It never calls a tracker or creates a worktree.", ["repository", "scope", "source_ref", "issues"], false, ["ledger_id", "repository_state"]),
-  tool("craft_ticket_dispatch_evaluate", "Run deterministic fixed cases against one ticket dispatch ledger. Eligibility is evidence for a candidate, never permission to execute Forge effects.", ["ledger_id", "cases"], false, ["evaluation_id", "minimum_accuracy"]),
-  tool("craft_forge_policy_save", "Save a project-scoped Forge policy bound to one exact Domain Kit. It declares permitted repositories, branches and operations but does not connect to GitHub or GitLab.", ["scope", "repositories", "branches", "operations", "domain_kit_id", "domain_kit_version"], false, ["policy_id", "auto_merge_enabled", "require_ci_green", "require_protected_branch"]),
-  tool("craft_forge_action_prepare", "Prepare a Host/Forge Adapter request only after ready dispatch, eligible evaluation, routeable Procedure, active Domain Kit application and explicit approval. It never performs the action.", ["action", "policy_id", "ledger_id", "evaluation_id", "ticket_id", "branch", "procedure_id", "kit_application_id", "task_id", "approval_ref"], false, ["forge_action_id"]),
-  tool("craft_forge_action_get", "Read one prepared Forge Adapter request and its immutable authority references.", ["forge_action_id"], true),
-  tool("craft_project_bundle_export", "Create a portable digest-verified Project Bundle for backup, migration and cross-host handoff.", ["project_id"], false, ["bundle_id", "limit"]),
-  tool("craft_project_bundle_verify", "Verify a stored Project Bundle without changing project data.", ["bundle_id"], true),
-  tool("craft_knowledge_memory_bundle", "Export, verify, plan, explicitly apply, or transport a scoped portable Knowledge/Memory/Experience bundle. Transport writes only a reviewable JSON bundle, never SQLite files, credentials, or implicit Git commits.", ["operation"], false, ["scope_kind", "scope_id", "include_candidates", "include_global", "limit", "exported_at", "bundle", "approved", "import_id", "transport", "transport_root", "file_name", "allow_local_write", "device_id", "export_id", "cursor"]),
-  tool("craft_feedback_learning_record", "Record a scoped user correction or acceptance signal without auto-publishing experience.", ["action", "diff_digest", "reason"], false, ["signal_id", "scope", "project_id", "task_id", "outcome_id", "accepted"]),
-  tool("craft_feedback_learning_resolve", "Resolve whether a feedback signal is reusable for the current project and optionally mark it stale.", ["signal_id"], false, ["project_id", "stale"]),
-  tool("craft_domain_evaluator_save", "Register a lightweight domain evaluator with explicit metric rules.", ["domain", "name", "rules"], false, ["evaluator_id", "description"]),
-  tool("craft_domain_evaluator_evaluate", "Evaluate observed domain metrics and return an evidence digest.", ["evaluator_id", "metrics"], true),
-  tool("craft_handoff_manifest_create", "Create a host-neutral handoff manifest preserving context, permissions, artifacts, evidence and outcome references.", ["task_id", "context_manifest_id", "host"], false, ["handoff_id", "session_id", "model", "allowed_effects", "artifact_ids", "evidence_ids", "outcome_id"]),
-  tool("craft_handoff_manifest_get", "Read a host-neutral handoff manifest.", ["handoff_id"], true),
-  tool("craft_cost_price_save", "Save a provider/model price snapshot used for real cost attribution.", ["provider", "model", "input_per_million", "output_per_million"], false, ["price_id", "effective_at"]),
-  tool("craft_cost_usage_record", "Record explicit token counts against a configured price snapshot; missing usage must not be estimated as zero.", ["provider", "model", "input_tokens", "output_tokens"], false, ["usage_id", "project_id", "task_id"]),
-  tool("craft_cost_ledger_report", "Report recorded cost and tokens by project. Missing, invalid or overflowed totals are null and listed in unavailable_metrics; truncated reports never expose partial sums as totals. Numeric totals do not attest Host usage or provider billing.", [], true, ["project_id"]),
-  tool("craft_verified_work_prepare", "Prepare the unified Verified Autonomous Work slice with pinned context, workspace, action and acceptance references.", ["task_id", "context_manifest_id", "host", "workspace_digest", "action_digest", "acceptance_ref"], false, ["work_id", "model", "effect", "budget"]),
-  tool("craft_verified_work_authorize", "Authorize one exact work slice; writes require approval and a verified platform profile.", ["work_id", "authorization_ref"], false, ["approved", "approved_by", "platform_profile_id"]),
-  tool("craft_verified_work_action", "Record one observed action receipt after the Host/tool call; duplicate idempotency keys are safe.", ["work_id", "action_contract", "idempotency_key", "input_digest", "result_digest"], false, ["reobserved"]),
-  tool("craft_verified_work_reobserve", "Compare external state after an action and fail closed into replanning on drift.", ["work_id", "observed_digest"], false, ["expected_digest"]),
-  tool("craft_verified_work_deliver", "Close work only after independent acceptance, artifacts and evidence are present.", ["work_id", "acceptance_verdict"], false, ["artifact_ids", "evidence_ids"]),
-  tool("craft_verified_work_resume", "Resume paused or interrupted work only from fresh context and observed state.", ["work_id", "context_digest", "observed_digest"], false, ["expected_context_digest"]),
-  tool("craft_verified_work_handoff", "Pause and hand off one authorized work slice to another Host without copying raw prompts.", ["work_id", "target_host"], false, ["handoff_id"]),
-  tool("craft_verified_work_get", "Read one Verified Autonomous Work state and its phase.", ["work_id"], true),
-  tool("craft_sandbox_conformance_save", "Record verifier-attributed platform sandbox conformance; this does not run the probe.", ["platform", "isolation", "network", "checks", "verifier"], false, ["profile_id", "status", "capabilities"]),
-  tool("craft_sandbox_conformance_admit", "Admit an effect only when the exact platform profile is verified, isolated and network-denied.", ["effect"], false, ["profile_id"]),
-  tool("craft_sandbox_conformance_get", "Read one platform conformance profile.", ["profile_id"], true),
-  tool("craft_trace_explorer_query", "Query a content-free Trace Explorer projection with event digests for Workbench diagnostics.", [], true, ["task_id", "status", "limit"]),
-  tool("craft_action_gateway_prepare", "Prepare one bounded workspace action with an effect and input digest.", ["task_id", "workspace", "operation", "input_digest"], false, ["action_id", "effect", "approval_ref"]),
-  tool("craft_action_gateway_execute", "Execute one prepared workspace read/write; shell, browser and MCP actions require external adapters.", ["action_id", "relative_path"], false, ["content", "approved"]),
-  tool("craft_action_gateway_get", "Read one action contract and receipt.", ["action_id"], true),
-  tool("craft_acceptance_gate_prepare", "Prepare an independent acceptance gate; Host completion is not a passing verdict.", ["task_id", "work_id", "acceptance_ref"], false, ["gate_id", "required_artifact_ids", "required_evidence_ids"]),
-  tool("craft_acceptance_gate_assess", "Assess an independent acceptance gate with artifact and evidence references.", ["gate_id", "verdict"], false, ["artifact_ids", "evidence_ids", "assessor"]),
-  tool("craft_acceptance_gate_outcome", "Create a verified Outcome only from a passed acceptance gate.", ["gate_id"], false, ["summary"]),
-  tool("craft_acceptance_gate_get", "Read one acceptance gate.", ["gate_id"], true),
-  tool("craft_durable_worker_configure", "Configure the local Worker lease and recovery policy.", [], false, ["worker_id", "startup", "notification", "lease_ttl_ms"]),
-  tool("craft_durable_worker_start", "Start the local Worker state machine; an OS service still owns the process.", [], false, ["worker_id"]),
-  tool("craft_durable_worker_stop", "Stop the local Worker state machine.", [], false, ["worker_id"]),
-  tool("craft_durable_worker_enqueue", "Enqueue one durable Worker job.", ["task_id", "action"], false, ["worker_id", "job_id", "payload"]),
-  tool("craft_durable_worker_tick", "Lease pending Worker jobs in one bounded tick.", [], false, ["worker_id", "now"]),
-  tool("craft_durable_worker_recover", "Return expired Worker leases to pending with a recovery receipt.", [], false, ["worker_id", "now"]),
-  tool("craft_durable_worker_get", "Read Worker state and jobs.", [], true, ["worker_id"]),
-  tool("craft_provider_route_plan", "Plan preferred and fallback model providers with a bounded budget digest.", ["providers"], false, ["route_id", "preferred", "task_id", "budget"]),
-  tool("craft_provider_route_record", "Record which declared provider was actually used.", ["route_id", "provider"], false, ["status", "usage"]),
-  tool("craft_provider_route_get", "Read one Provider route.", ["route_id"], true),
-  tool("craft_a2a_message_send", "Send a digest-only A2A message through the standard message/send operation.", ["endpoint", "message_digest"], false, ["request_id", "context_id"]),
-  tool("craft_a2a_message_stream", "Request a digest-only A2A streaming message operation.", ["endpoint", "message_digest"], false, ["request_id", "context_id"]),
-  tool("craft_a2a_task_list", "List remote A2A tasks without importing raw content.", ["endpoint"], false, ["request_id", "page_token"])
-];
-var RETIRED_PUBLIC_TOOL_NAMES = /* @__PURE__ */ new Set([
-  "craft_work_launch_prepare",
-  "craft_work_launch_decide",
-  "craft_work_launch_get",
-  "craft_work_launch_retry",
-  "craft_execution_fabric_prepare",
-  "craft_execution_fabric_execute",
-  "craft_execution_fabric_advance",
-  "craft_execution_fabric_consume",
-  "craft_execution_fabric_get",
-  "craft_verified_work_prepare",
-  "craft_verified_work_authorize",
-  "craft_verified_work_action",
-  "craft_verified_work_reobserve",
-  "craft_verified_work_deliver",
-  "craft_verified_work_resume",
-  "craft_verified_work_handoff",
-  "craft_verified_work_get",
-  "craft_capability_context_work_launch_prepare",
-  "craft_capability_context_work_launch_decide",
-  "craft_knowledge_context_work_launch_prepare",
-  "craft_knowledge_context_work_launch_decide",
-  "craft_knowledge_context_work_launch_retry",
-  "craft_guided_work_launch_prepare",
-  "craft_safety_work_launch_prepare",
-  "craft_safety_work_launch_decide"
-]);
-var TOOLS = TOOL_DEFINITIONS.filter((item) => !RETIRED_PUBLIC_TOOL_NAMES.has(item.name));
-var ACTIVE_TOOLS = TOOLS;
 
 // core/mcp/canonical-tools.ts
 function canonicalToolCatalog() {
@@ -239443,7 +239473,7 @@ var ProcedureAutomationKernel = class {
   }
   routeableWorkflow(procedureId, version3) {
     const procedure = activeProcedure(this.store, text8(procedureId, "procedure_id"));
-    if (!procedure || version3 !== void 0 && procedure.version !== version3) throw new Error("Procedure release unavailable or version drifted");
+    if (!procedure || version3 !== void 0 && procedure.version !== version3) throw new Error("Procedure release unavailable, version drifted, or is not routeable");
     if (procedure.lifecycle !== "routeable" || procedure.routeable !== true) throw new Error("Only routeable Procedure can be automated");
     if (procedure.procedure_kind !== "workflow") throw new Error("Procedure Automation supports only workflow Procedures; Graph and Prompt require a Host Adapter");
     return procedure;
@@ -251282,7 +251312,7 @@ ${String(value.description)}${contracts}`;
 };
 
 // capability/craft-experience/ownership.ts
-var EXPERIENCE_FAMILIES = "craft_(?:experience_(?:ledger_|observe|patterns_list|procedure_(?:draft|submit|get|projection_(?:draft|get|list)|gate|skill_export))|procedure_(?:create|get|list|gate|export_skill)|automation_job_(?:save|pause|run|tick|get|eligibility)|evaluation_model_|route_workflow_proposal|workflow_(?:save|get|search|transition|rollback))";
+var EXPERIENCE_FAMILIES = "craft_(?:experience_(?:ledger_|observe|patterns_list|learning_evaluation_(?:dispatch|result)|procedure_(?:draft|submit|get|projection_(?:draft|get|list)|gate|skill_export))|procedure_(?:create|get|list|gate|export_skill)|automation_job_(?:save|pause|run|tick|get|eligibility)|evaluation_model_|route_workflow_proposal|workflow_(?:save|get|search|transition|rollback))";
 var EXPERIENCE_PRODUCT_EXTRAS = "craft_(?:experience_(?:graph_|pattern_|candidate_list|mine|shadow_experiment_|capture_|asset_)|procedure_(?:host_control$|decision_evaluate$|invocation_|configuration_|plan$)|component_(?:readiness_get|diagnose)|evidence_record|scope_identity_resolve_project|context_resolution_(?:resolve|feedback)|decision_context_gate_open|workflow_(?:checkpoint|resume|run_cancel|replan|export|import))";
 var EXPERIENCE_OWNS = new RegExp(`^${EXPERIENCE_FAMILIES}`);
 var EXPERIENCE_COMPONENT = new RegExp(`^(?:${EXPERIENCE_FAMILIES}|${EXPERIENCE_PRODUCT_EXTRAS})`);
@@ -251502,8 +251532,9 @@ function codeContextCandidates(index, query, limit3 = 100) {
     }
   }
   const orderedNeighbours = [...neighbours.values()].sort((a, b) => Number(b.score) - Number(a.score) || String(a.path).localeCompare(String(b.path)) || String(a.id).localeCompare(String(b.id)));
-  const complete = new Map([...candidates.values(), ...orderedNeighbours, ...ranked.slice(seeds.length).map((row) => ({ ...row.node, score: row.score, selection_reason: "lexical_match" }))].map((node) => [String(node.id), node]));
-  const symbols = [...complete.values()].slice(0, limit3);
+  const complete = new Map([...candidates.values(), ...orderedNeighbours, ...ranked.map((row) => ({ ...row.node, score: row.score, selection_reason: "lexical_match" }))].map((node) => [String(node.id), node]));
+  const ordered = [...complete.values()].sort((a, b) => Number(b.score) - Number(a.score) || Number(a.selection_reason === "dependency_neighbour") - Number(b.selection_reason === "dependency_neighbour") || String(a.path).localeCompare(String(b.path)) || String(a.id).localeCompare(String(b.id)));
+  const symbols = ordered.slice(0, limit3);
   const selected = new Set(symbols.map((node) => String(node.id)));
   const mapEdges = edges.filter((edge) => selected.has(String(edge.from_node_id)) && selected.has(String(edge.to_node_id)));
   return {
@@ -255702,22 +255733,6 @@ function dataSpaceId(dataRoot2) {
   return `sha256:${(0, import_node_crypto130.createHash)("sha256").update(JSON.stringify({ data_root: normalized })).digest("hex")}`;
 }
 
-// core/mcp/context-tools.ts
-var TASK_TOOLS = {
-  recall: ["craft_context_open", "craft_context_resolution_feedback"],
-  knowledge: ["craft_knowledge_search", "craft_knowledge_claim_save", "craft_knowledge_host_review", "craft_knowledge_source_ingest"],
-  memory: ["craft_memory_governance", "craft_memory_capture_user_statement", "craft_memory_conflict_list", "craft_memory_conflict_resolve", "craft_memory_candidate_review", "craft_memory_ledger_remember_approved"],
-  experience: ["craft_experience_graph_inspect", "craft_experience_graph_edit", "craft_procedure_plan", "craft_procedure_host_control", "craft_procedure_decision_evaluate", "craft_procedure_invocation_bind", "craft_procedure_invocation_dispatch", "craft_procedure_invocation_report"],
-  code: ["craft_codebase_symbol_find", "craft_codebase_callers_find", "craft_codebase_impact_query", "craft_codebase_context_slice"]
-};
-function discoverContextTools(args) {
-  const intent = String(args.intent ?? "recall");
-  if (!Object.hasOwn(TASK_TOOLS, intent)) throw new Error("Unsupported Context tool intent");
-  const names3 = /* @__PURE__ */ new Set([...TASK_TOOLS.recall, ...TASK_TOOLS[intent]]);
-  const tools = ACTIVE_TOOLS.filter((tool2) => names3.has(tool2.name));
-  return { intent, tools, schema_estimated_tokens: estimateTokens(JSON.stringify(tools)), exact: false, changes_host_registration: false };
-}
-
 // core/application/actions/runtime-handlers.ts
 function createRuntimeHandlers(service) {
   return {
@@ -255869,8 +255884,10 @@ function createActionHandlers(service, mountedComponent) {
     ...createEvaluationHandlers(service),
     ...createWorkspaceHandlers(service),
     craft_info: () => service.info(),
-    craft_context_tools_discover: (a) => discoverContextTools(a),
+    craft_context_tools_discover: service.contextToolsDiscover.bind(service),
     craft_context_open: (a) => service.contextOpen(a),
+    craft_learning_cycle_finalize: (a) => service.learningCycleFinalize(a),
+    craft_experience_learning_request_get: (a) => service.learningCycleRequestGet(a),
     craft_codebase_repository_ensure: (a) => service.codebaseRepositoryEnsure(a),
     craft_component_readiness_get: (a) => service.componentReadinessGet(a, mountedComponent),
     craft_component_diagnose: (a) => service.componentDiagnose(a, mountedComponent),
@@ -256016,6 +256033,8 @@ function createActionHandlers(service, mountedComponent) {
     craft_experience_procedure_projection_get: (a) => service.experienceProcedureGet(a),
     craft_experience_procedure_projection_list: (a) => service.experienceProcedureList(a),
     craft_experience_procedure_skill_export: (a) => service.experienceProcedureSkillExport(a),
+    craft_experience_learning_evaluation_dispatch: (a) => service.experienceLearningEvaluationDispatch(a),
+    craft_experience_learning_evaluation_result: (a) => service.experienceLearningEvaluationResult(a),
     craft_procedure_configuration_save: (a) => service.procedureConfigurationSave(a),
     craft_experience_graph_inspect: (a) => service.experienceGraphInspect(a),
     craft_experience_graph_edit: (a) => service.experienceGraphEdit(a),
@@ -257316,7 +257335,11 @@ function installKnowledgeMemoryMethods(serviceClass) {
     return this.knowledgeSources.sourceTransition(args);
   };
   serviceClass.prototype.knowledgeSourceIngest = function(args) {
-    return this.knowledgeSources.sourceIngest(args);
+    const result = this.knowledgeSources.sourceIngest(args);
+    const candidates = Array.isArray(result.candidates) ? result.candidates : [];
+    const claimIds = [...new Set(candidates.map((item) => String(item.claim_id ?? "")).filter(Boolean))];
+    const automaticReview = claimIds.length ? this.knowledgeAutoReview({ claim_ids: claimIds }) : { assessments: [], summary: {}, auto_promote: false };
+    return { ...result, automatic_review: automaticReview };
   };
   serviceClass.prototype.memoryLedgerRemember = function(args) {
     return this.memoryLedger.remember(args);
@@ -257559,6 +257582,104 @@ function installHostSessionMethods(serviceClass) {
   };
 }
 
+// capability/craft-experience/learning-evaluation.ts
+var STAGES3 = ["shadow", "held_out", "signoff", "canary"];
+function text29(value, name) {
+  if (typeof value !== "string" || !value.trim()) throw new Error(`${name} must not be empty`);
+  return value.trim();
+}
+var ExperienceLearningEvaluation = class {
+  store;
+  constructor(store) {
+    this.store = store;
+  }
+  dispatch(args) {
+    const procedure = this.store.get("experience_procedure", text29(args.procedure_id, "procedure_id"));
+    if (procedure.lifecycle !== "candidate" || procedure.routeable === true) throw new Error("Only an unpublished candidate can enter automatic evaluation");
+    const completed = Array.isArray(procedure.completed_gates) ? procedure.completed_gates.map(String) : [];
+    const stage = STAGES3.find((item) => !completed.includes(item));
+    if (!stage) throw new Error("Experience candidate has no remaining evaluation stage");
+    const current2 = activeProcedure(this.store, String(procedure.id));
+    const identity = {
+      procedure_id: procedure.id,
+      procedure_version: procedure.version,
+      definition_digest: procedure.definition_digest,
+      stage,
+      baseline_version: current2?.version ?? null,
+      scenario_signature: procedure.scenario_signature,
+      content_free: true,
+      trace_id: `experience-learning:${stableDigest({ procedure_id: procedure.id, definition_digest: procedure.definition_digest, stage, baseline_version: current2?.version ?? null }).slice(-20)}`,
+      external_execution_required: true
+    };
+    const id22 = String(args.dispatch_id ?? `experience_evaluation_dispatch_${stableDigest(identity).slice(-20)}`);
+    const prior = this.store.find("experience_evaluation_dispatch", id22);
+    if (prior) {
+      if (prior.identity_digest !== stableDigest(identity)) throw new Error("Experience evaluation dispatch idempotency conflict");
+      return { dispatch: prior, idempotent: true };
+    }
+    const dispatch = this.store.create("experience_evaluation_dispatch", id22, { ...identity, identity_digest: stableDigest(identity), status: "awaiting_adapter" });
+    this.store.appendEvent(`experience:${procedure.id}`, "experience.evaluation_dispatched", { dispatch_id: id22, stage, trace_id: dispatch.trace_id, procedure_version: procedure.version, definition_digest: procedure.definition_digest });
+    return { dispatch, idempotent: false };
+  }
+  result(args, gate) {
+    return this.store.transaction(() => this.applyResult(args, gate));
+  }
+  applyResult(args, gate) {
+    const id22 = text29(args.dispatch_id, "dispatch_id");
+    const dispatch = this.store.get("experience_evaluation_dispatch", id22);
+    if (dispatch.status !== "awaiting_adapter") {
+      const replayEvidence = Array.isArray(args.evidence_ids) ? [...new Set(args.evidence_ids.map((value) => text29(value, "evidence_ids")))].sort() : [];
+      if (!["passed", "failed"].includes(String(dispatch.status)) || stableDigest(replayEvidence) !== stableDigest(dispatch.evidence_ids)) throw new Error("Experience evaluation dispatch is already resolved with different evidence");
+      const procedure2 = this.store.get("experience_procedure", String(dispatch.procedure_id));
+      const recordedGate = this.store.get("experience_procedure_gate", String(dispatch.gate_id));
+      return {
+        dispatch,
+        gate: recordedGate,
+        procedure: procedure2,
+        next_dispatch: null,
+        current: dispatch.stage === "canary" && dispatch.status === "passed" ? activeProcedure(this.store, String(procedure2.id)) : null,
+        idempotent: true
+      };
+    }
+    const procedure = this.store.get("experience_procedure", String(dispatch.procedure_id), Number(dispatch.procedure_version));
+    if (procedure.definition_digest !== dispatch.definition_digest) throw new Error("Experience evaluation candidate definition drifted");
+    if (!Array.isArray(args.evidence_ids) || args.evidence_ids.length === 0 || args.evidence_ids.length > 20) throw new Error("evidence_ids must contain between 1 and 20 values");
+    const evidenceIds2 = [...new Set(args.evidence_ids.map((value) => text29(value, "evidence_ids")))].sort();
+    if (evidenceIds2.length !== args.evidence_ids.length) throw new Error("evidence_ids must be unique");
+    for (const evidenceId of evidenceIds2) {
+      const evidence2 = this.store.get("evidence", evidenceId);
+      const metadata = evidence2.metadata;
+      if (evidence2.source_type !== "program" || evidence2.confidence !== "confirmed" || metadata?.experience_evaluation_dispatch_id !== id22 || metadata.procedure_id !== procedure.id || metadata.procedure_version !== procedure.version || metadata.definition_digest !== procedure.definition_digest || metadata.baseline_version !== dispatch.baseline_version || metadata.stage !== dispatch.stage || !["passed", "failed"].includes(String(metadata.status)) || typeof metadata.evaluator_ref !== "string" || typeof metadata.environment_digest !== "string") {
+        throw new Error("Experience evaluation Evidence is not confirmed and bound to this dispatch");
+      }
+      if (dispatch.stage === "held_out" && (typeof metadata.held_out_set_ref !== "string" || !metadata.held_out_set_ref || metadata.independent_of_training !== true)) throw new Error("Held-out gate requires a pinned independent case set");
+      if (dispatch.stage === "signoff" && (typeof metadata.signoff_ref !== "string" || !metadata.signoff_ref)) throw new Error("Signoff gate requires a reviewer reference");
+    }
+    const passed = evidenceIds2.every((id23) => this.store.get("evidence", id23).metadata.status === "passed");
+    const gateResult = gate({
+      procedure_id: procedure.id,
+      stage: dispatch.stage,
+      passed,
+      verdict: passed ? "adapter_evaluated_pass" : "adapter_evaluated_fail",
+      evidence_ids: evidenceIds2,
+      expected_version: procedure.version,
+      gate_id: `experience_auto_gate_${stableDigest({ dispatch: id22, evidenceIds: evidenceIds2, passed }).slice(-20)}`
+    });
+    const savedDispatch = this.store.save("experience_evaluation_dispatch", id22, { ...payload(dispatch), status: passed ? "passed" : "failed", evidence_ids: evidenceIds2, gate_id: gateResult.gate.id });
+    const next = passed && dispatch.stage !== "canary" ? this.dispatch({ procedure_id: procedure.id }) : null;
+    const updated = gateResult.procedure;
+    this.store.appendEvent(`experience:${procedure.id}`, "experience.evaluation_result_recorded", { dispatch_id: id22, gate_id: gateResult.gate.id, stage: dispatch.stage, status: passed ? "passed" : "failed", evidence_ids: evidenceIds2, trace_id: dispatch.trace_id });
+    return {
+      dispatch: savedDispatch,
+      gate: gateResult.gate,
+      procedure: updated,
+      next_dispatch: next?.dispatch ?? null,
+      current: dispatch.stage === "canary" && passed ? activeProcedure(this.store, String(procedure.id)) : null,
+      idempotent: false
+    };
+  }
+};
+
 // core/application/use-cases/durable-experience.ts
 function installDurableExperienceMethods(serviceClass) {
   serviceClass.prototype.durableActionLoopCreate = function(args) {
@@ -257605,6 +257726,12 @@ function installDurableExperienceMethods(serviceClass) {
   };
   serviceClass.prototype.experienceProcedureGate = function(args) {
     return this.experienceProcedures.gate(args);
+  };
+  serviceClass.prototype.experienceLearningEvaluationDispatch = function(args) {
+    return new ExperienceLearningEvaluation(this.store).dispatch(args);
+  };
+  serviceClass.prototype.experienceLearningEvaluationResult = function(args) {
+    return new ExperienceLearningEvaluation(this.store).result(args, (gateArgs) => this.experienceProcedures.gate(gateArgs));
   };
   serviceClass.prototype.procedureInvocationBind = function(args) {
     return this.procedureInvocations.bind(args);
@@ -257770,6 +257897,80 @@ function installKnowledgeAutoReviewMethods(serviceClass) {
   };
   serviceClass.prototype.knowledgeHostReview = function(args) {
     return this.knowledgeAutoReviewKernel.hostReview(args);
+  };
+}
+
+// core/application/use-cases/learning-cycle.ts
+function installLearningCycleMethods(serviceClass) {
+  serviceClass.prototype.learningCycleRequestGet = function(args) {
+    const id22 = args.request_id;
+    if (typeof id22 !== "string" || !id22.trim()) throw new Error("request_id must not be empty");
+    const request2 = this.store.get("workflow_evolution_request", id22.trim());
+    const refs6 = Array.isArray(request2.observation_refs) ? request2.observation_refs : [];
+    const observations = refs6.map((ref2) => this.store.get("workflow_evolution_observation", String(ref2.id), Number(ref2.version)));
+    return { request: request2, observations, content_stored: false, execution_authority: false };
+  };
+  serviceClass.prototype.learningCycleFinalize = function(args) {
+    const requiredText3 = (key2) => {
+      const value = args[key2];
+      if (typeof value !== "string" || !value.trim()) throw new Error(`${key2} must not be empty`);
+      return value.trim();
+    };
+    const host = requiredText3("host");
+    if (!/^[a-z][a-z0-9_-]{0,63}$/u.test(host)) throw new Error("host must be a bounded Host identifier");
+    const taskId3 = requiredText3("task_id"), turnId = requiredText3("turn_id"), receiptId = requiredText3("context_receipt_id");
+    const outcome2 = requiredText3("verification_outcome");
+    if (outcome2 !== "passed" && outcome2 !== "failed") throw new Error("verification_outcome must be passed or failed");
+    const verificationRef = requiredText3("verification_ref");
+    const resolution = this.store.find("context_resolution_receipt", receiptId);
+    const pack = resolution ? null : this.store.find("context_pack_receipt", receiptId);
+    const receipt = resolution ?? (pack ? this.store.find("context_resolution_receipt", String(pack.context_receipt_id)) : null);
+    if (!receipt) throw new Error("context_receipt_id must reference a stored Context receipt");
+    if (args.verified !== true) return { status: "ignored", reason: "verification_not_attested", observation: null, request: null, idempotent: false };
+    const scope3 = receipt.scope;
+    if (!scope3 || typeof scope3.kind !== "string" || typeof scope3.id !== "string") throw new Error("Context receipt has no usable scope");
+    if (receipt.task_id && receipt.task_id !== taskId3) throw new Error("task_id does not match the Context receipt");
+    const scenario = args.scenario_key;
+    if (scenario !== void 0 && (typeof scenario !== "string" || !/^[a-z0-9][a-z0-9._/-]{0,95}$/u.test(scenario))) throw new Error("scenario_key must be a bounded stable identifier");
+    const identity = { host, task_id: taskId3, turn_id: turnId, context_receipt_id: receipt.id, verification_ref: verificationRef, outcome: outcome2, scope: scope3, scenario_key: scenario ?? null };
+    const sourceDigest = stableDigest(identity);
+    const scenarioSignature = scenario ? { schema: "craft.scenario-signature.v1", project: scope3, scenario_key: scenario, target_class: "host_task_completion", host_revision: "craft-learning-cycle-v1" } : null;
+    const scenarioKey = scenarioSignature ? `scenario:${stableDigest(scenarioSignature).slice(-24)}` : null;
+    const evidenceId = `evidence_learning_cycle_${sourceDigest.slice(-20)}`;
+    const evidence2 = this.store.find("evidence", evidenceId) ?? this.evidenceRecord({ evidence_id: evidenceId, source_type: "host_completion_signal", confidence: "bounded", claim: `Host reported terminal verification ${outcome2}.`, locator: `context-receipt:${receipt.id}`, metadata: { provenance: "host_completion_signal", host, task_id: taskId3, turn_id: turnId, verification_ref_digest: stableDigest(verificationRef), context_receipt_id: receipt.id, content_stored: false } });
+    const observationId = `workflow_evolution_observation_${sourceDigest.slice(-20)}`;
+    const observed = this.workflowEvolutionObserve({ observation_id: observationId, scenario_key: scenarioKey ?? `unclassified:${stableDigest({ scope: scope3, host }).slice(-24)}`, source_kind: `host:${host}`, source_id: taskId3, source_digest: stableDigest({ taskId: taskId3, turnId, outcome: outcome2, verificationRef }), outcome: outcome2, scope: `${scope3.kind}:${scope3.id}`, ...scenarioSignature ? { scenario_signature: scenarioSignature } : {}, evidence_ids: [evidence2.id], sanitized: true, content_stored: false });
+    const observationReplay = observed.idempotent === true;
+    if (!scenarioKey) return { status: "observed", observation: observed.observation, evidence: evidence2, request: null, next_action: "stable_scenario_key_required_for_cross_task_learning", idempotent: observationReplay };
+    const observations = this.workflowEvolutionObservations({ scenario_key: scenarioKey, limit: 100 }).observations;
+    const distinct = observations.filter((item) => item.source.id !== taskId3);
+    if (!distinct.length) return { status: "observed", observation: observed.observation, evidence: evidence2, request: null, next_action: "await_an_independent_verified_task", idempotent: observationReplay };
+    const request2 = this.workflowEvolutionPropose({ scenario_key: scenarioKey, observation_ids: [String(distinct[0].id), observationId].sort(), hypothesis: "Require a recorded terminal verification before marking a task complete, and preserve failed verification for bounded recovery.", design_axes: ["orchestration"], procedure_kind: "workflow", output_contract_ref: "acceptance:terminal-verification" });
+    const evolutionRequest = request2.request;
+    const profile = this.store.list("evaluation_model_profile", 100, (item) => item.lifecycle === "active" && Array.isArray(item.purposes) && item.purposes.includes("workflow_evolution"))[0];
+    const priorTicket = this.store.list("evaluation_model_ticket", 100, (item) => item.purpose === "workflow_evolution" && item.target?.id === evolutionRequest.id && Number(item.target.version) === Number(evolutionRequest.version))[0];
+    let ticket = priorTicket ?? null, ticketWasCreated = false;
+    if (!ticket && profile && evolutionRequest.lifecycle === "awaiting_model") {
+      const issued = this.evaluationModelTicketIssue({
+        profile_id: profile.id,
+        purpose: "workflow_evolution",
+        workflow_evolution_request_id: evolutionRequest.id,
+        input_ref: `craft-experience://request/${evolutionRequest.id}/v${evolutionRequest.version}`,
+        output_contract_ref: "craft-experience-procedure-draft-v1"
+      });
+      ticket = issued.ticket;
+      ticketWasCreated = issued.idempotent !== true;
+    }
+    const submitted = evolutionRequest.lifecycle === "draft_submitted";
+    return {
+      status: submitted ? "candidate_submitted" : "candidate_request",
+      observation: observed.observation,
+      evidence: evidence2,
+      request: evolutionRequest,
+      model_ticket: ticket,
+      next_action: submitted ? "run_the_pinned_candidate_through_ordered_external_evaluation_gates" : ticket ? "model_adapter_distills_proposal_then_external_evaluator_runs_ordered_gates" : "configure_workflow_evolution_model_profile_then_distill_and_evaluate",
+      idempotent: observationReplay && request2.idempotent === true && !ticketWasCreated
+    };
   };
 }
 
@@ -258061,6 +258262,20 @@ function repositoryFiles(root, _query = "") {
   return { root, state: "ready", files: files5, omitted };
 }
 
+// core/operation-error.ts
+var CraftOperationError = class extends Error {
+  code;
+  stage;
+  safeDetails;
+  constructor(code, stage, message, safeDetails = {}) {
+    super(message);
+    this.name = "CraftOperationError";
+    this.code = code;
+    this.stage = stage;
+    this.safeDetails = safeDetails;
+  }
+};
+
 // capability/craft-codebase/basic-analysis.ts
 var ANALYZER_VERSION = "2";
 function basicAnalysis(store, workspaceId, files5) {
@@ -258162,12 +258377,16 @@ function ensureRepository(service, args) {
 
 // core/application/use-cases/repository-context.ts
 async function openContext(service, args) {
-  if (typeof args.query !== "string" || !args.query.trim()) throw new Error("query must not be empty");
-  if (args.include_codebase !== void 0 && typeof args.include_codebase !== "boolean") throw new Error("include_codebase must be boolean");
-  if (args.index_depth !== void 0 && !["basic", "semantic"].includes(String(args.index_depth))) throw new Error("index_depth must be basic or semantic");
+  if (typeof args.query !== "string" || !args.query.trim()) throw new CraftOperationError("INVALID_INPUT", "input_validation", "query must not be empty", { field: "query" });
+  if (args.include_codebase !== void 0 && typeof args.include_codebase !== "boolean") throw new CraftOperationError("INVALID_INPUT", "input_validation", "include_codebase must be boolean", { field: "include_codebase" });
+  if (args.index_depth !== void 0 && !["basic", "semantic"].includes(String(args.index_depth))) throw new CraftOperationError("INVALID_INPUT", "input_validation", "index_depth must be basic or semantic", { field: "index_depth", allowed: ["basic", "semantic"] });
   const maxChars = Number(args.max_chars ?? 12e3);
   const maxItems = Number(args.max_items ?? 12);
-  new ContextBudget(maxItems, maxChars);
+  try {
+    new ContextBudget(maxItems, maxChars);
+  } catch {
+    throw new CraftOperationError("LIMIT_EXCEEDED", "budget_validation", "Context budget is invalid", { budget: !Number.isSafeInteger(maxItems) || maxItems < 1 ? "max_items" : "max_chars", max_items: maxItems, max_chars: maxChars, minimum: 1 });
+  }
   const { root } = repositoryRoot(args.project_root);
   const identity = service.scopeIdentityResolveProject({ project_root: root }).identity;
   const scope3 = identity.canonical_scope;
@@ -258177,12 +258396,18 @@ async function openContext(service, args) {
   } catch {
     codebase = { status: "unavailable", reason: "repository_index_failed" };
   }
-  if (args.required_refs !== void 0 && !Array.isArray(args.required_refs)) throw new Error("required_refs must be an array");
-  const required5 = (args.required_refs ?? []).map(requiredContextRef);
+  if (args.required_refs !== void 0 && !Array.isArray(args.required_refs)) throw new CraftOperationError("INVALID_INPUT", "input_validation", "required_refs must be an array", { field: "required_refs" });
+  let required5;
+  try {
+    required5 = (args.required_refs ?? []).map(requiredContextRef);
+  } catch {
+    throw new CraftOperationError("INVALID_INPUT", "input_validation", "required_refs contains an invalid reference", { field: "required_refs" });
+  }
   const codeRequired = required5.filter((ref2) => ref2.member === "codebase");
+  if (codeRequired.length && codebase.status !== "ready") throw new CraftOperationError("REQUIRED_MATERIAL_UNAVAILABLE", "codebase_projection", "Required Codebase material is unavailable", { member: "codebase", reason: codebase.reason });
   const controls = Object.fromEntries(["source_ids", "memory_ids", "retrieval_adapter_id", "allow_restricted", "principal_id", "principal_ids", "tenant_id", "cognitive_purpose", "user_scope_id", "team_scope_id", "organization_scope_id", "session_scope_id", "include_global", "include_working_notes", "now", "task_id", "session_id", "turn_id", "history_refs", "state_refs"].filter((key2) => args[key2] !== void 0).map((key2) => [key2, args[key2]]));
   const taskKind = args.task_kind ?? (/review|bug|debug|code|开发|代码|修复|排查|重构|测试/iu.test(args.query) ? "code" : "general");
-  if (!["code", "review", "debug", "development", "knowledge", "general"].includes(String(taskKind))) throw new Error("Unsupported Context task_kind");
+  if (!["code", "review", "debug", "development", "knowledge", "general"].includes(String(taskKind))) throw new CraftOperationError("INVALID_INPUT", "input_validation", "Unsupported Context task_kind", { field: "task_kind" });
   const codeFirst = ["code", "review", "debug", "development"].includes(String(taskKind)) || codeRequired.length > 0;
   const projection = codebase.status === "ready" ? service.codebase.contextProjection({ workspace_id: codebase.workspace_id, index_id: codebase.index_id, query: args.query, limit: 100, required_refs: codeRequired, scope: scope3 }) : null;
   const queryOmitted = Number(projection?.query_omitted_count ?? 0);
@@ -258208,9 +258433,9 @@ async function openContext(service, args) {
   const reasons = [];
   if (receipt?.partial === true) reasons.push("context_contribution_unavailable");
   if (codebase.status === "unavailable") reasons.push("codebase_unavailable");
-  if (codebase.status === "ready" && codebase.summary.certainty !== "complete") reasons.push("codebase_partial_analysis");
+  if (codebase.status === "ready" && Number(codebase.summary.unsupported_file_count) > 0) reasons.push("codebase_analyzer_unsupported_files");
   if (Number(codebase.omitted_files ?? 0) > 0) reasons.push("codebase_files_omitted");
-  if (budgetOmitted > 0 || codebase.status === "ready" && (Number(receipt?.total_items ?? 0) >= maxItems || Number(receipt?.total_used_chars ?? 0) >= maxChars)) reasons.push("codebase_budget_exhausted");
+  if (budgetOmitted > 0) reasons.push("codebase_budget_exhausted");
   if (queryOmitted > 0) reasons.push("codebase_query_truncated");
   codebase = { ...codebase, budget_omitted_count: budgetOmitted, query_omitted_count: queryOmitted, budget_rebalanced: budgetRebalanced };
   const assetRefs = context.asset_refs;
@@ -258222,12 +258447,14 @@ async function openContext(service, args) {
   const injectionContributions = context.contributions.map((part) => ({ ...part, items: part.items.filter((item) => novel(String(part.member), item)) }));
   const injection = JSON.stringify({ items: injectionItems, contributions: injectionContributions, host_refs: context.host_refs, codebase_references: references });
   const estimatedTokens = estimateTokens(injection);
-  if (args.max_tokens !== void 0 && (!Number.isSafeInteger(args.max_tokens) || Number(args.max_tokens) < 1 || estimatedTokens > Number(args.max_tokens))) throw new Error("Context injection exceeds estimated token budget or max_tokens is invalid");
+  if (args.max_tokens !== void 0 && (!Number.isSafeInteger(args.max_tokens) || Number(args.max_tokens) < 1 || estimatedTokens > Number(args.max_tokens))) throw new CraftOperationError("LIMIT_EXCEEDED", "injection_budget", "Context injection exceeds estimated token budget or max_tokens is invalid", { budget: "max_tokens", estimated_tokens: estimatedTokens, limit: args.max_tokens });
   return service.store.transaction(() => {
     assertContextReadCurrent(service.store, receipt);
     if (projection) service.codebase.assertContextProjectionCurrent(projection, references);
     const packReceipt = service.store.find("context_pack_receipt", id22) ?? service.store.create("context_pack_receipt", id22, { ...packIdentity, identity_digest: stableDigest(packIdentity), content_free: true });
-    return { ...context, items: injectionItems, contributions: injectionContributions, already_emitted_refs: alreadyEmitted, hook_reused: alreadyEmitted.length > 0, asset_refs: assetRefs, injection_measurement: { measurement_scope: "material_projection_excludes_protocol_envelope_and_host_history_bodies", serialized_chars: injection.length, estimated_tokens: estimatedTokens, tokenizer: "cjk_char_latin_four_char_estimate", exact: false, host_measured_tokens: null }, partial: reasons.length > 0, codebase: { ...codebase, references }, pack_receipt: packReceipt, host_execution_authority: false };
+    const contextStatus = receipt?.partial === true ? "partial" : "resolved";
+    const packStatus = reasons.length ? "partial" : "ready";
+    return { ...context, context_status: contextStatus, pack_status: packStatus, items: injectionItems, contributions: injectionContributions, already_emitted_refs: alreadyEmitted, hook_reused: alreadyEmitted.length > 0, asset_refs: assetRefs, injection_measurement: { measurement_scope: "material_projection_excludes_protocol_envelope_and_host_history_bodies", serialized_chars: injection.length, estimated_tokens: estimatedTokens, tokenizer: "cjk_char_latin_four_char_estimate", exact: false, host_measured_tokens: null }, partial: reasons.length > 0, codebase: { ...codebase, analysis_confidence: codebase.summary?.certainty ?? null, references }, pack_receipt: packReceipt, host_execution_authority: false };
   });
 }
 
@@ -258300,6 +258527,7 @@ function installKernelDelegateMethods(serviceClass) {
   installLegacyKnowledgeMigrationMethods(serviceClass);
   installRuntimeLearningMethods(serviceClass);
   installKnowledgeAutoReviewMethods(serviceClass);
+  installLearningCycleMethods(serviceClass);
   installDecisionContextGateMethods(serviceClass);
   installQualityProfileMethods(serviceClass);
   installCodebaseMethods(serviceClass);
@@ -258572,7 +258800,7 @@ var WorkControl = class {
 // core/application/coordinators/forge-dispatch.ts
 var ACTIONS3 = /* @__PURE__ */ new Set(["worktree", "draft_pr", "merge"]);
 var HIGH_RISK_LABELS = /* @__PURE__ */ new Set(["security", "compliance", "production", "destructive"]);
-function text29(value, name) {
+function text30(value, name) {
   if (typeof value !== "string" || !value.trim()) throw new Error(`${name} must not be empty`);
   return value.trim();
 }
@@ -258582,7 +258810,7 @@ function object6(value, name) {
 }
 function strings34(value, name, minimum = 0) {
   if (!Array.isArray(value)) throw new Error(`${name} must be an array`);
-  const values3 = [...new Set(value.map((item) => text29(item, name)))].sort();
+  const values3 = [...new Set(value.map((item) => text30(item, name)))].sort();
   if (values3.length < minimum) throw new Error(`${name} must contain at least ${minimum} item`);
   return values3;
 }
@@ -258609,9 +258837,9 @@ var ForgeDispatchCoordinator = class {
     this.store = store;
   }
   scan(args) {
-    const repository = text29(args.repository, "repository");
-    const sourceRef = text29(args.source_ref, "source_ref");
-    const scope3 = text29(args.scope, "scope");
+    const repository = text30(args.repository, "repository");
+    const sourceRef = text30(args.source_ref, "source_ref");
+    const scope3 = text30(args.scope, "scope");
     const state4 = object6(args.repository_state ?? {}, "repository_state");
     const repositoryReady = state4.clean === true && state4.default_branch_protected === true;
     const sourceIssues = Array.isArray(args.issues) ? args.issues : (() => {
@@ -258619,7 +258847,7 @@ var ForgeDispatchCoordinator = class {
     })();
     const entries2 = sourceIssues.map((value) => {
       const issue = object6(value, "issues");
-      const ticketId = text29(issue.ticket_id, "issue.ticket_id");
+      const ticketId = text30(issue.ticket_id, "issue.ticket_id");
       const classified = issueDisposition(issue, repositoryReady);
       return {
         ticket_id: ticketId,
@@ -258653,15 +258881,15 @@ var ForgeDispatchCoordinator = class {
     }), idempotent: false };
   }
   evaluate(args) {
-    const ledger = this.store.get("ticket_dispatch_ledger", text29(args.ledger_id, "ledger_id"));
+    const ledger = this.store.get("ticket_dispatch_ledger", text30(args.ledger_id, "ledger_id"));
     const cases = Array.isArray(args.cases) ? args.cases.map((item) => object6(item, "cases")) : (() => {
       throw new Error("cases must be an array");
     })();
     if (!cases.length) throw new Error("cases must contain at least 1 item");
     const entries2 = new Map(ledger.entries.map((entry2) => [String(entry2.ticket_id), entry2]));
     const rows4 = cases.map((item) => {
-      const ticketId = text29(item.ticket_id, "case.ticket_id");
-      const expected = text29(item.expected, "case.expected");
+      const ticketId = text30(item.ticket_id, "case.ticket_id");
+      const expected = text30(item.expected, "case.expected");
       if (!["ready", "blocked", "needs_human"].includes(expected)) throw new Error("case.expected is unsupported");
       const actual = entries2.get(ticketId);
       if (!actual) throw new Error(`Ticket Dispatch case is absent from ledger: ${ticketId}`);
@@ -258689,11 +258917,11 @@ var ForgeDispatchCoordinator = class {
     }), idempotent: false };
   }
   policySave(args) {
-    const kit = this.store.get("domain_kit", text29(args.domain_kit_id, "domain_kit_id"), Number(args.domain_kit_version));
+    const kit = this.store.get("domain_kit", text30(args.domain_kit_id, "domain_kit_id"), Number(args.domain_kit_version));
     const operations2 = strings34(args.operations, "operations", 1);
     if (operations2.some((operation2) => !ACTIONS3.has(operation2))) throw new Error("Forge Policy operation is unsupported");
     const identity = {
-      scope: text29(args.scope, "scope"),
+      scope: text30(args.scope, "scope"),
       repositories: strings34(args.repositories, "repositories", 1),
       branches: strings34(args.branches, "branches", 1),
       operations: operations2,
@@ -258714,16 +258942,16 @@ var ForgeDispatchCoordinator = class {
     return { policy: this.store.create("forge_policy", policyId, { ...identity, identity_digest: digest35, status: "active", created_at: (/* @__PURE__ */ new Date()).toISOString() }), idempotent: false };
   }
   actionPrepare(args) {
-    const action = text29(args.action, "action");
+    const action = text30(args.action, "action");
     if (!ACTIONS3.has(action)) throw new Error("Forge action is unsupported");
-    const policy = this.store.get("forge_policy", text29(args.policy_id, "policy_id"));
-    const ledger = this.store.get("ticket_dispatch_ledger", text29(args.ledger_id, "ledger_id"));
-    const evaluation = this.store.get("ticket_dispatch_evaluation", text29(args.evaluation_id, "evaluation_id"));
-    const procedure = this.store.get("experience_procedure", text29(args.procedure_id, "procedure_id"));
-    const application = this.store.get("domain_kit_application", text29(args.kit_application_id, "kit_application_id"));
-    const taskId3 = text29(args.task_id, "task_id");
-    const branch = text29(args.branch, "branch");
-    const ticketId = text29(args.ticket_id, "ticket_id");
+    const policy = this.store.get("forge_policy", text30(args.policy_id, "policy_id"));
+    const ledger = this.store.get("ticket_dispatch_ledger", text30(args.ledger_id, "ledger_id"));
+    const evaluation = this.store.get("ticket_dispatch_evaluation", text30(args.evaluation_id, "evaluation_id"));
+    const procedure = this.store.get("experience_procedure", text30(args.procedure_id, "procedure_id"));
+    const application = this.store.get("domain_kit_application", text30(args.kit_application_id, "kit_application_id"));
+    const taskId3 = text30(args.task_id, "task_id");
+    const branch = text30(args.branch, "branch");
+    const ticketId = text30(args.ticket_id, "ticket_id");
     const entry2 = ledger.entries.find((item) => item.ticket_id === ticketId);
     const repositories = strings34(policy.repositories, "policy.repositories", 1);
     const operations2 = strings34(policy.operations, "policy.operations", 1);
@@ -258736,7 +258964,7 @@ var ForgeDispatchCoordinator = class {
     if (evaluation.status !== "eligible" || evaluation.ledger_id !== ledger.id || Number(evaluation.ledger_version) !== Number(ledger.version)) throw new Error("Forge action requires an eligible same-ledger evaluation");
     if (!entry2 || entry2.disposition !== "ready") throw new Error("Forge action requires a ready ticket");
     if (procedure.lifecycle !== "routeable" || procedure.routeable !== true) throw new Error("Forge action requires a routeable Experience Procedure");
-    const approvalRef = text29(args.approval_ref, "approval_ref");
+    const approvalRef = text30(args.approval_ref, "approval_ref");
     if (action === "merge") {
       if (policy.auto_merge_enabled !== true || policy.require_ci_green !== true || policy.require_protected_branch !== true || ledger.repository_state.ci_green !== true || ledger.repository_state.default_branch_protected !== true) {
         throw new Error("Forge merge requires an explicitly enabled policy, green CI and protected branch");
@@ -258779,7 +259007,7 @@ var ForgeDispatchCoordinator = class {
     }), idempotent: false };
   }
   get(args) {
-    return { action: this.store.get("forge_action", text29(args.forge_action_id, "forge_action_id")) };
+    return { action: this.store.get("forge_action", text30(args.forge_action_id, "forge_action_id")) };
   }
 };
 
@@ -258979,6 +259207,9 @@ function validateModelInput(args, id22) {
   return { id: id22, name, protocol, baseUrl, model, apiKeyEnv, supportsTools };
 }
 var CraftService = class _CraftService extends ServiceFoundation {
+  contextToolsDiscover(args) {
+    return discoverContextTools(args);
+  }
   workControl;
   forgeDispatch;
   cognitiveWorkbench;
@@ -267310,6 +267541,7 @@ var DAILY_COMPONENT_TOOLS = {
     "craft_procedure_configuration_save",
     "craft_experience_graph_inspect",
     "craft_experience_graph_edit",
+    "craft_learning_cycle_finalize",
     "craft_component_readiness_get",
     "craft_evidence_record",
     "craft_experience_observe",
@@ -267317,15 +267549,15 @@ var DAILY_COMPONENT_TOOLS = {
     "craft_experience_procedure_draft",
     "craft_experience_procedure_submit",
     "craft_experience_procedure_get",
-    "craft_procedure_host_control",
-    "craft_procedure_decision_evaluate",
+    "craft_experience_learning_request_get",
+    "craft_experience_learning_evaluation_dispatch",
+    "craft_experience_learning_evaluation_result",
     "craft_procedure_invocation_bind",
     "craft_procedure_invocation_dispatch",
     "craft_procedure_invocation_report",
     "craft_procedure_invocation_resume",
     "craft_procedure_invocation_get",
     "craft_procedure_invocation_transition",
-    "craft_procedure_invocation_evaluate",
     "craft_procedure_create",
     "craft_procedure_plan",
     "craft_procedure_get",
@@ -267377,7 +267609,7 @@ function canonical(value) {
 function digest34(value) {
   return `sha256:${(0, import_node_crypto135.createHash)("sha256").update(canonical(value)).digest("hex")}`;
 }
-function text30(value, fallback2) {
+function text31(value, fallback2) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback2;
 }
 var ComponentTraceKernel = class {
@@ -267407,7 +267639,7 @@ var ComponentTraceKernel = class {
         return null;
       }
     })();
-    const taskId3 = existing?.task_id ?? text30(input.task_id, `mcp:${this.sessionId}`);
+    const taskId3 = existing?.task_id ?? text31(input.task_id, `mcp:${this.sessionId}`);
     const correlation = {
       trace_id: traceId,
       task_id: taskId3,
@@ -267460,6 +267692,7 @@ var ComponentTraceKernel = class {
     } catch (error) {
       if (!terminal2) observe(() => {
         const errorName = error instanceof Error ? error.name : "NonErrorThrow";
+        const safeError = error && typeof error === "object" ? error : {};
         this.trace.append({
           trace_id: traceId,
           event_id: operationEventId(traceId, eventKey, "failed"),
@@ -267469,7 +267702,12 @@ var ComponentTraceKernel = class {
           trust: "observed",
           status: "failed",
           error_class: errorName,
-          data: { error_class: errorName },
+          data: {
+            error_class: errorName,
+            error_code: typeof safeError.code === "string" ? safeError.code : null,
+            stage: typeof safeError.stage === "string" ? safeError.stage : "dispatch",
+            details: safeError.safeDetails && typeof safeError.safeDetails === "object" ? safeError.safeDetails : {}
+          },
           summary: `${args.component}.${args.operation} failed`
         });
         if (explicitTraceId === null) this.trace.finalize({ trace_id: traceId, status: "failed", summary: "Component call failed" });
@@ -267788,6 +268026,7 @@ var McpServer = class {
       if (!captured.ok) {
         return this.ok(request2.id, {
           content: [{ type: "text", text: captured.error instanceof Error ? captured.error.message : String(captured.error) }],
+          structuredContent: safeFailure(captured.error),
           trace_correlation: captured.correlation,
           ...captured.telemetry_error ? { telemetry_error: captured.telemetry_error } : {},
           isError: true
@@ -267807,6 +268046,7 @@ var McpServer = class {
     } catch (error) {
       return this.ok(request2.id, {
         content: [{ type: "text", text: error instanceof Error ? error.message : String(error) }],
+        structuredContent: safeFailure(error),
         isError: true
       });
     }
@@ -267854,6 +268094,14 @@ var McpServer = class {
     return { jsonrpc: "2.0", id: requestId, error: { code, message } };
   }
 };
+function safeFailure(error) {
+  if (!error || typeof error !== "object") return { error_code: "INTERNAL_ERROR", stage: "dispatch", details: {} };
+  const value = error;
+  const code = typeof value.code === "string" ? value.code : "INTERNAL_ERROR";
+  const stage = typeof value.stage === "string" ? value.stage : "dispatch";
+  const details = value.safeDetails && typeof value.safeDetails === "object" && !Array.isArray(value.safeDetails) ? value.safeDetails : {};
+  return { error_code: code, stage, details };
+}
 
 // core/interfaces/mcp/product-launch.ts
 var MCP_PRODUCT_SURFACES = {
